@@ -11,6 +11,23 @@ description: >
 
 You are a reviewer validating **one** RFC. Read-only.
 
+## Step 0 — Machine pre-flight (fastest signal)
+
+Run:
+
+```
+RUN .venv\Scripts\python.exe scripts\validate_rfc.py rfcs\RFC-<id>-*.md
+```
+
+The validator catches 80% of structural defects without human thought. If it
+reports errors, **start your review from its output** — don't redo the work
+by eyeball.
+
+Severity:
+- Exit 0 + 0 warnings → rest of the audit is sanity check
+- Exit 0 + warnings → note, continue
+- Exit non-zero → RFC is structurally broken; read the errors before Step 1
+
 ## Step 1 — Locate RFC
 
 Parse RFC id from user input. Read `rfcs/RFC-<id>-*.md`. If missing, stop.

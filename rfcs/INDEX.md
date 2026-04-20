@@ -51,10 +51,14 @@
 |---------|-----------------------------------|--------|-------------|-------|
 | RFC-001 | lock dependencies with uv         | open   |             |       |
 | RFC-002 | GitHub Actions CI matrix          | open   | RFC-001     |       |
-| RFC-003 | Credential Store (domain + API)   | open   | RFC-002     |       |
+| RFC-003 | Credential Store (domain + API)   | blocked ⚠ | RFC-002  |       |
 | RFC-004 | Rate limiting decorator           | open   | RFC-002     |       |
 | RFC-005 | Safe path helper + audit          | open   | RFC-002     |       |
-| RFC-A04 | Edition + FeatureFlags infra      | open   | RFC-002     |       |
+| RFC-A04 | Edition + FeatureFlags infra      | blocked ⚠ | RFC-002  |       |
+
+> ⚠ = `reason: spec_failed_preflight` — see [RFC_AUDIT_PREFLIGHT.md](../RFC_AUDIT_PREFLIGHT.md).
+> Do not execute. Spec author must rewrite SEARCH blocks against the real
+> source files, or split the RFC to fit within budget caps.
 
 ### Epic B — Core hardening
 
@@ -71,13 +75,16 @@
 
 | id      | title                             | status | blocking_on | owner |
 |---------|-----------------------------------|--------|-------------|-------|
-| RFC-006 | FastAPI app skeleton              | open   | RFC-002     |       |
-| RFC-007 | htmx + Tailwind base layout       | open   | RFC-006     |       |
-| RFC-008 | engagement routes + templates     | open   | RFC-007     |       |
-| RFC-009 | findings table + transitions      | open   | RFC-008     |       |
-| RFC-010 | tool launcher + SSE stdout stream | open   | RFC-008     |       |
+| RFC-006 | FastAPI app skeleton              | blocked ⚠ | RFC-002  |       |
+| RFC-007 | htmx + Tailwind base layout       | blocked-dep | RFC-006 |     |
+| RFC-008 | engagement routes + templates     | blocked-dep | RFC-007 |     |
+| RFC-009 | findings table + transitions      | blocked-dep | RFC-008 |     |
+| RFC-010 | tool launcher + SSE stdout stream | blocked ⚠ | RFC-008  |       |
 | RFC-011 | settings page (keys + paths)      | open   | RFC-007     |       |
 | RFC-012 | HTTP Basic auth for shared deploy | open   | RFC-006     |       |
+
+> ⚠ = direct spec defects (phantom paths / bad SEARCH / budget). Rewrite needed.
+> `blocked-dep` = RFC itself is OK but depends on a broken earlier RFC.
 
 ### Epic D — Web UI Tier 2
 
@@ -133,8 +140,8 @@
 
 | id      | title                              | status | blocking_on         | owner |
 |---------|------------------------------------|--------|---------------------|-------|
-| RFC-T00 | Team unleashed mode                | open   | RFC-A04             |       |
-| RFC-T08 | Team bootstrap command             | open   | RFC-A04, RFC-T00    |       |
+| RFC-T00 | Team unleashed mode                | blocked ⚠ | RFC-A04          |       |
+| RFC-T08 | Team bootstrap command             | blocked ⚠ | RFC-A04, RFC-T00 |       |
 | RFC-T01 | Obsidian Team Vault template       | open   | RFC-T08             | later |
 | RFC-T02 | Vaultwarden integration            | open   | RFC-003, RFC-T08    | later |
 | RFC-T03 | tmate share-shell tool             | open   | RFC-T08             | later |

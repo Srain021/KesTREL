@@ -150,6 +150,23 @@ RUN .venv\Scripts\python.exe -m pytest tests/unit/webui/ -q
 
 ## 5. 验证规则
 
+### 5.0 `validate_rfc.py` 预检（**2026-04-21 强制加入**）
+
+在 Steps 开始**之前**，执行者必须跑：
+
+```
+RUN .venv\Scripts\python.exe scripts\validate_rfc.py rfcs\RFC-<id>-*.md
+```
+
+**exit code 0**：spec 结构健康，可以进 §5.1。
+**exit code 非 0**：spec 本身有缺陷（phantom paths / 不匹配 SEARCH / budget
+超限 / RUN 非白名单）。**立刻停止**，在 RFC 里写 `status: blocked` 并标
+`reason: spec_failed_preflight`，不要试图在执行中"修 spec"。
+
+本步骤来源：2026-04-21 审计发现 15 个 full-fleshed RFC 中 10 个 pre-flight
+失败（RFC_AUDIT_PREFLIGHT.md）。通过机器检测，80% 的 spec 缺陷能在执行前
+拦住。
+
 ### 5.1 `verify_cmd` 运行协议
 
 执行者在所有 `steps` 跑完后必须执行且仅执行 `verify_cmd`，不带任何修改。

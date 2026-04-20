@@ -19,6 +19,39 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 - `.editorconfig` — cross-IDE style consistency.
 - `scripts/sync_rfc_index.py` — scans `rfcs/RFC-*.md` front-matter, refreshes
   `rfcs/INDEX.md` status table. Previously promised but missing.
+- `scripts/validate_rfc.py` — pre-flight validator for RFCs. 10 checks
+  (C1-C10) catch phantom paths, hallucinated SEARCH blocks, budget overruns,
+  non-whitelisted RUN commands. Runs in <1s.
+- `RFC_AUDIT_PREFLIGHT.md` — 2026-04-21 audit report: 10 out of 15
+  full-fleshed RFCs fail pre-flight. Root-cause analysis, defect taxonomy,
+  per-RFC verdict.
+- `SPEC_AUTHORING_CHECKLIST.md` — 12-section checklist every spec author
+  must tick before submitting an RFC. Prevents the 5 defect classes found
+  in the 2026-04-21 audit.
+
+### Changed
+- `AGENT_EXECUTION_PROTOCOL.md` §5.0 — **mandatory pre-flight step** added.
+  Executors must run `scripts/validate_rfc.py` before Step 1 of any RFC.
+  Exit non-zero = abort without attempting execution.
+- `.cursor/skills-cursor/kestrel-mcp/exec/rfc/SKILL.md` Step 3 — added
+  `validate_rfc.py` invocation. Refuse to execute on failure.
+- `.cursor/skills-cursor/kestrel-mcp/audit/rfc/SKILL.md` Step 0 — added
+  machine pre-flight as first step.
+
+### Fixed (RFC-001)
+- RFC-001 Step 2 no longer inserts `[tool.uv] default-groups = ["dev"]`
+  into `pyproject.toml` — that field references PEP 735's
+  `[dependency-groups]` table; project uses PEP 621's
+  `[project.optional-dependencies]`. Two specs are incompatible.
+- RFC-001 Step 4 changed to `uv sync --frozen --all-extras` so dev deps
+  still install.
+- RFC-001 `Notes for executor` documents the pitfall.
+- Discovered when first real RFC execution attempt crashed on Step 4.
+
+### Marked blocked (spec_failed_preflight)
+- RFC-003, RFC-A04, RFC-T00, RFC-T08, RFC-006, RFC-010 — per
+  RFC_AUDIT_PREFLIGHT.md. Require spec rewrite before they can execute.
+- RFC-007, RFC-008, RFC-009 — blocked transitively on RFC-006 being fixed.
 
 ### Infrastructure
 - Project is now tracked in git on branch `main`.

@@ -51,9 +51,13 @@ skill_id: rfc-001-uv-lock
 
 1. 用 `pip install uv` 装 uv 到现有 venv（不破坏现有环境）。
 2. 跑 `uv lock` 生成 `uv.lock`。
-3. 更新 `pyproject.toml` 加 `[tool.uv]` 段落（明确 indexer 用清华，和当前一致）。
-4. `.gitignore` 不忽略 `uv.lock`（锁文件必须入库）。
-5. README 加一节 "Reproducible installs" 说明 `uv sync` 用法。
+3. 更新 `pyproject.toml` 加 `[[tool.uv.index]]` 段（清华镜像优先）。**不加**
+   `[tool.uv] default-groups`，因为项目用的是 PEP 621 的
+   `[project.optional-dependencies]`，`default-groups` 是 PEP 735 的
+   `[dependency-groups]` 专属字段。
+4. `uv sync` 调用带 `--all-extras`，让 `[dev]` extra 自动装。
+5. `.gitignore` 不忽略 `uv.lock`（锁文件必须入库）。
+6. README 加一节 "Reproducible installs" 说明 `uv sync` 用法。
 
 ## Steps
 
@@ -63,7 +67,12 @@ skill_id: rfc-001-uv-lock
 RUN .venv\Scripts\python.exe -m pip install --upgrade "uv>=0.5"
 ```
 
-### Step 2 — pyproject.toml 加 uv 段
+### Step 2 — pyproject.toml 加 uv index 段
+
+只加 `[[tool.uv.index]]` 两行。**不加** `[tool.uv] default-groups` — 那个字段
+要配 PEP 735 的 `[dependency-groups]` 使用，项目目前用 PEP 621 的
+`[project.optional-dependencies]`，不兼容。dev extras 通过 `uv sync --all-extras`
+装（见 Step 4）。
 
 ```
 REPLACE pyproject.toml
@@ -77,9 +86,6 @@ Issues = "https://github.com/your-org/redteam-mcp/issues"
 Homepage = "https://github.com/your-org/redteam-mcp"
 Documentation = "https://github.com/your-org/redteam-mcp#readme"
 Issues = "https://github.com/your-org/redteam-mcp/issues"
-
-[tool.uv]
-default-groups = ["dev"]
 
 [[tool.uv.index]]
 name = "tsinghua"
@@ -102,8 +108,11 @@ RUN .venv\Scripts\python.exe -m uv lock
 
 ### Step 4 — 用 uv sync 验证可复现安装（副作用最小）
 
+`--all-extras` 确保 PEP 621 的 `[project.optional-dependencies] dev` 也装上
+（否则 pytest / ruff / mypy 不在 venv 里，CI 会红）。
+
 ```
-RUN .venv\Scripts\python.exe -m uv sync --frozen
+RUN .venv\Scripts\python.exe -m uv sync --frozen --all-extras
 ```
 
 ### Step 5 — 更新 .gitignore
@@ -147,7 +156,7 @@ developers, CI, and production.
 
 ```bash
 pip install uv
-uv sync --frozen
+uv sync --frozen --all-extras
 ```
 
 See [RFC-001](./rfcs/RFC-001-uv-lock-dependencies.md) for the rationale.
@@ -186,7 +195,13 @@ if exist uv.lock del uv.lock
 
 - 如果 Step 3 的 `uv lock` 报 "failed to solve"，大概率是某个包版本不兼容；不要改 pyproject.toml 兜底，直接 rollback 并把 stderr tail 写进 blocked 记录。
 - `uv.lock` 必须 commit 进仓库。不要让它进 .gitignore。
+- **不要** 引入 `[tool.uv] default-groups = ["dev"]` —— 那指向 PEP 735 的
+  `[dependency-groups]`，本项目用的是 PEP 621 的 `[project.optional-dependencies]`，
+  两个规范不互通。参见 RFC_AUDIT_PREFLIGHT.md §1.1。
 
 ## Changelog
 
-- **2026-04-21 初版** — Spec Author: Claude pair
+- **2026-04-21 v1.0** — Spec Author: Claude pair
+- **2026-04-21 v1.1** — Removed `[tool.uv] default-groups = ["dev"]` per runtime
+  failure during first execution attempt; switched Step 4 to `uv sync --frozen
+  --all-extras`. See RFC_AUDIT_PREFLIGHT.md for root-cause analysis.

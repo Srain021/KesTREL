@@ -31,11 +31,19 @@ Run (each Shell call separate):
 ```
 RUN git status --short
 RUN .venv\Scripts\python.exe scripts\full_verify.py
+RUN .venv\Scripts\python.exe scripts\validate_rfc.py rfcs\RFC-<id>-*.md
 ```
 
 - If dirty files overlap with `files_will_touch` → stop, tell user "workspace dirty, clean first".
 - If `full_verify.py` not 8/8 → stop, "baseline broken, fix with health/ skill first".
+- If `validate_rfc.py` exits non-zero → **stop immediately**. The spec is broken
+  (phantom paths, non-matching SEARCH, budget overrun, etc). Do NOT attempt
+  to fix the RFC mid-execution. Route to `audit/rfc/` skill, mark RFC
+  `status: blocked` with `reason: spec_failed_preflight`.
 - Record current `git rev-parse HEAD` — you'll reset here if failure.
+
+**This pre-flight step is mandatory as of 2026-04-21** — see
+AGENT_EXECUTION_PROTOCOL §5.0 and RFC_AUDIT_PREFLIGHT.md for rationale.
 
 ## Step 4 — Execute Steps
 

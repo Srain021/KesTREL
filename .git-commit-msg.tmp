@@ -1,0 +1,53 @@
+fix: RFC-001 spec + systematic RFC audit tooling
+
+RFC-001 failed at Step 4 in first real execution attempt: `uv sync --frozen`
+rejected `[tool.uv] default-groups = ["dev"]` because the project's dev deps
+live in PEP 621 `[project.optional-dependencies]`, not PEP 735
+`[dependency-groups]`. This commit fixes that specific spec AND audits every
+other full-fleshed RFC for similar class-of defects.
+
+RFC-001 fix:
+- Step 2: remove `[tool.uv] default-groups = ["dev"]` line (kept
+  `[[tool.uv.index]]` mirrors).
+- Step 4: `uv sync --frozen` -> `uv sync --frozen --all-extras` so dev deps
+  still install via the optional-dependencies mechanism.
+- Notes for executor: document the PEP 621 / PEP 735 incompatibility.
+
+Systematic audit (10 of 15 full-fleshed RFCs fail pre-flight):
+
+New tooling:
+- `scripts/validate_rfc.py` (350 LOC): 10 checks C1-C10 covering front-matter
+  integrity, files_to_read existence, SEARCH-block uniqueness, WRITE collision
+  detection, RUN whitelist enforcement, budget caps, blocking_on validity.
+  Runs in <1s against all RFCs. Parses raw YAML to recover `# new` /
+  `# modified` comments that `safe_load` drops.
+
+New documents:
+- `RFC_AUDIT_PREFLIGHT.md` (500 LOC): per-RFC verdict with 5-class defect
+  taxonomy (config hallucination, phantom file reference, SEARCH block
+  hallucination, missing from files_will_touch, budget cap overrun). 24 real
+  errors catalogued, each with location + minimum fix.
+- `SPEC_AUTHORING_CHECKLIST.md` (250 LOC): 12-section checklist authors must
+  tick before submitting an RFC. Guards against the 5 defect classes.
+
+Protocol tightening:
+- AGENT_EXECUTION_PROTOCOL §5.0 NEW: mandatory `validate_rfc.py` run before
+  Step 1 of any RFC execution. Exit non-zero = abort.
+- exec/rfc/ skill Step 3: validator is now part of the pre-flight trio
+  (git status + full_verify + validate_rfc).
+- audit/rfc/ skill Step 0: machine pre-flight as the first review action.
+
+INDEX.md status updates per audit:
+- RFC-003, RFC-006, RFC-010, RFC-A04, RFC-T00, RFC-T08: `blocked` with
+  reason `spec_failed_preflight` (SEARCH hallucination / phantom paths /
+  budget overrun). Require rewrite.
+- RFC-007, RFC-008, RFC-009: `blocked-dep` (transitively depend on RFC-006).
+
+Regression:
+- full_verify.py still 8/8 green (no src/ code changes).
+- Validator: 5 pass, 10 fail (23 errors, 8 warnings).
+- RFC-001 now PASS after fix.
+
+Next: human rewrites RFC-A04/T00/T08 SEARCH blocks against real files,
+then attempts exec/rfc/ again. Any new RFC must pass validate_rfc.py
+before landing.
