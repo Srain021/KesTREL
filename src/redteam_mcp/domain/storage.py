@@ -27,22 +27,25 @@ Design principles
 from __future__ import annotations
 
 import os
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
-from typing import AsyncIterator
 from uuid import UUID
 
 from sqlalchemy import (
     JSON,
     Boolean,
     DateTime,
-    Enum as SAEnum,
     Float,
     ForeignKey,
     Integer,
     LargeBinary,
     String,
     Text,
+)
+from sqlalchemy import (
+    Enum as SAEnum,
 )
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -54,7 +57,6 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import TypeDecorator
 
 from . import entities as ent
-
 
 # ---------------------------------------------------------------------------
 # Custom types
@@ -116,24 +118,34 @@ class EngagementRow(Base):
     owners_json: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
 
     authorization_doc_ref: Mapped[str | None] = mapped_column(Text)
-    started_at: Mapped["DateTime | None"] = mapped_column(DateTime(timezone=True))
-    expires_at: Mapped["DateTime | None"] = mapped_column(DateTime(timezone=True))
-    closed_at: Mapped["DateTime | None"] = mapped_column(DateTime(timezone=True))
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     dry_run: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     opsec_mode: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
-    created_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), nullable=False)
-    updated_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     # Relationships
-    scope: Mapped["ScopeRow | None"] = relationship(back_populates="engagement", uselist=False)
-    targets: Mapped[list["TargetRow"]] = relationship(back_populates="engagement", cascade="all, delete-orphan")
-    findings: Mapped[list["FindingRow"]] = relationship(back_populates="engagement", cascade="all, delete-orphan")
-    credentials: Mapped[list["CredentialRow"]] = relationship(back_populates="engagement", cascade="all, delete-orphan")
-    artifacts: Mapped[list["ArtifactRow"]] = relationship(back_populates="engagement", cascade="all, delete-orphan")
-    sessions: Mapped[list["SessionRow"]] = relationship(back_populates="engagement", cascade="all, delete-orphan")
-    invocations: Mapped[list["ToolInvocationRow"]] = relationship(
+    scope: Mapped[ScopeRow | None] = relationship(back_populates="engagement", uselist=False)
+    targets: Mapped[list[TargetRow]] = relationship(
+        back_populates="engagement", cascade="all, delete-orphan"
+    )
+    findings: Mapped[list[FindingRow]] = relationship(
+        back_populates="engagement", cascade="all, delete-orphan"
+    )
+    credentials: Mapped[list[CredentialRow]] = relationship(
+        back_populates="engagement", cascade="all, delete-orphan"
+    )
+    artifacts: Mapped[list[ArtifactRow]] = relationship(
+        back_populates="engagement", cascade="all, delete-orphan"
+    )
+    sessions: Mapped[list[SessionRow]] = relationship(
+        back_populates="engagement", cascade="all, delete-orphan"
+    )
+    invocations: Mapped[list[ToolInvocationRow]] = relationship(
         back_populates="engagement", cascade="all, delete-orphan"
     )
 
@@ -145,11 +157,11 @@ class ScopeRow(Base):
     engagement_id: Mapped[UUID] = mapped_column(
         UUIDString(), ForeignKey("engagements.id", ondelete="CASCADE"), unique=True, nullable=False
     )
-    created_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), nullable=False)
-    updated_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     engagement: Mapped[EngagementRow] = relationship(back_populates="scope")
-    entries: Mapped[list["ScopeEntryRow"]] = relationship(
+    entries: Mapped[list[ScopeEntryRow]] = relationship(
         back_populates="scope", cascade="all, delete-orphan", order_by="ScopeEntryRow.added_at"
     )
 
@@ -162,11 +174,13 @@ class ScopeEntryRow(Base):
         UUIDString(), ForeignKey("scopes.id", ondelete="CASCADE"), nullable=False, index=True
     )
     pattern: Mapped[str] = mapped_column(String(256), nullable=False)
-    kind: Mapped[ent.ScopeEntryKind] = mapped_column(SAEnum(ent.ScopeEntryKind, name="scope_entry_kind"), nullable=False)
+    kind: Mapped[ent.ScopeEntryKind] = mapped_column(
+        SAEnum(ent.ScopeEntryKind, name="scope_entry_kind"), nullable=False
+    )
     included: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     note: Mapped[str | None] = mapped_column(Text)
     added_by: Mapped[UUID | None] = mapped_column(UUIDString())
-    added_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), nullable=False)
+    added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     scope: Mapped[ScopeRow] = relationship(back_populates="entries")
 
@@ -178,12 +192,16 @@ class TargetRow(Base):
     engagement_id: Mapped[UUID] = mapped_column(
         UUIDString(), ForeignKey("engagements.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    kind: Mapped[ent.TargetKind] = mapped_column(SAEnum(ent.TargetKind, name="target_kind"), nullable=False)
+    kind: Mapped[ent.TargetKind] = mapped_column(
+        SAEnum(ent.TargetKind, name="target_kind"), nullable=False
+    )
     value: Mapped[str] = mapped_column(String(512), nullable=False, index=True)
-    parent_id: Mapped[UUID | None] = mapped_column(UUIDString(), ForeignKey("targets.id", ondelete="SET NULL"))
+    parent_id: Mapped[UUID | None] = mapped_column(
+        UUIDString(), ForeignKey("targets.id", ondelete="SET NULL")
+    )
 
     discovered_by_tool: Mapped[str | None] = mapped_column(String(128))
-    discovered_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), nullable=False)
+    discovered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     open_ports_json: Mapped[list[int]] = mapped_column(JSON, nullable=False, default=list)
     tech_stack_json: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
@@ -191,7 +209,7 @@ class TargetRow(Base):
     organization: Mapped[str | None] = mapped_column(String(256))
     country: Mapped[str | None] = mapped_column(String(8))
 
-    last_scanned_at: Mapped["DateTime | None"] = mapped_column(DateTime(timezone=True))
+    last_scanned_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     notes: Mapped[str] = mapped_column(Text, nullable=False, default="")
     tags_json: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
 
@@ -205,10 +223,14 @@ class CredentialRow(Base):
     engagement_id: Mapped[UUID] = mapped_column(
         UUIDString(), ForeignKey("engagements.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    kind: Mapped[ent.CredentialKind] = mapped_column(SAEnum(ent.CredentialKind, name="credential_kind"), nullable=False)
-    target_id: Mapped[UUID | None] = mapped_column(UUIDString(), ForeignKey("targets.id", ondelete="SET NULL"))
+    kind: Mapped[ent.CredentialKind] = mapped_column(
+        SAEnum(ent.CredentialKind, name="credential_kind"), nullable=False
+    )
+    target_id: Mapped[UUID | None] = mapped_column(
+        UUIDString(), ForeignKey("targets.id", ondelete="SET NULL")
+    )
     obtained_from_tool: Mapped[str] = mapped_column(String(128), nullable=False)
-    obtained_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), nullable=False)
+    obtained_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     identity: Mapped[str] = mapped_column(String(256), nullable=False)
     secret_ciphertext: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
@@ -216,7 +238,7 @@ class CredentialRow(Base):
     secret_metadata_json: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False, default=dict)
 
     validated: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    validated_at: Mapped["DateTime | None"] = mapped_column(DateTime(timezone=True))
+    validated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     revoked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     tags_json: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
@@ -240,7 +262,9 @@ class FindingRow(Base):
     severity: Mapped[ent.FindingSeverity] = mapped_column(
         SAEnum(ent.FindingSeverity, name="finding_severity"), nullable=False, index=True
     )
-    confidence: Mapped[ent.Confidence] = mapped_column(SAEnum(ent.Confidence, name="confidence"), nullable=False)
+    confidence: Mapped[ent.Confidence] = mapped_column(
+        SAEnum(ent.Confidence, name="confidence"), nullable=False
+    )
     category: Mapped[ent.FindingCategory] = mapped_column(
         SAEnum(ent.FindingCategory, name="finding_category"), nullable=False
     )
@@ -257,19 +281,26 @@ class FindingRow(Base):
     remediation: Mapped[str] = mapped_column(Text, nullable=False, default="")
     references_json: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
 
-    evidence_json: Mapped[list[dict]] = mapped_column(JSON, nullable=False, default=list)
+    evidence_json: Mapped[list[dict[str, object]]] = mapped_column(
+        JSON, nullable=False, default=list
+    )
 
     discovered_by_tool: Mapped[str] = mapped_column(String(128), nullable=False)
-    discovered_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    discovered_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
     verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     verified_by: Mapped[UUID | None] = mapped_column(UUIDString())
-    verified_at: Mapped["DateTime | None"] = mapped_column(DateTime(timezone=True))
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     status: Mapped[ent.FindingStatus] = mapped_column(
-        SAEnum(ent.FindingStatus, name="finding_status"), nullable=False, default=ent.FindingStatus.NEW, index=True
+        SAEnum(ent.FindingStatus, name="finding_status"),
+        nullable=False,
+        default=ent.FindingStatus.NEW,
+        index=True,
     )
     triage_notes: Mapped[str] = mapped_column(Text, nullable=False, default="")
-    fixed_at: Mapped["DateTime | None"] = mapped_column(DateTime(timezone=True))
+    fixed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     group_id: Mapped[UUID | None] = mapped_column(UUIDString())
 
@@ -283,7 +314,9 @@ class ArtifactRow(Base):
     engagement_id: Mapped[UUID] = mapped_column(
         UUIDString(), ForeignKey("engagements.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    kind: Mapped[ent.ArtifactKind] = mapped_column(SAEnum(ent.ArtifactKind, name="artifact_kind"), nullable=False)
+    kind: Mapped[ent.ArtifactKind] = mapped_column(
+        SAEnum(ent.ArtifactKind, name="artifact_kind"), nullable=False
+    )
 
     storage_path: Mapped[str] = mapped_column(String(1024), nullable=False)
     size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -291,10 +324,12 @@ class ArtifactRow(Base):
     encrypted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     produced_by_tool: Mapped[str] = mapped_column(String(128), nullable=False)
-    produced_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), nullable=False)
+    produced_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     source_target_id: Mapped[UUID | None] = mapped_column(UUIDString())
 
-    mime_type: Mapped[str] = mapped_column(String(128), nullable=False, default="application/octet-stream")
+    mime_type: Mapped[str] = mapped_column(
+        String(128), nullable=False, default="application/octet-stream"
+    )
     original_filename: Mapped[str | None] = mapped_column(String(512))
     tags_json: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     notes: Mapped[str] = mapped_column(Text, nullable=False, default="")
@@ -309,19 +344,26 @@ class SessionRow(Base):
     engagement_id: Mapped[UUID] = mapped_column(
         UUIDString(), ForeignKey("engagements.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    target_id: Mapped[UUID | None] = mapped_column(UUIDString(), ForeignKey("targets.id", ondelete="SET NULL"))
+    target_id: Mapped[UUID | None] = mapped_column(
+        UUIDString(), ForeignKey("targets.id", ondelete="SET NULL")
+    )
 
-    kind: Mapped[ent.SessionKind] = mapped_column(SAEnum(ent.SessionKind, name="session_kind"), nullable=False)
+    kind: Mapped[ent.SessionKind] = mapped_column(
+        SAEnum(ent.SessionKind, name="session_kind"), nullable=False
+    )
     external_id: Mapped[str] = mapped_column(String(128), nullable=False)
     protocol: Mapped[str] = mapped_column(String(32), nullable=False, default="https")
     callback_addr: Mapped[str] = mapped_column(String(256), nullable=False)
 
     status: Mapped[ent.SessionStatus] = mapped_column(
-        SAEnum(ent.SessionStatus, name="session_status"), nullable=False, default=ent.SessionStatus.ACTIVE, index=True
+        SAEnum(ent.SessionStatus, name="session_status"),
+        nullable=False,
+        default=ent.SessionStatus.ACTIVE,
+        index=True,
     )
-    first_seen_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), nullable=False)
-    last_check_in_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), nullable=False)
-    closed_at: Mapped["DateTime | None"] = mapped_column(DateTime(timezone=True))
+    first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_check_in_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     remote_hostname: Mapped[str | None] = mapped_column(String(256))
     remote_user: Mapped[str | None] = mapped_column(String(256))
@@ -346,11 +388,15 @@ class ToolInvocationRow(Base):
     actor_id: Mapped[UUID] = mapped_column(UUIDString(), nullable=False, index=True)
 
     tool_name: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
-    arguments_sanitized_json: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    arguments_sanitized_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict
+    )
     arguments_hash: Mapped[str] = mapped_column(String(64), nullable=False)
 
-    started_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    completed_at: Mapped["DateTime"] = mapped_column(DateTime(timezone=True), nullable=False)
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
+    completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     duration_ms: Mapped[int] = mapped_column(Integer, nullable=False)
     exit_code: Mapped[int | None] = mapped_column(Integer)
     truncated: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
@@ -375,7 +421,9 @@ class ToolInvocationRow(Base):
 # ---------------------------------------------------------------------------
 
 
-DEFAULT_ENGAGEMENTS_ROOT = Path(os.environ.get("KESTREL_DATA_DIR", "~/.kestrel/engagements")).expanduser()
+DEFAULT_ENGAGEMENTS_ROOT = Path(
+    os.environ.get("KESTREL_DATA_DIR", "~/.kestrel/engagements")
+).expanduser()
 
 
 def db_path_for_engagement(slug: str, root: Path | None = None) -> Path:
@@ -418,7 +466,9 @@ async def create_all(engine: AsyncEngine) -> None:
 
 
 @asynccontextmanager
-async def open_session(sessionmaker_: async_sessionmaker[AsyncSession]) -> AsyncIterator[AsyncSession]:
+async def open_session(
+    sessionmaker_: async_sessionmaker[AsyncSession],
+) -> AsyncIterator[AsyncSession]:
     """Provide a committed-on-success, rolled-back-on-error transaction.
 
     Services use this via their constructor rather than opening sessions

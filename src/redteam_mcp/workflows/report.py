@@ -15,7 +15,6 @@ from jinja2 import Template
 from ..logging import audit_event, get_logger
 from ..tools.base import ToolResult, ToolSpec
 
-
 _TEMPLATE = Template(
     """\
 # {{ title }}

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import datetime, timezone
-from typing import Iterable
 from uuid import UUID
 
 from sqlalchemy import select
@@ -19,7 +19,6 @@ from ..errors import (
 )
 from ..storage import EngagementRow
 from ._base import _ServiceBase
-
 
 # State machine (see DOMAIN_MODEL.md §3.2)
 _TRANSITIONS: dict[ent.EngagementStatus, set[ent.EngagementStatus]] = {
@@ -160,9 +159,7 @@ class EngagementService(_ServiceBase):
 
         e = await self.get(engagement_id)
         if not e.allows_dangerous_tools():
-            reason = (
-                "engagement expired" if e.is_expired() else f"status is {e.status.value}"
-            )
+            reason = "engagement expired" if e.is_expired() else f"status is {e.status.value}"
             raise EngagementStateError(
                 f"Engagement '{e.name}' does not allow dangerous tools ({reason}).",
                 engagement_id=str(engagement_id),

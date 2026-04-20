@@ -698,6 +698,16 @@ Chosen option: **Option X**, because [rationale]
 
 ## 14. Release 流程
 
+### Current CI baseline
+
+- RFC-002 is the current baseline: `.github/workflows/ci.yml` must stay green
+  on `ruff check`, `ruff format --check`, `mypy --strict` for
+  `src/redteam_mcp/core` + `src/redteam_mcp/domain`, plus `pytest` and
+  `scripts/full_verify.py` across Ubuntu/macOS/Windows on Python
+  3.10/3.11/3.12.
+- Weekly security automation lives in `.github/workflows/codeql.yml` and
+  dependency refreshes live in `.github/dependabot.yml`.
+
 ### 版本号
 
 **SemVer 2.0**。没有例外。

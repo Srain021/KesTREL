@@ -115,7 +115,8 @@ def doctor() -> None:
     )
     env_table.add_row(
         "Authorized scope",
-        ", ".join(settings.security.authorized_scope) or "[red]EMPTY (offensive tools disabled)[/red]",
+        ", ".join(settings.security.authorized_scope)
+        or "[red]EMPTY (offensive tools disabled)[/red]",
     )
     env_table.add_row("Dry-run mode", "on" if settings.security.dry_run else "off")
     console.print(env_table)
@@ -236,7 +237,11 @@ def _status_for(name: str, block: dict, resolved: str | None) -> str:
     if not block.get("enabled"):
         return "[dim]disabled[/dim]"
     if name == "shodan":
-        return "[green]ready[/green]" if os.environ.get("SHODAN_API_KEY") else "[red]missing API key[/red]"
+        return (
+            "[green]ready[/green]"
+            if os.environ.get("SHODAN_API_KEY")
+            else "[red]missing API key[/red]"
+        )
     if resolved:
         return "[green]ready[/green]"
     return "[red]binary not found[/red]"

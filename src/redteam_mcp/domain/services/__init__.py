@@ -15,9 +15,9 @@ Postgres at runtime.
 from __future__ import annotations
 
 from .engagement_service import EngagementService
+from .finding_service import FindingService
 from .scope_service import ScopeService
 from .target_service import TargetService
-from .finding_service import FindingService
 
 __all__ = [
     "EngagementService",

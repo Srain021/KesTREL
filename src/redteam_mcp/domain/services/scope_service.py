@@ -22,17 +22,18 @@ from __future__ import annotations
 import ipaddress
 import re
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 from uuid import UUID, uuid4
 
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...logging import audit_event
 from .. import entities as ent
 from ..errors import ScopeViolationError
 from ..storage import ScopeEntryRow, ScopeRow
 from ._base import _ServiceBase
-
 
 _IP_V4_RE = re.compile(r"^\d{1,3}(\.\d{1,3}){3}$")
 
@@ -115,6 +116,37 @@ def _is_ip(value: str) -> bool:
     return True
 
 
+def _cidr_supernet_match(raw: str, target: str) -> bool:
+    try:
+        raw_net = ipaddress.ip_network(raw, strict=False)
+        tgt_net = ipaddress.ip_network(target, strict=False)
+    except ValueError:
+        return False
+    if isinstance(raw_net, ipaddress.IPv4Network) and isinstance(tgt_net, ipaddress.IPv4Network):
+        return raw_net.supernet_of(tgt_net)
+    if isinstance(raw_net, ipaddress.IPv6Network) and isinstance(tgt_net, ipaddress.IPv6Network):
+        return raw_net.supernet_of(tgt_net)
+    return False
+
+
+def _ip_family_match(kind: ent.ScopeEntryKind, raw: str, host: str) -> bool:
+    if not _is_ip(host):
+        return False
+    try:
+        host_addr = ipaddress.ip_address(host)
+    except ValueError:
+        return False
+    if kind in (ent.ScopeEntryKind.CIDR_V4, ent.ScopeEntryKind.CIDR_V6):
+        try:
+            return host_addr in ipaddress.ip_network(raw, strict=False)
+        except ValueError:
+            return False
+    try:
+        return host_addr == ipaddress.ip_address(raw)
+    except ValueError:
+        return False
+
+
 def _match(entry: _CompiledEntry, target: str) -> bool:
     raw = entry.raw.strip().lower()
     kind = entry.kind
@@ -122,35 +154,18 @@ def _match(entry: _CompiledEntry, target: str) -> bool:
     # URL and bare hostname handling share an extracted host
     host = _extract_host(target)
     if host is None:
-        # Target is a CIDR or similar — only IP-family entries could match
-        try:
-            tgt_net = ipaddress.ip_network(target, strict=False)
-        except ValueError:
-            return False
+        # Target is a CIDR or similar - only IP-family entries could match
         if kind in (ent.ScopeEntryKind.CIDR_V4, ent.ScopeEntryKind.CIDR_V6):
-            try:
-                return ipaddress.ip_network(raw, strict=False).supernet_of(tgt_net)
-            except ValueError:
-                return False
+            return _cidr_supernet_match(raw, target)
         return False
 
     host = host.lower()
 
     if kind in (ent.ScopeEntryKind.CIDR_V4, ent.ScopeEntryKind.CIDR_V6):
-        if not _is_ip(host):
-            return False
-        try:
-            return ipaddress.ip_address(host) in ipaddress.ip_network(raw, strict=False)
-        except ValueError:
-            return False
+        return _ip_family_match(kind, raw, host)
 
     if kind in (ent.ScopeEntryKind.IP_V4, ent.ScopeEntryKind.IP_V6):
-        if not _is_ip(host):
-            return False
-        try:
-            return ipaddress.ip_address(host) == ipaddress.ip_address(raw)
-        except ValueError:
-            return False
+        return _ip_family_match(kind, raw, host)
 
     if kind == ent.ScopeEntryKind.HOSTNAME_EXACT:
         return host == raw
@@ -368,7 +383,7 @@ class ScopeService(_ServiceBase):
 
     # ------ helpers ------
 
-    async def _get_or_create_scope(self, s, engagement_id: UUID) -> ScopeRow:
+    async def _get_or_create_scope(self, s: AsyncSession, engagement_id: UUID) -> ScopeRow:
         stmt = select(ScopeRow).where(ScopeRow.engagement_id == engagement_id)
         row = (await s.execute(stmt)).scalar_one_or_none()
         if row is None:
@@ -395,9 +410,7 @@ class ScopeService(_ServiceBase):
             return len((await s.execute(stmt)).scalars().all())
 
 
-def _now():
-    from datetime import datetime, timezone
-
+def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 

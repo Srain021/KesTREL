@@ -30,7 +30,7 @@ from uuid import UUID
 
 from ..core.context import (
     NoActiveEngagementError,
-    current_context,
+    RequestContext,
     current_context_or_none,
 )
 from ..domain import entities as ent
@@ -43,13 +43,12 @@ from ..domain.errors import (
 )
 from .base import ToolModule, ToolResult, ToolSpec
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
-def _require_ctx() -> "RequestContext":  # type: ignore[name-defined]
+def _require_ctx() -> RequestContext:
     ctx = current_context_or_none()
     if ctx is None:
         raise RuntimeError(

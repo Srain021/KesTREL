@@ -13,9 +13,10 @@ import asyncio
 import os
 import shlex
 import shutil
+from collections.abc import Mapping, Sequence
+from contextlib import suppress
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Mapping, Sequence
 
 import anyio
 
@@ -32,8 +33,11 @@ class ToolNotFoundError(ExecutorError):
     """The requested binary is not installed / not on PATH / wrong path in config."""
 
 
-class ExecutionTimeout(ExecutorError):
+class ExecutionTimeoutError(ExecutorError):
     """The command ran longer than the configured budget."""
+
+
+ExecutionTimeout = ExecutionTimeoutError
 
 
 @dataclass
@@ -139,16 +143,15 @@ async def run_command(
 
         stdin_task: asyncio.Task[None] | None = None
         if stdin_data is not None and proc.stdin is not None:
+
             async def _feed() -> None:
                 assert proc.stdin is not None
                 try:
                     proc.stdin.write(stdin_data)
                     await proc.stdin.drain()
                 finally:
-                    try:
+                    with suppress(Exception):
                         proc.stdin.close()
-                    except Exception:  # noqa: BLE001
-                        pass
 
             stdin_task = asyncio.create_task(_feed())
 
@@ -176,8 +179,7 @@ async def run_command(
         with anyio.fail_after(timeout_sec):
             result = await _run()
     except TimeoutError as exc:
-        elapsed = anyio.current_time() - start
-        raise ExecutionTimeout(
+        raise ExecutionTimeoutError(
             f"Command exceeded {timeout_sec}s budget: {shlex.join(list(argv))}"
         ) from exc
 

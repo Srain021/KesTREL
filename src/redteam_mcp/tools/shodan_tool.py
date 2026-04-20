@@ -75,7 +75,7 @@ class ShodanModule(ToolModule):
                                 "Shodan query. Space = AND. Examples: "
                                 '"product:nginx country:US", "port:6379 -authentication", '
                                 "'ssl.cert.subject.CN:\"acme.com\"'. "
-                                "Country MUST be 2-letter ISO (US not \"United States\")."
+                                'Country MUST be 2-letter ISO (US not "United States").'
                             ),
                         },
                     },
@@ -107,7 +107,7 @@ class ShodanModule(ToolModule):
                     "Country code is 2-letter ISO. 'United States' will return 0.",
                     "Use space between filters, NOT comma. 'product:nginx,country:US' is wrong.",
                     "Shodan has no AND/OR keywords. Space already means AND.",
-                    "Quotes needed only when value contains whitespace: org:\"Amazon Inc\".",
+                    'Quotes needed only when value contains whitespace: org:"Amazon Inc".',
                     "Dash prefix means NEGATION: '-authentication' finds endpoints without auth.",
                 ],
                 example_conversation=(
@@ -194,9 +194,9 @@ class ShodanModule(ToolModule):
                 example_conversation=(
                     'User: "find 5 older nginx in the US"\n'
                     'Agent -> shodan_count({"query": "product:nginx country:US version:1.14"})\n'
-                    'Result: 12843 matches.\n'
+                    "Result: 12843 matches.\n"
                     'Agent -> shodan_search({"query": "product:nginx country:US version:1.14", "limit": 5})\n'
-                    'Agent summarises the 5 hits with IP, org, port.'
+                    "Agent summarises the 5 hits with IP, org, port."
                 ),
                 local_model_hints=(
                     "ALWAYS call shodan_count first with the same query. If count is 0, "
@@ -479,8 +479,11 @@ class ShodanModule(ToolModule):
         enriched = await self._enrich_target_from_host(ip, summary)
 
         audit_event(
-            self.log, "shodan.host",
-            ip=ip, ports=summary["ports"], vulns=summary["vulns"],
+            self.log,
+            "shodan.host",
+            ip=ip,
+            ports=summary["ports"],
+            vulns=summary["vulns"],
             enriched=enriched,
         )
         msg = f"Host {ip}: {len(summary['ports'])} open ports, {len(summary['vulns'])} known vulns."
@@ -577,7 +580,8 @@ class ShodanModule(ToolModule):
                 continue
             try:
                 ctx.scope.ensure_against(
-                    scope_snapshot, str(ip),
+                    scope_snapshot,
+                    str(ip),
                     tool_name="shodan_search.ingest",
                     engagement_id=eid,  # type: ignore[arg-type]
                 )

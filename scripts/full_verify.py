@@ -1,6 +1,6 @@
 """End-to-end verification of every subsystem.
 
-Runs seven independent checks and prints a single pass/fail matrix.
+Runs eight independent checks and prints a single pass/fail matrix.
 Exits non-zero if ANY check fails.
 """
 
@@ -19,8 +19,16 @@ from typing import Callable
 
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
-VENV_PYTHON = REPO / ".venv" / "Scripts" / "python.exe"
-VENV_CLI = REPO / ".venv" / "Scripts" / "redteam-mcp.exe"
+
+
+def _venv_executable(name: str) -> pathlib.Path:
+    bin_dir = "Scripts" if os.name == "nt" else "bin"
+    suffix = ".exe" if os.name == "nt" else ""
+    return REPO / ".venv" / bin_dir / f"{name}{suffix}"
+
+
+VENV_PYTHON = _venv_executable("python")
+VENV_CLI = _venv_executable("redteam-mcp")
 
 
 class Check:

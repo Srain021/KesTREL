@@ -12,14 +12,15 @@ from redteam_mcp.domain.services import (
     TargetService,
 )
 
-
 pytestmark = pytest.mark.asyncio
 
 
 async def _eng(sm):
     return await EngagementService(sm).create(
-        name="e", display_name="e",
-        engagement_type=ent.EngagementType.CTF, client="c",
+        name="e",
+        display_name="e",
+        engagement_type=ent.EngagementType.CTF,
+        client="c",
     )
 
 
@@ -59,16 +60,22 @@ async def test_target_enrichment_merges(sm):
 
 async def test_finding_create_and_count(sm):
     e = await _eng(sm)
-    tgt = await TargetService(sm).add(engagement_id=e.id, kind=ent.TargetKind.URL, value="http://x/")
+    tgt = await TargetService(sm).add(
+        engagement_id=e.id, kind=ent.TargetKind.URL, value="http://x/"
+    )
     fsvc = FindingService(sm)
     await fsvc.create(
-        engagement_id=e.id, target_id=tgt.id,
-        title="SQLi", severity=ent.FindingSeverity.CRITICAL,
+        engagement_id=e.id,
+        target_id=tgt.id,
+        title="SQLi",
+        severity=ent.FindingSeverity.CRITICAL,
         discovered_by_tool="nuclei",
     )
     await fsvc.create(
-        engagement_id=e.id, target_id=tgt.id,
-        title="XSS", severity=ent.FindingSeverity.MEDIUM,
+        engagement_id=e.id,
+        target_id=tgt.id,
+        title="XSS",
+        severity=ent.FindingSeverity.MEDIUM,
         discovered_by_tool="dalfox",
     )
 
@@ -80,15 +87,23 @@ async def test_finding_create_and_count(sm):
 
 async def test_finding_list_filters(sm):
     e = await _eng(sm)
-    tgt = await TargetService(sm).add(engagement_id=e.id, kind=ent.TargetKind.URL, value="http://x/")
+    tgt = await TargetService(sm).add(
+        engagement_id=e.id, kind=ent.TargetKind.URL, value="http://x/"
+    )
     fsvc = FindingService(sm)
     await fsvc.create(
-        engagement_id=e.id, target_id=tgt.id,
-        title="a", severity=ent.FindingSeverity.HIGH, discovered_by_tool="t",
+        engagement_id=e.id,
+        target_id=tgt.id,
+        title="a",
+        severity=ent.FindingSeverity.HIGH,
+        discovered_by_tool="t",
     )
     await fsvc.create(
-        engagement_id=e.id, target_id=tgt.id,
-        title="b", severity=ent.FindingSeverity.LOW, discovered_by_tool="t",
+        engagement_id=e.id,
+        target_id=tgt.id,
+        title="b",
+        severity=ent.FindingSeverity.LOW,
+        discovered_by_tool="t",
     )
 
     highs = await fsvc.list_for_engagement(e.id, severity=ent.FindingSeverity.HIGH)
@@ -98,11 +113,16 @@ async def test_finding_list_filters(sm):
 
 async def test_finding_transition_valid_sequence(sm):
     e = await _eng(sm)
-    tgt = await TargetService(sm).add(engagement_id=e.id, kind=ent.TargetKind.URL, value="http://x/")
+    tgt = await TargetService(sm).add(
+        engagement_id=e.id, kind=ent.TargetKind.URL, value="http://x/"
+    )
     fsvc = FindingService(sm)
     f = await fsvc.create(
-        engagement_id=e.id, target_id=tgt.id,
-        title="x", severity=ent.FindingSeverity.HIGH, discovered_by_tool="t",
+        engagement_id=e.id,
+        target_id=tgt.id,
+        title="x",
+        severity=ent.FindingSeverity.HIGH,
+        discovered_by_tool="t",
     )
     f = await fsvc.transition(f.id, ent.FindingStatus.TRIAGED, note="first look")
     assert f.status == ent.FindingStatus.TRIAGED
@@ -118,11 +138,16 @@ async def test_finding_transition_valid_sequence(sm):
 
 async def test_finding_invalid_transition_rejected(sm):
     e = await _eng(sm)
-    tgt = await TargetService(sm).add(engagement_id=e.id, kind=ent.TargetKind.URL, value="http://x/")
+    tgt = await TargetService(sm).add(
+        engagement_id=e.id, kind=ent.TargetKind.URL, value="http://x/"
+    )
     fsvc = FindingService(sm)
     f = await fsvc.create(
-        engagement_id=e.id, target_id=tgt.id,
-        title="x", severity=ent.FindingSeverity.HIGH, discovered_by_tool="t",
+        engagement_id=e.id,
+        target_id=tgt.id,
+        title="x",
+        severity=ent.FindingSeverity.HIGH,
+        discovered_by_tool="t",
     )
     # NEW can go to TRIAGED, not FIXED
     with pytest.raises(InvalidStateTransitionError):
@@ -131,11 +156,16 @@ async def test_finding_invalid_transition_rejected(sm):
 
 async def test_finding_terminal_states(sm):
     e = await _eng(sm)
-    tgt = await TargetService(sm).add(engagement_id=e.id, kind=ent.TargetKind.URL, value="http://x/")
+    tgt = await TargetService(sm).add(
+        engagement_id=e.id, kind=ent.TargetKind.URL, value="http://x/"
+    )
     fsvc = FindingService(sm)
     f = await fsvc.create(
-        engagement_id=e.id, target_id=tgt.id,
-        title="x", severity=ent.FindingSeverity.HIGH, discovered_by_tool="t",
+        engagement_id=e.id,
+        target_id=tgt.id,
+        title="x",
+        severity=ent.FindingSeverity.HIGH,
+        discovered_by_tool="t",
     )
     await fsvc.transition(f.id, ent.FindingStatus.FALSE_POSITIVE)
     with pytest.raises(InvalidStateTransitionError):

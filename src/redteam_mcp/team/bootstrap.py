@@ -8,9 +8,9 @@ from __future__ import annotations
 import asyncio
 import os
 import shutil
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable
 
 from redteam_mcp.config import Settings
 from redteam_mcp.core.services import ServiceContainer
@@ -47,10 +47,9 @@ class BootstrapReport:
         lines += [
             "",
             "  Next steps:",
-            f"    1. Start server:  kestrel --edition team serve",
-            f"    2. Point your LLM client at the stdio transport",
-            f"    3. Active engagement via env:  "
-            f"$env:KESTREL_ENGAGEMENT = '{self.name}'",
+            "    1. Start server:  kestrel --edition team serve",
+            "    2. Point your LLM client at the stdio transport",
+            f"    3. Active engagement via env:  $env:KESTREL_ENGAGEMENT = '{self.name}'",
             "",
             "=" * 62,
         ]

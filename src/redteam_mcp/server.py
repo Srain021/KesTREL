@@ -25,7 +25,6 @@ Active-engagement resolution (tried in order)
 
 from __future__ import annotations
 
-import asyncio
 import json
 import os
 from typing import Any
@@ -128,9 +127,7 @@ class RedTeamMCPServer:
             ]
 
         @mcp.call_tool()  # type: ignore[misc]
-        async def call_tool(
-            name: str, arguments: dict[str, Any] | None
-        ) -> list[TextContent]:
+        async def call_tool(name: str, arguments: dict[str, Any] | None) -> list[TextContent]:
             spec = self._specs.get(name)
             if spec is None:
                 return [TextContent(type="text", text=f"ERROR: unknown tool {name!r}")]
@@ -240,7 +237,6 @@ class RedTeamMCPServer:
                 hint="Defaulting to no active engagement.",
             )
             return None
-
 
     # ------------------------------------------------------------------
 

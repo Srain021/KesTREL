@@ -36,7 +36,6 @@ from ..logging import audit_event
 from ..security import ScopeGuard
 from .base import ToolModule, ToolResult, ToolSpec
 
-
 _SERVER_PID_FILE = "sliver-server.pid"
 
 
@@ -203,9 +202,7 @@ class SliverModule(ToolModule):
             ),
             ToolSpec(
                 name="sliver_execute_in_session",
-                description=(
-                    "Run a command inside a given sliver session and return stdout."
-                ),
+                description=("Run a command inside a given sliver session and return stdout."),
                 input_schema={
                     "type": "object",
                     "required": ["session_id", "command"],
@@ -313,7 +310,9 @@ class SliverModule(ToolModule):
         running = _alive(pid)
         if not running:
             self._pid_file.unlink(missing_ok=True)
-        return ToolResult(text=f"pid={pid} running={running}", structured={"pid": pid, "running": running})
+        return ToolResult(
+            text=f"pid={pid} running={running}", structured={"pid": pid, "running": running}
+        )
 
     # ------------------------------------------------------------------ client
 
@@ -491,7 +490,7 @@ def _parse_table(output: str) -> list[dict[str, str]]:
                 values = parts
             else:
                 continue
-        parsed.append(dict(zip(columns, values)))
+        parsed.append(dict(zip(columns, values, strict=False)))
     return parsed
 
 

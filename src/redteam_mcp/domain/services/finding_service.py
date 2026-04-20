@@ -13,7 +13,6 @@ from ..errors import InvalidStateTransitionError
 from ..storage import FindingRow
 from ._base import _ServiceBase
 
-
 _ALLOWED_TRANSITIONS: dict[ent.FindingStatus, set[ent.FindingStatus]] = {
     ent.FindingStatus.NEW: {
         ent.FindingStatus.TRIAGED,

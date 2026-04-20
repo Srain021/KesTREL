@@ -2,17 +2,15 @@
 
 from __future__ import annotations
 
-import pytest
-
 from redteam_mcp.config import Settings
 from redteam_mcp.security import ScopeGuard
 
 
 def _all_enabled_settings() -> Settings:
     settings = Settings()
-    for tool in type(settings.tools).model_fields.keys():
+    for tool in type(settings.tools).model_fields:
         block = getattr(settings.tools, tool)
-        setattr(block, "enabled", True)
+        block.enabled = True
     return settings
 
 
@@ -27,7 +25,13 @@ class TestToolRegistry:
         assert ids == sorted(
             [
                 "engagement",  # Sprint 3: domain management module
-                "shodan", "nuclei", "caido", "ligolo", "sliver", "havoc", "evilginx",
+                "shodan",
+                "nuclei",
+                "caido",
+                "ligolo",
+                "sliver",
+                "havoc",
+                "evilginx",
             ]
         )
 
@@ -62,8 +66,15 @@ class TestToolRegistry:
         guard = ScopeGuard(["*.example.com"])
         from redteam_mcp.tools import load_modules
 
-        dangerous_indicators = {"url", "urls", "target", "targets", "callback_addr",
-                                "phish_hostname", "cidr"}
+        dangerous_indicators = {
+            "url",
+            "urls",
+            "target",
+            "targets",
+            "callback_addr",
+            "phish_hostname",
+            "cidr",
+        }
         modules = load_modules(settings, guard)
         for m in modules:
             for spec in m.specs():

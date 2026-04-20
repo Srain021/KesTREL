@@ -5,7 +5,6 @@ Uses in-memory SQLite so each test has an isolated schema.
 
 from __future__ import annotations
 
-import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 

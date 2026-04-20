@@ -34,9 +34,8 @@ import yaml
 from ..config import Settings
 from ..executor import resolve_binary
 from ..logging import audit_event
-from ..security import AuthorizationError, ScopeGuard
+from ..security import ScopeGuard
 from .base import ToolModule, ToolResult, ToolSpec
-
 
 _PID_FILE_NAME = "evilginx.pid"
 _DEFAULT_DATA_DIR = "~/.evilginx"
@@ -250,7 +249,9 @@ class EvilginxModule(ToolModule):
         running = _alive(pid)
         if not running:
             self._pid_file.unlink(missing_ok=True)
-        return ToolResult(text=f"pid={pid} running={running}", structured={"pid": pid, "running": running})
+        return ToolResult(
+            text=f"pid={pid} running={running}", structured={"pid": pid, "running": running}
+        )
 
     async def _handle_list_phishlets(self, arguments: dict[str, Any]) -> ToolResult:
         phishlets_raw = arguments.get("phishlets_dir") or self._phishlets_dir
@@ -278,7 +279,9 @@ class EvilginxModule(ToolModule):
                     "author": data.get("author"),
                     "min_ver": data.get("min_ver"),
                     "proxy_hosts": [
-                        h.get("domain") for h in (data.get("proxy_hosts") or []) if isinstance(h, dict)
+                        h.get("domain")
+                        for h in (data.get("proxy_hosts") or [])
+                        if isinstance(h, dict)
                     ],
                     "auth_urls": data.get("auth_urls", []),
                 }

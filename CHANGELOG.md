@@ -30,7 +30,14 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   in the 2026-04-21 audit.
 
 ### Changed
-- `RFC-001` — dependencies are now locked with `uv.lock`; reproducible installs
+- `RFC-002` - GitHub Actions CI is now checked in: lint (`ruff`), type checks
+  (`mypy` on `core` + `domain`), 3 OS x 3 Python test matrix, weekly CodeQL,
+  Dependabot, and a PR template. Team edition now has a real CI baseline.
+- `scripts/full_verify.py` now resolves `.venv` executables cross-platform, so
+  the same end-to-end verification script runs on Linux, macOS, and Windows.
+- `src/redteam_mcp/core` + `src/redteam_mcp/domain` are now green under
+  `mypy --strict`, and `ruff check src tests` is back to zero for CI.
+- `RFC-001` - dependencies are now locked with `uv.lock`; reproducible installs
   use `uv sync --frozen --all-extras`. Closes GAP G-E3.
 - `AGENT_EXECUTION_PROTOCOL.md` §5.0 — **mandatory pre-flight step** added.
   Executors must run `scripts/validate_rfc.py` before Step 1 of any RFC.

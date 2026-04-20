@@ -29,7 +29,6 @@ from ..logging import audit_event
 from ..security import ScopeGuard
 from .base import ToolModule, ToolResult, ToolSpec
 
-
 _PID_FILE_NAME = "caido-cli.pid"
 
 
@@ -223,7 +222,9 @@ class CaidoModule(ToolModule):
         alive = _pid_alive(pid)
         if not alive:
             self._pid_file.unlink(missing_ok=True)
-        return ToolResult(text=f"pid={pid} running={alive}", structured={"pid": pid, "running": alive})
+        return ToolResult(
+            text=f"pid={pid} running={alive}", structured={"pid": pid, "running": alive}
+        )
 
     async def _handle_replay(self, arguments: dict[str, Any]) -> ToolResult:
         url = arguments["url"]

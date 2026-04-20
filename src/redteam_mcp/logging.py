@@ -14,7 +14,6 @@ from typing import Any
 
 import structlog
 
-
 _configured = False
 
 

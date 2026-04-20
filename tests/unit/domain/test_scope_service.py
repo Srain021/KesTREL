@@ -8,15 +8,16 @@ from redteam_mcp.domain import entities as ent
 from redteam_mcp.domain.errors import ScopeViolationError
 from redteam_mcp.domain.services import EngagementService, ScopeService
 
-
 pytestmark = pytest.mark.asyncio
 
 
 async def _make_engagement(sm):
     svc = EngagementService(sm)
     return await svc.create(
-        name="s", display_name="s",
-        engagement_type=ent.EngagementType.CTF, client="c",
+        name="s",
+        display_name="s",
+        engagement_type=ent.EngagementType.CTF,
+        client="c",
     )
 
 
@@ -111,8 +112,12 @@ async def test_scope_isolated_per_engagement(sm):
     """Adding a pattern in engagement A must not affect engagement B."""
 
     eng_svc = EngagementService(sm)
-    a = await eng_svc.create(name="a", display_name="a", engagement_type=ent.EngagementType.CTF, client="c")
-    b = await eng_svc.create(name="b", display_name="b", engagement_type=ent.EngagementType.CTF, client="c")
+    a = await eng_svc.create(
+        name="a", display_name="a", engagement_type=ent.EngagementType.CTF, client="c"
+    )
+    b = await eng_svc.create(
+        name="b", display_name="b", engagement_type=ent.EngagementType.CTF, client="c"
+    )
     scope = ScopeService(sm)
     await scope.add_entry(a.id, "*.a.test")
 

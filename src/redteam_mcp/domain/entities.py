@@ -24,7 +24,6 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -38,9 +37,9 @@ class _BaseEntity(BaseModel):
     """Shared configuration for every domain entity."""
 
     model_config = ConfigDict(
-        frozen=False,                 # services rebuild with model_copy; fine.
+        frozen=False,  # services rebuild with model_copy; fine.
         str_strip_whitespace=True,
-        use_enum_values=False,        # keep Enum members, not raw strings
+        use_enum_values=False,  # keep Enum members, not raw strings
         validate_assignment=True,
         extra="forbid",
     )
@@ -136,7 +135,11 @@ class Engagement(_BaseEntity):
     # --- Predicates (no state mutation; helpers for services) ---
 
     def is_mutable(self) -> bool:
-        return self.status in (EngagementStatus.PLANNING, EngagementStatus.ACTIVE, EngagementStatus.PAUSED)
+        return self.status in (
+            EngagementStatus.PLANNING,
+            EngagementStatus.ACTIVE,
+            EngagementStatus.PAUSED,
+        )
 
     def is_expired(self, *, at: datetime | None = None) -> bool:
         if self.expires_at is None:
@@ -146,9 +149,7 @@ class Engagement(_BaseEntity):
     def allows_dangerous_tools(self) -> bool:
         if self.status != EngagementStatus.ACTIVE:
             return False
-        if self.is_expired():
-            return False
-        return True
+        return not self.is_expired()
 
 
 # ---------------------------------------------------------------------------
@@ -260,7 +261,9 @@ class Credential(_BaseEntity):
 
     identity: str = Field(..., min_length=1, max_length=256)
     secret_ciphertext: bytes
-    secret_kdf: str = Field(..., description="Algorithm name: 'age-x25519-v1', 'kc-macos', 'vault-v1', ...")
+    secret_kdf: str = Field(
+        ..., description="Algorithm name: 'age-x25519-v1', 'kc-macos', 'vault-v1', ..."
+    )
     secret_metadata: dict[str, str] = Field(default_factory=dict)
 
     validated: bool = False
@@ -526,6 +529,9 @@ __all__ = [
 # ---------------------------------------------------------------------------
 
 EngagementStatusLiteral = Literal[
-    "planning", "active", "paused", "closed",
+    "planning",
+    "active",
+    "paused",
+    "closed",
 ]
 """Convenience Literal for APIs that take a status string."""

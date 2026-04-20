@@ -29,12 +29,13 @@ Why a class (not module globals)
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncIterator
+from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from ..domain import entities as ent
 from ..domain.services import (
@@ -46,6 +47,8 @@ from ..domain.services import (
 from ..domain.storage import create_all, make_engine, make_sessionmaker
 from ..logging import get_logger
 
+if TYPE_CHECKING:
+    from .context import RequestContext
 
 _log = get_logger(__name__)
 
@@ -56,7 +59,7 @@ class ServiceContainer:
     def __init__(
         self,
         engine: AsyncEngine,
-        sessionmaker: async_sessionmaker,
+        sessionmaker: async_sessionmaker[AsyncSession],
         database_url: str,
     ) -> None:
         self.engine = engine
@@ -73,19 +76,19 @@ class ServiceContainer:
     # ----- lifecycle -----
 
     @classmethod
-    def from_url(cls, database_url: str, *, echo: bool = False) -> "ServiceContainer":
+    def from_url(cls, database_url: str, *, echo: bool = False) -> ServiceContainer:
         engine = make_engine(database_url, echo=echo)
         sm = make_sessionmaker(engine)
         return cls(engine=engine, sessionmaker=sm, database_url=database_url)
 
     @classmethod
-    def in_memory(cls) -> "ServiceContainer":
+    def in_memory(cls) -> ServiceContainer:
         """Shortcut for tests — single in-memory SQLite, tables created."""
 
         return cls.from_url("sqlite+aiosqlite:///:memory:")
 
     @classmethod
-    def default_on_disk(cls, *, data_dir: Path | None = None) -> "ServiceContainer":
+    def default_on_disk(cls, *, data_dir: Path | None = None) -> ServiceContainer:
         """Default production container — single shared SQLite on disk.
 
         Path resolution follows :data:`KESTREL_DATA_DIR` env or XDG style:
@@ -120,7 +123,7 @@ class ServiceContainer:
         engagement_id: UUID | None = None,
         actor: ent.Actor | None = None,
         dry_run: bool = False,
-    ) -> AsyncIterator["RequestContext"]:
+    ) -> AsyncIterator[RequestContext]:
         """Bind a new :class:`RequestContext` for the duration of the ``with``."""
 
         from .context import RequestContext, bind_context  # local to avoid import cycle

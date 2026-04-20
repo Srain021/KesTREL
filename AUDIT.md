@@ -60,13 +60,14 @@
 - 升级 Sliver 大概率要改代码
 - **每次集成新 tool 前必须做升级兼容测试**
 
-### D-8. 没有 CI
+### D-8. CI 已落地（RESOLVED by RFC-002）
 
-- 目前所有验证在本机跑
-- 没有 `.github/workflows/*`
-- 没有矩阵测试（Linux/macOS/Win × Python 3.10/11/12）
-- PR review 依赖人眼 + 本地 `full_verify.py`
-- **RFC-002 第一个必须做**
+- `.github/workflows/ci.yml` 已接入 `ruff` / `mypy` / `pytest` /
+  `scripts/full_verify.py`
+- 测试矩阵覆盖 Linux/macOS/Windows x Python 3.10/3.11/3.12
+- `.github/workflows/codeql.yml` 已加入 weekly + `push to main` 安全扫描
+- `.github/dependabot.yml` + PR template 已落地
+- 这项风险已从“发布阻塞”降为“持续维护事项”
 
 ### D-9. Secrets 明文
 

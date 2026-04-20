@@ -50,7 +50,7 @@
 | id      | title                             | status | blocking_on | owner |
 |---------|-----------------------------------|--------|-------------|-------|
 | RFC-001 | lock dependencies with uv         | done   |             |       |
-| RFC-002 | GitHub Actions CI matrix          | open   | RFC-001     |       |
+| RFC-002 | GitHub Actions CI matrix          | done   | RFC-001     | agent |
 | RFC-003 | Credential Store (domain + API)   | blocked ⚠ | RFC-002  |       |
 | RFC-004 | Rate limiting decorator           | open   | RFC-002     |       |
 | RFC-005 | Safe path helper + audit          | open   | RFC-002     |       |
@@ -178,7 +178,8 @@
 
 ## 🔓 当前可并行执行的 RFC（最上游，无前置依赖）
 
-- **RFC-002** — GitHub Actions CI matrix（RFC-001 已完成，现已解锁）
+- **RFC-004** — Rate limiting decorator（RFC-002 已完成，现已解锁）
+- **RFC-005** — Safe path helper + audit（RFC-002 已完成，现已解锁）
 - **RFC-G01** — subfinder tool（独立，可平行）
 - **RFC-G03** — nmap wrapper（独立）
 - **RFC-G04** — ffuf wrapper（独立）
@@ -191,12 +192,12 @@
 ## 🚀 Team MVP 关键路径（串行）
 
 ```
-RFC-002 (CI) ─► RFC-A04 (FeatureFlags) ─► RFC-T00 (Unleashed) ─► RFC-T08 (Bootstrap)
-                                                                      │
-                                                                      └─► Team Edition 可发布
+RFC-A04 (FeatureFlags) ─► RFC-T00 (Unleashed) ─► RFC-T08 (Bootstrap)
+                                                     │
+                                                     └─► Team MVP complete
 ```
 
-**最短时间**：RFC-002 完成后，A04+T00+T08 串行估 **2-3 小时 agent 执行**（或 1 人天）。
+**当前状态**：Team MVP 已完成；RFC-001 + RFC-002 现已补齐 lockfile 和 CI 基线。
 
 ---
 

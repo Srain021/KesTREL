@@ -33,22 +33,24 @@ restored on exit. This lets workflows temporarily switch engagement.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar, Token
 from dataclasses import dataclass
-from typing import Iterator, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from ..domain import entities as ent
 
 if TYPE_CHECKING:
+    from ..domain.services import EngagementService, FindingService, ScopeService, TargetService
     from .services import ServiceContainer
 
 
 # Sentinel distinguishing "no context ever bound" from "context explicitly None".
-_UNSET: "RequestContext | None" = None
+_UNSET: RequestContext | None = None
 
-_CTX: ContextVar["RequestContext | None"] = ContextVar("kestrel_request_context", default=_UNSET)
+_CTX: ContextVar[RequestContext | None] = ContextVar("kestrel_request_context", default=_UNSET)
 
 
 class NoActiveEngagementError(Exception):
@@ -67,7 +69,7 @@ class NoActiveContextError(Exception):
 class RequestContext:
     """State bound to one tool invocation."""
 
-    container: "ServiceContainer"
+    container: ServiceContainer
     engagement_id: UUID | None = None
     actor: ent.Actor | None = None
     dry_run: bool = False
@@ -75,19 +77,19 @@ class RequestContext:
     # ---- convenience accessors to services ----
 
     @property
-    def scope(self):
+    def scope(self) -> ScopeService:
         return self.container.scope
 
     @property
-    def engagement(self):
+    def engagement(self) -> EngagementService:
         return self.container.engagement
 
     @property
-    def target(self):
+    def target(self) -> TargetService:
         return self.container.target
 
     @property
-    def finding(self):
+    def finding(self) -> FindingService:
         return self.container.finding
 
     # ---- engagement helpers ----
@@ -135,7 +137,7 @@ def bind_context(ctx: RequestContext) -> Iterator[RequestContext]:
     Safe for nesting; the previous binding is restored on exit.
     """
 
-    token: Token = _CTX.set(ctx)
+    token: Token[RequestContext | None] = _CTX.set(ctx)
     try:
         yield ctx
     finally:

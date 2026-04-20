@@ -7,6 +7,7 @@ are surfaced as structured MCP content.
 from __future__ import annotations
 
 import json
+from contextlib import suppress
 from typing import Any
 
 from ..config import Settings
@@ -16,7 +17,6 @@ from ..executor import resolve_binary, run_command
 from ..logging import audit_event
 from ..security import ScopeGuard
 from .base import ToolModule, ToolResult, ToolSpec
-
 
 _SEVERITY_LEVELS = ["info", "low", "medium", "high", "critical"]
 
@@ -126,12 +126,12 @@ class NucleiModule(ToolModule):
                 ],
                 example_conversation=(
                     'User: "quick scan http://10.10.11.42"\n'
-                    'Agent -> nuclei_scan({\n'
+                    "Agent -> nuclei_scan({\n"
                     '    "targets": ["http://10.10.11.42"],\n'
                     '    "severity": ["critical", "high"]\n'
-                    '})\n'
-                    'Result: 3 findings (1 critical RCE, 2 high).\n'
-                    'Agent summarises each with template_id, CVE, remediation.'
+                    "})\n"
+                    "Result: 3 findings (1 critical RCE, 2 high).\n"
+                    "Agent summarises each with template_id, CVE, remediation."
                 ),
                 local_model_hints=(
                     "ALWAYS pass severity=['critical','high'] on first scan. "
@@ -224,9 +224,7 @@ class NucleiModule(ToolModule):
                     "Troubleshooting a failed scan (is binary even installed?).",
                     "User asks 'what version of Nuclei are we running?'.",
                 ],
-                local_model_hints=(
-                    "Default first step when any nuclei tool errors unexpectedly."
-                ),
+                local_model_hints=("Default first step when any nuclei tool errors unexpectedly."),
             ),
             ToolSpec(
                 name="nuclei_validate_template",
@@ -324,11 +322,13 @@ class NucleiModule(ToolModule):
             by_severity=by_sev,
         )
 
-        summary_lines = [f"Nuclei finished in {result.duration_sec:.1f}s — {len(findings)} finding(s)."]
+        summary_lines = [
+            f"Nuclei finished in {result.duration_sec:.1f}s — {len(findings)} finding(s)."
+        ]
         if by_sev:
-            summary_lines.append("Severity breakdown: " + ", ".join(
-                f"{k}={v}" for k, v in sorted(by_sev.items())
-            ))
+            summary_lines.append(
+                "Severity breakdown: " + ", ".join(f"{k}={v}" for k, v in sorted(by_sev.items()))
+            )
         if persisted:
             summary_lines.append(f"Persisted {persisted} finding(s) into active engagement.")
 
@@ -408,7 +408,9 @@ class NucleiModule(ToolModule):
 
         binary = self._binary()
         content = arguments["template_yaml"]
-        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False, encoding="utf-8") as tmp:
+        with tempfile.NamedTemporaryFile(
+            "w", suffix=".yaml", delete=False, encoding="utf-8"
+        ) as tmp:
             tmp.write(content)
             tmp_path = Path(tmp.name)
 
@@ -428,10 +430,8 @@ class NucleiModule(ToolModule):
                 is_error=not result.ok,
             )
         finally:
-            try:
+            with suppress(OSError):
                 tmp_path.unlink()
-            except OSError:
-                pass
 
     @staticmethod
     def _parse_jsonl(text: str) -> list[dict[str, Any]]:
@@ -555,8 +555,8 @@ def _coerce_cvss(value: Any) -> float | None:
 def _best_target_for(
     matched: str,
     targets: list[str],
-    entities: dict[str, "ent.Target"],
-) -> "ent.Target | None":
+    entities: dict[str, ent.Target],
+) -> ent.Target | None:
     """Pick the Target entity whose URL is a prefix of ``matched-at``."""
 
     if not entities:

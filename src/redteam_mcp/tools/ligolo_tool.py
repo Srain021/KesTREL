@@ -31,7 +31,6 @@ from ..logging import audit_event
 from ..security import ScopeGuard
 from .base import ToolModule, ToolResult, ToolSpec
 
-
 _PID_FILE_NAME = "ligolo-proxy.pid"
 
 
@@ -211,9 +210,7 @@ class LigoloModule(ToolModule):
                 stdin=subprocess.DEVNULL,
                 cwd=str(Path(binary).parent),
                 creationflags=(
-                    subprocess.CREATE_NEW_PROCESS_GROUP
-                    if sys.platform == "win32"
-                    else 0
+                    subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == "win32" else 0
                 ),
             )
         except OSError as exc:

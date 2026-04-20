@@ -37,7 +37,6 @@ from ..logging import audit_event
 from ..security import ScopeGuard
 from .base import ToolModule, ToolResult, ToolSpec
 
-
 _PID_FILE_NAME = "havoc-teamserver.pid"
 
 
@@ -222,9 +221,7 @@ class HavocModule(ToolModule):
 
         profile = arguments.get("profile") or self._default_profile
         if not profile:
-            return ToolResult.error(
-                "No profile specified and config.tools.havoc.profile is unset."
-            )
+            return ToolResult.error("No profile specified and config.tools.havoc.profile is unset.")
 
         profile_path = self.settings.expanded_path(profile)
         if not profile_path.is_file():
@@ -268,7 +265,9 @@ class HavocModule(ToolModule):
 
     async def _handle_stop(self, _arguments: dict[str, Any]) -> ToolResult:
         if not self._pid_file.exists():
-            return ToolResult(text="Havoc teamserver is not running.", structured={"running": False})
+            return ToolResult(
+                text="Havoc teamserver is not running.", structured={"running": False}
+            )
         try:
             pid = int(self._pid_file.read_text("utf-8").strip())
         except ValueError:
@@ -286,7 +285,9 @@ class HavocModule(ToolModule):
             return ToolResult.error(f"Failed to stop PID {pid}: {exc}")
         self._pid_file.unlink(missing_ok=True)
         audit_event(self.log, "havoc.stop", pid=pid)
-        return ToolResult(text=f"Stopped havoc teamserver PID {pid}.", structured={"stopped_pid": pid})
+        return ToolResult(
+            text=f"Stopped havoc teamserver PID {pid}.", structured={"stopped_pid": pid}
+        )
 
     async def _handle_status(self, _arguments: dict[str, Any]) -> ToolResult:
         if not self._pid_file.exists():
@@ -298,7 +299,9 @@ class HavocModule(ToolModule):
         running = _alive(pid)
         if not running:
             self._pid_file.unlink(missing_ok=True)
-        return ToolResult(text=f"pid={pid} running={running}", structured={"pid": pid, "running": running})
+        return ToolResult(
+            text=f"pid={pid} running={running}", structured={"pid": pid, "running": running}
+        )
 
     async def _handle_lint(self, arguments: dict[str, Any]) -> ToolResult:
         path = self.settings.expanded_path(arguments["profile"])
@@ -324,7 +327,9 @@ class HavocModule(ToolModule):
                 for name, block in user_map.items():
                     pwd = (block or {}).get("Password") or (block or {}).get("password")
                     if not pwd or len(str(pwd)) < 8:
-                        problems.append(f"Operator '{name}' has weak or missing password (<8 chars).")
+                        problems.append(
+                            f"Operator '{name}' has weak or missing password (<8 chars)."
+                        )
 
         listeners = raw.get("Listeners") or raw.get("listeners")
         if not listeners:
@@ -349,7 +354,7 @@ class HavocModule(ToolModule):
                 "Menu: Attack -> Payload -> Demon",
                 f"Listener: {listener}",
                 f"Arch: {arch}",
-                f"Format: Windows Exe (or Shellcode/DLL)",
+                "Format: Windows Exe (or Shellcode/DLL)",
                 f"Sleep Obfuscation: {sleep_obf.upper()}",
                 "Indirect Syscall: enabled (for EDR evasion)",
                 "AMSI Patch: enabled",

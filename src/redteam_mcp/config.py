@@ -19,13 +19,10 @@ from pathlib import Path
 from typing import Any, Literal
 
 import yaml
-from typing import Union
-
 from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
 from .features import FeatureFlags
-
 
 DEFAULT_CONFIG_FILENAME = "default.yaml"
 USER_CONFIG_DIR = Path.home() / ".redteam-mcp"
@@ -51,7 +48,7 @@ class SecuritySettings(BaseModel):
     # Typed as Union[list[str], str] so pydantic-settings does NOT attempt
     # to JSON-decode the value when it arrives from an env var. The
     # validator below converts a comma-separated string into a list.
-    authorized_scope: Union[list[str], str] = Field(default_factory=list)
+    authorized_scope: list[str] | str = Field(default_factory=list)
     require_ack: bool = True
     dry_run: bool = False
     audit_log: str = "~/.redteam-mcp/audit.log"
@@ -153,7 +150,7 @@ class Settings(BaseSettings):
     features: FeatureFlags = Field(default_factory=FeatureFlags)
 
     @classmethod
-    def build(cls, edition: str | None = None, **overrides: Any) -> "Settings":
+    def build(cls, edition: str | None = None, **overrides: Any) -> Settings:
         """Build Settings with edition defaults applied before overrides.
 
         Order of precedence: Pro defaults -> edition defaults -> explicit
@@ -205,11 +202,7 @@ def _read_yaml(path: Path) -> dict[str, Any]:
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
     result = dict(base)
     for key, value in override.items():
-        if (
-            key in result
-            and isinstance(result[key], dict)
-            and isinstance(value, dict)
-        ):
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
             result[key] = _deep_merge(result[key], value)
         else:
             result[key] = value

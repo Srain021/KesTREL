@@ -13,7 +13,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-
 ScopeEnforcement = Literal["strict", "warn_only", "off"]
 
 
@@ -23,7 +22,7 @@ class FeatureFlags(BaseModel):
     scope_enforcement: ScopeEnforcement = Field(
         default="strict",
         description="How to handle out-of-scope targets. "
-                    "strict=block, warn_only=log+allow, off=silent.",
+        "strict=block, warn_only=log+allow, off=silent.",
     )
     rate_limit_enabled: bool = Field(
         default=True,

@@ -78,15 +78,18 @@ async def test_nuclei_persist_findings_noop_without_engagement(container, nuclei
 
 async def test_nuclei_persist_findings_creates_target_and_finding(container, nuclei_mod):
     e = await container.engagement.create(
-        name="n", display_name="n",
-        engagement_type=ent.EngagementType.CTF, client="c",
+        name="n",
+        display_name="n",
+        engagement_type=ent.EngagementType.CTF,
+        client="c",
     )
     async with container.open_context(engagement_id=e.id):
         persisted = await nuclei_mod._persist_findings(
             ["http://api.lab.test/"],
             [
-                _fake_finding("SQL injection in /login", "critical",
-                              cwe="CWE-89", cve="CVE-2024-1234"),
+                _fake_finding(
+                    "SQL injection in /login", "critical", cwe="CWE-89", cve="CVE-2024-1234"
+                ),
                 _fake_finding("Reflected XSS", "medium"),
             ],
         )
@@ -111,8 +114,10 @@ async def test_nuclei_persist_findings_creates_target_and_finding(container, nuc
 
 async def test_nuclei_persist_picks_best_target(container, nuclei_mod):
     e = await container.engagement.create(
-        name="n2", display_name="n2",
-        engagement_type=ent.EngagementType.CTF, client="c",
+        name="n2",
+        display_name="n2",
+        engagement_type=ent.EngagementType.CTF,
+        client="c",
     )
     async with container.open_context(engagement_id=e.id):
         # Two target URLs; one is a prefix of matched-at
@@ -134,6 +139,7 @@ async def test_nuclei_persist_picks_best_target(container, nuclei_mod):
 def test_best_target_for_prefix():
     class DummyT:
         pass
+
     ents = {
         "http://a.lab/": DummyT(),
         "http://b.lab/": DummyT(),
@@ -147,8 +153,10 @@ def test_best_target_for_prefix():
 
 async def test_shodan_ingest_noop_without_scope(container, shodan_mod):
     e = await container.engagement.create(
-        name="s", display_name="s",
-        engagement_type=ent.EngagementType.CTF, client="c",
+        name="s",
+        display_name="s",
+        engagement_type=ent.EngagementType.CTF,
+        client="c",
     )
     # scope empty → should NOT ingest
     async with container.open_context(engagement_id=e.id):
@@ -158,26 +166,32 @@ async def test_shodan_ingest_noop_without_scope(container, shodan_mod):
 
 async def test_shodan_ingest_respects_scope(container, shodan_mod):
     e = await container.engagement.create(
-        name="s2", display_name="s2",
-        engagement_type=ent.EngagementType.CTF, client="c",
+        name="s2",
+        display_name="s2",
+        engagement_type=ent.EngagementType.CTF,
+        client="c",
     )
     await container.scope.add_entry(e.id, "10.0.0.0/8")
 
     async with container.open_context(engagement_id=e.id):
-        added = await shodan_mod._ingest_search_hits([
-            {"ip": "10.0.0.5"},     # in scope
-            {"ip": "10.1.2.3"},     # in scope
-            {"ip": "8.8.8.8"},      # OUT of scope
-            {"ip": None},            # skip
-            {},                      # skip
-        ])
+        added = await shodan_mod._ingest_search_hits(
+            [
+                {"ip": "10.0.0.5"},  # in scope
+                {"ip": "10.1.2.3"},  # in scope
+                {"ip": "8.8.8.8"},  # OUT of scope
+                {"ip": None},  # skip
+                {},  # skip
+            ]
+        )
     assert added == 2
 
 
 async def test_shodan_enrich_target(container, shodan_mod):
     e = await container.engagement.create(
-        name="s3", display_name="s3",
-        engagement_type=ent.EngagementType.CTF, client="c",
+        name="s3",
+        display_name="s3",
+        engagement_type=ent.EngagementType.CTF,
+        client="c",
     )
     await container.scope.add_entry(e.id, "10.0.0.0/8")
 
@@ -187,8 +201,13 @@ async def test_shodan_enrich_target(container, shodan_mod):
         # Then call the enrichment with host summary
         ok = await shodan_mod._enrich_target_from_host(
             "10.0.0.5",
-            {"ports": [22, 80], "hostnames": ["a.lab"], "org": "Example", "country": "US",
-             "vulns": []},
+            {
+                "ports": [22, 80],
+                "hostnames": ["a.lab"],
+                "org": "Example",
+                "country": "US",
+                "vulns": [],
+            },
         )
     assert ok is True
 

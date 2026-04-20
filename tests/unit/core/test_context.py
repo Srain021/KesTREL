@@ -29,7 +29,6 @@ from redteam_mcp.core.context import (
 from redteam_mcp.domain import entities as ent
 from redteam_mcp.domain.errors import ScopeViolationError
 
-
 pytestmark = pytest.mark.asyncio
 
 
@@ -80,8 +79,10 @@ async def test_require_engagement_without_raises(container):
 
 async def test_require_engagement_with(container):
     e = await container.engagement.create(
-        name="x", display_name="x",
-        engagement_type=ent.EngagementType.CTF, client="c",
+        name="x",
+        display_name="x",
+        engagement_type=ent.EngagementType.CTF,
+        client="c",
     )
     async with container.open_context(engagement_id=e.id) as ctx:
         assert ctx.require_engagement() == e.id
@@ -96,8 +97,10 @@ async def test_ensure_scope_noop_without_engagement(container):
 
 async def test_ensure_scope_rejects_out_of_scope(container):
     e = await container.engagement.create(
-        name="x", display_name="x",
-        engagement_type=ent.EngagementType.CTF, client="c",
+        name="x",
+        display_name="x",
+        engagement_type=ent.EngagementType.CTF,
+        client="c",
     )
     await container.scope.add_entry(e.id, "*.lab.test")
     async with container.open_context(engagement_id=e.id) as ctx:
@@ -110,18 +113,22 @@ async def test_parallel_tasks_see_own_contexts(container):
     """Two asyncio tasks must each keep their own context."""
 
     a = await container.engagement.create(
-        name="a", display_name="a",
-        engagement_type=ent.EngagementType.CTF, client="c",
+        name="a",
+        display_name="a",
+        engagement_type=ent.EngagementType.CTF,
+        client="c",
     )
     b = await container.engagement.create(
-        name="b", display_name="b",
-        engagement_type=ent.EngagementType.CTF, client="c",
+        name="b",
+        display_name="b",
+        engagement_type=ent.EngagementType.CTF,
+        client="c",
     )
 
     leaked: dict[str, object] = {}
 
     async def worker(name: str, eid):
-        async with container.open_context(engagement_id=eid) as ctx:
+        async with container.open_context(engagement_id=eid):
             # Yield to the other task to maximise interleaving
             await asyncio.sleep(0)
             leaked[name] = current_context().engagement_id
@@ -144,5 +151,5 @@ async def test_bind_context_manual(container):
 
 
 async def test_dry_run_flag_propagates(container):
-    async with container.open_context(dry_run=True) as ctx:
+    async with container.open_context(dry_run=True):
         assert current_context().dry_run is True

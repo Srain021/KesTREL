@@ -15,13 +15,13 @@ Design goals:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable
+from typing import Any
 
 from ..config import Settings
 from ..logging import get_logger
 from ..security import ScopeGuard
-
 
 ToolHandler = Callable[[dict[str, Any]], Awaitable["ToolResult"]]
 
@@ -40,7 +40,7 @@ class ToolResult:
     is_error: bool = False
 
     @classmethod
-    def error(cls, message: str, **extra: Any) -> "ToolResult":
+    def error(cls, message: str, **extra: Any) -> ToolResult:
         return cls(text=f"ERROR: {message}", structured={"error": message, **extra}, is_error=True)
 
 
