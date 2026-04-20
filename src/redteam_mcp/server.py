@@ -250,19 +250,40 @@ class RedTeamMCPServer:
         target: str,
         tool_name: str,
     ) -> None:
-        """Central scope check.
+        """Central scope check, honoring ``FeatureFlags.scope_enforcement``.
 
         Precedence:
             1. If the context has an active engagement, the persistent
                :class:`ScopeService` is authoritative.
             2. Otherwise fall back to the in-memory :class:`ScopeGuard`
                (legacy mode / pre-engagement workflows).
+
+        Feature-flag behavior (RFC-T00):
+
+        * ``strict``    (Pro default): violations raise.
+        * ``warn_only`` (Team default): violations logged and allowed.
+        * ``off``       : no check at all.
         """
 
-        if ctx.has_engagement():
-            await ctx.ensure_scope(target, tool_name=tool_name)
+        enforcement = self.settings.features.scope_enforcement
+        if enforcement == "off":
             return
-        self.scope_guard.ensure(target, tool_name=tool_name)
+        try:
+            if ctx.has_engagement():
+                await ctx.ensure_scope(target, tool_name=tool_name)
+                return
+            self.scope_guard.ensure(target, tool_name=tool_name)
+        except (AuthorizationError, ScopeViolationError) as exc:
+            if enforcement == "warn_only":
+                self.log.warning(
+                    "scope.warn_only",
+                    tool=tool_name,
+                    target=target,
+                    reason=str(exc),
+                    engagement_id=str(ctx.engagement_id) if ctx.engagement_id else None,
+                )
+                return
+            raise
 
 
 # ---------------------------------------------------------------------------

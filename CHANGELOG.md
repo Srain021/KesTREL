@@ -65,6 +65,20 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 - `full_verify.py` now 8/8 green (95 -> 105 tests passed). Smoke-tested
   both editions' `show-config` output. Pro edition runtime behavior unchanged.
 
+### RFC-T00 completed
+- RFC-T00 v2.0 rewritten after v1 failed pre-flight (6 SEARCH hallucinations,
+  1 files_will_touch gap, 1 missing dep). Scope collapsed to a single-method
+  change in `server._check_scope` instead of the v1's attempt to modify 4
+  files (security.py / scope_service.py / context.py / rate_limit.py).
+- Executed RFC-T00 v2.0: `server.RedTeamMCPServer._check_scope` now reads
+  `self.settings.features.scope_enforcement` and honors three states —
+  `strict` (raise, Pro default), `warn_only` (log + allow, Team default),
+  `off` (silent pass-through). 8 new tests using `MagicMock(spec=...)` to
+  avoid the heavy full-server fixture.
+- Rate-limit and credential-encryption feature gates moved to a future
+  RFC-T00b (needs `core/rate_limit.py`, not yet created).
+- `full_verify.py` still 8/8 (113 tests now, was 105).
+
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
 - `AGENT_EXECUTION_PROTOCOL.md` §6 whitelisted git commands are now functional.

@@ -140,7 +140,7 @@
 
 | id      | title                              | status | blocking_on         | owner |
 |---------|------------------------------------|--------|---------------------|-------|
-| RFC-T00 | Team unleashed mode                | blocked ⚠ | RFC-A04          |       |
+| RFC-T00 | Team unleashed mode                | done   |             | agent |
 | RFC-T08 | Team bootstrap command             | blocked ⚠ | RFC-A04, RFC-T00 |       |
 | RFC-T01 | Obsidian Team Vault template       | open   | RFC-T08             | later |
 | RFC-T02 | Vaultwarden integration            | open   | RFC-003, RFC-T08    | later |
