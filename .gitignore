@@ -31,6 +31,9 @@ Thumbs.db
 .coverage
 htmlcov/
 
+.git-commit-msg.tmp
+HANDOFF.md.tmp
+
 *.pem
 *.key
 *.crt
