@@ -185,6 +185,35 @@ def show_config_cmd() -> None:
     typer.echo(json.dumps(payload, indent=2))
 
 
+team_app = typer.Typer(
+    name="team",
+    help="Team edition commands (use with --edition team).",
+    no_args_is_help=True,
+)
+app.add_typer(team_app, name="team")
+
+
+@team_app.command("bootstrap")
+def team_bootstrap_cmd(
+    name: Annotated[str, typer.Option("--name", "-n", help="Engagement slug.")],
+    scope: Annotated[
+        str | None,
+        typer.Option("--scope", help="Comma-separated scope patterns."),
+    ] = None,
+    dry_run: Annotated[
+        bool,
+        typer.Option("--dry-run", help="Preview only; no DB writes."),
+    ] = False,
+) -> None:
+    """Bootstrap a Team edition engagement in one command."""
+
+    from .team.bootstrap import bootstrap
+
+    edition = _edition_state.get("value") or "team"
+    report = bootstrap(name=name, scope=scope, dry_run=dry_run, edition=edition)
+    typer.echo(report.render())
+
+
 @app.command()
 def version() -> None:
     """Print the installed version."""

@@ -1,34 +1,38 @@
 ---
 id: RFC-T08
-title: Team bootstrap — one command to get a 4-person crew operational
+title: Team bootstrap command — kestrel team bootstrap --name <slug>
 epic: T-TeamEdition
-status: open
+status: done
 owner: unassigned
 role: backend-engineer
 blocking_on: [RFC-A04, RFC-T00]
 edition: team
 budget:
-  max_files_touched: 5
-  max_new_files: 3
-  max_lines_added: 260
-  max_minutes_human: 50
-  max_tokens_model: 18000
+  max_files_touched: 8
+  max_new_files: 4
+  max_lines_added: 360
+  max_minutes_human: 45
+  max_tokens_model: 16000
 files_to_read:
   - src/redteam_mcp/__main__.py
-  - src/redteam_mcp/config.py
-  - src/redteam_mcp/domain/services/engagement_service.py
   - src/redteam_mcp/core/services.py
+  - src/redteam_mcp/domain/services/engagement_service.py
+  - src/redteam_mcp/domain/services/scope_service.py
+  - src/redteam_mcp/domain/entities.py
   - README.md
 files_will_touch:
   - src/redteam_mcp/team/__init__.py              # new
   - src/redteam_mcp/team/bootstrap.py             # new
-  - src/redteam_mcp/__main__.py                   # modified: add `team` subcommand group
+  - src/redteam_mcp/__main__.py                   # modified
+  - tests/unit/team/__init__.py                   # new
   - tests/unit/team/test_bootstrap.py             # new
-  - README.md                                     # modified: add Team Quickstart
+  - README.md                                     # modified
+  - CHANGELOG.md                                  # modified
+  - rfcs/INDEX.md                                 # modified
 verify_cmd: |
-  .venv\Scripts\python.exe -m pytest tests/unit/team/test_bootstrap.py -v && .venv\Scripts\python.exe -m redteam_mcp.__main__ --edition team team bootstrap --dry-run --name smoke-test
+  .venv\Scripts\python.exe -m pytest tests/unit/team/test_bootstrap.py -v
 rollback_cmd: |
-  git checkout -- src/redteam_mcp/__main__.py README.md
+  git checkout -- src/redteam_mcp/__main__.py README.md CHANGELOG.md rfcs/INDEX.md
   if exist src\redteam_mcp\team rmdir /s /q src\redteam_mcp\team
   if exist tests\unit\team rmdir /s /q tests\unit\team
 skill_id: rfc-t08-bootstrap
@@ -38,52 +42,62 @@ skill_id: rfc-t08-bootstrap
 
 ## Mission
 
-一条命令 `kestrel --edition team team bootstrap --name <slug>` 把队伍拉起来：建 engagement、载默认 scope、doctor 自检、输出连接说明。
+`kestrel --edition team team bootstrap --name <slug> [--scope ...]` 一条命令起
+队伍：建 Engagement、载默认 Scope、打印 readiness 报告。
 
 ## Context
 
 - PRODUCT_LINES.md "最快部署能用"原则的兑现。
-- RFC-A04 提供 edition；RFC-T00 提供 unleashed 行为 —— 此 RFC 提供**用户入口**。
-- 新人拉代码后 <5 分钟应该 "能跑起来"。
-- 不新造 domain —— 直接调现有 `EngagementService.create()` + `ScopeService.add_entry()`。
+- RFC-A04 提供 edition + FeatureFlags；RFC-T00 提供 unleashed 行为。本 RFC 提
+  供**用户入口**。
+- v1 失败于 3 个 SEARCH 幻觉 + 1 个 WRITE-not-in-fwt + 错误的 `engagement.create`
+  签名（v1 假设有 `description` 参数）。v2 按真实 `EngagementService.create`
+  签名重写（required keyword-only: `name`, `display_name`, `engagement_type`,
+  `client`）。
+- v2 基于真实 `ServiceContainer.default_on_disk(*, data_dir=...)` 签名（v1
+  传了位置参数）。
 
 ## Non-goals
 
-- **不做 CTF-specific**：不拉 VPN / 不刷 nuclei templates / 不连 HTB API。那是 CTF 专属的 RFC（按用户决策，砍）。
-- 不集成 Vaultwarden（V-T2 后续）。
-- 不启动 tmate（V-T3 后续）。
-- 不做 docker-compose 栈（Pro 版 deploy RFC 的事）。
+- **不做 CTF-specific** — 不连 HTB / pull VPN / refresh nuclei templates（PRODUCT_LINES
+  决策 5 明确砍）。
+- 不起 docker-compose 栈（那是 deploy RFC）。
+- 不集成 Vaultwarden / tmate / Obsidian vault（RFC-T01~T03 未来）。
 - **不写 web UI 部分** —— 纯 CLI。
+- 不实现 `session new` 这类子命令（超出本 RFC scope）。
 
 ## Design
 
-`kestrel team bootstrap` 做 6 件事：
+`team bootstrap` 做 5 件事：
+1. 创建 `~/.kestrel/data/` (via `ServiceContainer.default_on_disk()` 默认行为)
+2. Doctor 检查关键工具（nuclei / sliver-server / caido / SHODAN_API_KEY 是否就位 ——
+   缺失只 warn 不阻塞）
+3. 调 `EngagementService.create(name, display_name, engagement_type, client,
+   owners)` 建 Engagement，状态留在 PLANNING
+4. 批量 add scope patterns via `ScopeService.add_entry(engagement_id, pattern)`
+5. 打印 "Ready!" 报告 + 下一步提示
 
-1. 读/创建 `~/.kestrel/data/` 数据目录（若不存在）
-2. 运行 `doctor` 检查关键工具（nuclei/sliver/caido/shodan api key 是否就位，缺失只 warn）
-3. 在 Team DB 新建一个 `Engagement`（slug = `--name`，status=`active`）
-4. 若提供 `--scope a.com,b.net`，批量 add 到 scope
-5. 打印 "Ready!" 信息 + 下一步提示（连 LLM client 的命令）
-6. 可选 `--dry-run` 只打印要做什么，不落地
+`--dry-run` 跳过 step 1-4 的副作用，只打印「会做什么」。
 
-**设计决策**：
-- 这是**第一个 Team 专属子包**；在 `src/redteam_mcp/team/` 建立目录骨架
-- bootstrap 不直接调 sqlalchemy；走 `ServiceContainer.default_on_disk()` + domain services
-- CLI 加 typer 子 app 避免污染顶层命名空间：`kestrel team <subcommand>`
+Typer 分组：新增 `team_app = typer.Typer(...)` + `app.add_typer(team_app,
+name="team")`；`team_app.command("bootstrap")` 是本 RFC 唯一子命令。**未来
+T05/T09 再加更多子命令**，不动本 RFC。
 
 ## Steps
 
-### Step 1 — 建 team 子包
+### Step 1 — 新建 team/__init__.py 占位
 
 ```
 WRITE src/redteam_mcp/team/__init__.py
+```
+```python
 """Team Edition subpackage.
 
-Only imported when `settings.edition == "team"`. Code in this package MUST check
-`settings.features` before invoking side effects; it MUST NOT assume Pro safety
-guarantees (no rate limiting, no strict scope).
+Only imported by CLI handlers under `kestrel team ...`. Code in this package
+must check `settings.features` before invoking side effects; it MUST NOT
+assume Pro safety guarantees (no rate limiting, no strict scope).
 
-Decision log: see PRODUCT_LINES.md Part 9.
+Decision log: PRODUCT_LINES.md Part 9.
 """
 ```
 
@@ -91,11 +105,17 @@ Decision log: see PRODUCT_LINES.md Part 9.
 
 ```
 WRITE src/redteam_mcp/team/bootstrap.py
-"""Bootstrap a crew-ready Team edition install."""
+```
+```python
+"""Bootstrap a crew-ready Team edition install.
+
+Called by `kestrel team bootstrap --name <slug>`. See RFC-T08.
+"""
 
 from __future__ import annotations
 
 import asyncio
+import os
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -103,6 +123,7 @@ from typing import Iterable
 
 from redteam_mcp.config import Settings
 from redteam_mcp.core.services import ServiceContainer
+from redteam_mcp.domain import entities as ent
 
 
 @dataclass
@@ -117,13 +138,13 @@ class BootstrapReport:
 
     def render(self) -> str:
         lines = [
-            f"╔══════════════════════════════════════════════════════════════╗",
-            f"║  Kestrel Team Edition — Bootstrap Report                    ║",
-            f"╚══════════════════════════════════════════════════════════════╝",
-            f"  Engagement: {self.name}  ({'dry-run' if self.dry_run else 'created'})",
-            f"  Edition:    {self.edition}",
-            f"  Data dir:   {self.data_dir}",
-            f"  Engagement id: {self.engagement_id or '(pending)'}",
+            "=" * 62,
+            "  Kestrel Team Edition - Bootstrap Report",
+            "=" * 62,
+            f"  Engagement:    {self.name}  ({'dry-run' if self.dry_run else 'created'})",
+            f"  Edition:       {self.edition}",
+            f"  Data dir:      {self.data_dir}",
+            f"  Engagement id: {self.engagement_id or '(would be created)'}",
             f"  Scope entries: {len(self.scope_added)}",
         ]
         for s in self.scope_added:
@@ -135,20 +156,21 @@ class BootstrapReport:
         lines += [
             "",
             "  Next steps:",
-            "    1. Start server:   kestrel --edition team server --engagement " + self.name,
-            "    2. Point your LLM client at stdio transport",
-            "    3. First tool:     engagement_get → scope_list → target_list",
+            f"    1. Start server:  kestrel --edition team serve",
+            f"    2. Point your LLM client at the stdio transport",
+            f"    3. Active engagement via env:  "
+            f"$env:KESTREL_ENGAGEMENT = '{self.name}'",
             "",
+            "=" * 62,
         ]
         return "\n".join(lines)
 
 
 def _doctor_warnings() -> list[str]:
-    warnings = []
+    warnings: list[str] = []
     for tool in ("nuclei", "sliver-server", "caido"):
         if shutil.which(tool) is None:
             warnings.append(f"{tool} not on PATH (feature degraded)")
-    import os
     if not os.getenv("SHODAN_API_KEY"):
         warnings.append("SHODAN_API_KEY unset (OSINT search disabled)")
     return warnings
@@ -160,9 +182,8 @@ async def _do_bootstrap(
     scope_entries: Iterable[str],
     dry_run: bool,
 ) -> BootstrapReport:
-    data_dir = Path.home() / ".kestrel" / "data"
-    if not dry_run:
-        data_dir.mkdir(parents=True, exist_ok=True)
+    # Resolve data_dir the same way ServiceContainer.default_on_disk does.
+    data_dir = Path(os.environ.get("KESTREL_DATA_DIR", "~/.kestrel")).expanduser()
 
     report = BootstrapReport(
         name=name,
@@ -170,23 +191,35 @@ async def _do_bootstrap(
         data_dir=data_dir,
         dry_run=dry_run,
         doctor_warnings=_doctor_warnings(),
+        scope_added=list(scope_entries) if dry_run else [],
     )
 
     if dry_run:
-        report.scope_added = list(scope_entries)
         return report
 
-    services = ServiceContainer.default_on_disk(data_dir / "team.sqlite")
-    await services.create_all()
+    data_dir.mkdir(parents=True, exist_ok=True)
 
-    eng = await services.engagement.create(name=name, description="Team edition engagement", owners=[])
-    report.engagement_id = str(eng.id)
+    container = ServiceContainer.default_on_disk(data_dir=data_dir)
+    await container.initialise()
+    try:
+        engagement = await container.engagement.create(
+            name=name,
+            display_name=name.replace("-", " ").replace("_", " ").title(),
+            engagement_type=ent.EngagementType.RED_TEAM,
+            client="internal-crew",
+            owners=[],
+        )
+        report.engagement_id = str(engagement.id)
 
-    for entry in scope_entries:
-        await services.scope.add_entry(engagement_id=eng.id, pattern=entry.strip())
-        report.scope_added.append(entry.strip())
+        for entry in scope_entries:
+            entry = entry.strip()
+            if not entry:
+                continue
+            await container.scope.add_entry(engagement_id=engagement.id, pattern=entry)
+            report.scope_added.append(entry)
+    finally:
+        await container.dispose()
 
-    await services.close()
     return report
 
 
@@ -196,39 +229,76 @@ def bootstrap(
     dry_run: bool = False,
     edition: str | None = "team",
 ) -> BootstrapReport:
+    """Top-level entry point. Builds Settings, runs the async core, returns
+    the report dataclass.
+    """
+
     settings = Settings.build(edition=edition)
     entries = [s.strip() for s in (scope or "").split(",") if s.strip()]
     return asyncio.run(_do_bootstrap(settings, name, entries, dry_run))
 ```
 
-> **Notes for executor**: `ServiceContainer.default_on_disk(path)` and `services.engagement.create(...)` signatures must match the codebase. If `default_on_disk` requires `str`, wrap `str(data_dir / "team.sqlite")`. If `engagement.create` doesn't accept `owners=[]`, drop it. Read the service signatures before writing this file.
-
-### Step 3 — CLI 子命令
+### Step 3 — 加 `team` 子命令组到 __main__.py
 
 ```
 REPLACE src/redteam_mcp/__main__.py
 <<<<<<< SEARCH
 @app.command("show-config")
+def show_config_cmd() -> None:
+    """Print resolved Settings (edition + features) as JSON."""
+
+    from .config import Settings
+
+    s = Settings.build(edition=_edition_state["value"])
+    payload = {"edition": s.edition, "features": s.features.model_dump()}
+    typer.echo(json.dumps(payload, indent=2))
+
+
+@app.command()
+def version() -> None:
 =======
-team_app = typer.Typer(help="Team edition commands (use with --edition team)")
+@app.command("show-config")
+def show_config_cmd() -> None:
+    """Print resolved Settings (edition + features) as JSON."""
+
+    from .config import Settings
+
+    s = Settings.build(edition=_edition_state["value"])
+    payload = {"edition": s.edition, "features": s.features.model_dump()}
+    typer.echo(json.dumps(payload, indent=2))
+
+
+team_app = typer.Typer(
+    name="team",
+    help="Team edition commands (use with --edition team).",
+    no_args_is_help=True,
+)
 app.add_typer(team_app, name="team")
 
 
 @team_app.command("bootstrap")
 def team_bootstrap_cmd(
-    name: str = typer.Option(..., "--name", "-n", help="Engagement slug, e.g. 'op-winter-2026'"),
-    scope: str | None = typer.Option(None, "--scope", help="Comma-separated scope patterns"),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Preview only, no changes"),
+    name: Annotated[str, typer.Option("--name", "-n", help="Engagement slug.")],
+    scope: Annotated[
+        str | None,
+        typer.Option("--scope", help="Comma-separated scope patterns."),
+    ] = None,
+    dry_run: Annotated[
+        bool,
+        typer.Option("--dry-run", help="Preview only; no DB writes."),
+    ] = False,
 ) -> None:
     """Bootstrap a Team edition engagement in one command."""
-    from redteam_mcp.team.bootstrap import bootstrap
+
+    from .team.bootstrap import bootstrap
 
     edition = _edition_state.get("value") or "team"
     report = bootstrap(name=name, scope=scope, dry_run=dry_run, edition=edition)
-    print(report.render())
+    typer.echo(report.render())
 
 
-@app.command("show-config")
+@app.command()
+def version() -> None:
 >>>>>>> REPLACE
 ```
 
@@ -237,9 +307,16 @@ def team_bootstrap_cmd(
 ```
 WRITE tests/unit/team/__init__.py
 ```
+```python
+"""Team edition tests."""
+```
 
 ```
 WRITE tests/unit/team/test_bootstrap.py
+```
+```python
+"""Tests for RFC-T08 team bootstrap command."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -250,119 +327,210 @@ from redteam_mcp.team.bootstrap import BootstrapReport, bootstrap
 
 
 def test_dry_run_reports_no_mutation(tmp_path, monkeypatch):
-    monkeypatch.setenv("HOME", str(tmp_path))
-    monkeypatch.setenv("USERPROFILE", str(tmp_path))  # Windows home
+    # Point KESTREL_DATA_DIR at an isolated tmp so nothing real is touched.
+    monkeypatch.setenv("KESTREL_DATA_DIR", str(tmp_path))
     report = bootstrap(name="op-test", scope="a.com,b.net", dry_run=True)
+
     assert report.dry_run is True
     assert report.engagement_id is None
     assert report.scope_added == ["a.com", "b.net"]
     assert report.edition == "team"
+    # Dry-run must NOT create the sqlite file.
+    assert not (tmp_path / "data.db").exists()
 
 
-def test_report_render_contains_next_steps():
-    r = BootstrapReport(name="x", edition="team", data_dir=Path("/tmp"), dry_run=True)
+def test_report_render_contains_expected_sections():
+    r = BootstrapReport(
+        name="op-x",
+        edition="team",
+        data_dir=Path("/tmp/x"),
+        dry_run=True,
+        scope_added=["a.com"],
+    )
     text = r.render()
+    assert "Kestrel Team Edition" in text
+    assert "op-x" in text
     assert "Next steps" in text
     assert "kestrel --edition team" in text
-    assert "dry-run" in text
+    assert "a.com" in text
 
 
-def test_doctor_warnings_collected():
-    r = BootstrapReport(name="x", edition="team", data_dir=Path("/tmp"), dry_run=True)
-    # best-effort; some tools may exist on CI boxes
+def test_report_render_handles_empty_scope_and_warnings():
+    r = BootstrapReport(
+        name="op-y",
+        edition="team",
+        data_dir=Path("/tmp/y"),
+        dry_run=False,
+        doctor_warnings=["nuclei not on PATH"],
+    )
     text = r.render()
-    # just verify render doesn't crash with empty warnings either
-    assert "Kestrel Team Edition" in text
+    assert "Doctor warnings" in text
+    assert "nuclei" in text
 
 
-@pytest.mark.asyncio
-async def test_real_bootstrap_creates_engagement(tmp_path, monkeypatch):
-    monkeypatch.setenv("HOME", str(tmp_path))
-    monkeypatch.setenv("USERPROFILE", str(tmp_path))
-    report = bootstrap(name="op-real", scope="example.com", dry_run=False)
+def test_real_bootstrap_creates_engagement(tmp_path, monkeypatch):
+    """Non-dry-run: actually creates sqlite + Engagement."""
+    monkeypatch.setenv("KESTREL_DATA_DIR", str(tmp_path))
+    monkeypatch.delenv("KESTREL_EDITION", raising=False)
+
+    report = bootstrap(
+        name="op-real",
+        scope="example.com,target.lab",
+        dry_run=False,
+    )
+
     assert report.engagement_id is not None
-    assert len(report.engagement_id) >= 32  # UUID-ish
-    assert report.scope_added == ["example.com"]
-    assert (tmp_path / ".kestrel" / "data" / "team.sqlite").is_file()
+    assert len(report.engagement_id) >= 32  # UUID string
+    assert set(report.scope_added) == {"example.com", "target.lab"}
+    # Verify sqlite file exists after.
+    assert (tmp_path / "data.db").exists()
+
+
+def test_empty_scope_still_creates_engagement(tmp_path, monkeypatch):
+    monkeypatch.setenv("KESTREL_DATA_DIR", str(tmp_path))
+    report = bootstrap(name="op-z", scope=None, dry_run=False)
+    assert report.engagement_id is not None
+    assert report.scope_added == []
+
+
+def test_bootstrap_respects_pro_edition_when_forced(tmp_path, monkeypatch):
+    """Sanity: if caller passes edition='pro', the report reflects pro."""
+    monkeypatch.setenv("KESTREL_DATA_DIR", str(tmp_path))
+    report = bootstrap(name="op-pro", dry_run=True, edition="pro")
+    assert report.edition == "pro"
 ```
 
-> **Notes for executor**: `test_real_bootstrap_creates_engagement` 是真 I/O 测试。如果 CI 敏感把它标 `@pytest.mark.integration`；但本地应该跑得通。`Path.home()` 在 Windows 下读 `USERPROFILE`。
-
-### Step 5 — README 加 Team Quickstart
+### Step 5 — README 加 Team Quickstart 章节
 
 ```
 REPLACE README.md
 <<<<<<< SEARCH
-## Installation
-=======
-## Team Edition Quickstart (4-person crew)
+Cursor will auto-invoke `shodan_search`.
 
-Get operational in under 5 minutes:
+---
+
+## 🏗️ Architecture
+=======
+Cursor will auto-invoke `shodan_search`.
+
+---
+
+## 🧑‍🤝‍🧑 Team Edition Quickstart
+
+Team Edition is the unleashed mode for internal crews (see
+[PRODUCT_LINES.md](./PRODUCT_LINES.md) Part 9). Get operational in one
+command:
 
 ```powershell
-# 1. One-liner bootstrap
-kestrel --edition team team bootstrap --name op-winter-2026 --scope "hackbox.lab,*.ctf-internal"
+# One-liner bootstrap
+kestrel --edition team team bootstrap --name op-winter-2026 --scope "target.lab,*.internal"
 
-# 2. Start server (points your LLM client at stdio)
-kestrel --edition team server --engagement op-winter-2026
+# Then start the server, pointing your LLM client at stdio
+kestrel --edition team serve
+$env:KESTREL_ENGAGEMENT = "op-winter-2026"
 ```
 
-**What unleashed mode means:**
-- `scope_enforcement = warn_only` — out-of-scope targets logged, not blocked
-- `rate_limit_enabled = False` — no throttling
-- `credential_encryption_required = False` — plaintext creds OK inside your vault
+What "unleashed" means in this edition:
 
-See [PRODUCT_LINES.md](./PRODUCT_LINES.md) for edition differences.
+- `scope_enforcement = warn_only` — out-of-scope targets are logged, not
+  blocked (see RFC-T00).
+- `rate_limit_enabled = false` — no throttling of tool calls.
+- `credential_encryption_required = false` — plaintext creds OK inside the
+  vault.
 
-## Installation
+Switch back to Pro strict defaults by dropping `--edition team` or setting
+`KESTREL_EDITION=pro`.
+
+---
+
+## 🏗️ Architecture
 >>>>>>> REPLACE
 ```
 
-### Step 6 — 运行
+### Step 6 — verify_cmd
 
 ```
 RUN .venv\Scripts\python.exe -m pytest tests/unit/team/test_bootstrap.py -v
-RUN .venv\Scripts\python.exe -m redteam_mcp.__main__ --edition team team bootstrap --dry-run --name smoke --scope test.local
 ```
+
+### Step 7 — full_verify
+
+```
+RUN .venv\Scripts\python.exe scripts\full_verify.py
+```
+
+### Step 8 — CLI smoke (manual, for post-check)
+
+执行者跑这条，**该 RFC 不把它包成 RUN step**（不在 whitelist 前缀内可能有差
+异；只作为人工校验）：
+
+```powershell
+.venv\Scripts\python.exe -m redteam_mcp --edition team team bootstrap --dry-run --name smoke-test --scope "test.local"
+```
+
+应看到 Bootstrap Report banner 含 `smoke-test` 和 `test.local`。
 
 ## Tests
 
-见 Step 4。4 个测试：
-- Dry-run 不写盘
-- Report 渲染包含关键字符串
-- Doctor warnings 收集
-- 真 bootstrap 建 engagement 到 sqlite
+Step 4 含 6 个测试：
+- dry-run 不写盘
+- 渲染函数含关键字符串
+- doctor warnings 进渲染
+- 真 bootstrap 建 engagement + sqlite
+- 空 scope 也能建
+- 显式 edition='pro' 被尊重
 
 ## Post-checks
 
-- [ ] `git diff --stat` 只列出 `files_will_touch`
-- [ ] `team bootstrap --dry-run` 输出包含 ASCII banner、engagement id `(pending)`、Next steps
-- [ ] `team bootstrap --name real` 创建 sqlite 文件 in `~/.kestrel/data/team.sqlite`
-- [ ] 再跑 `team bootstrap --name real` —— 应该**幂等**或**友好失败**（重复 slug 不应抛栈）
+- [ ] `git diff --stat` 只列 `files_will_touch`
+- [ ] `pytest tests/unit/team/test_bootstrap.py` 6 passed
+- [ ] `full_verify.py` 仍 8/8
+- [ ] 人工：`kestrel --edition team team bootstrap --dry-run --name smoke`
+      输出 banner + scope + Next steps
+- [ ] 第二次执行同一 name：应该报 `Engagement name '<name>' already exists`
+      (UniqueConstraintError) — 不是崩，是明确 error
+- [ ] `Remove-Item $env:USERPROFILE\.kestrel\data.db` 可以清理测试残留
 
 ## Rollback plan
 
-```
-git checkout -- src/redteam_mcp/__main__.py README.md
-rmdir /s /q src\redteam_mcp\team tests\unit\team
-```
-
-若 Step 6 已建 `~/.kestrel/data/team.sqlite`，用户可手工删除；此 RFC 不清理。
+见 front-matter `rollback_cmd`。注意：如果执行过真 bootstrap，`~/.kestrel/data.db`
+里有测试 engagement — 手动删除，否则下次 smoke 同名会冲突。
 
 ## Updates to other docs
 
-- `CHANGELOG.md` → `[Unreleased]` 加 `RFC-T08 one-command team bootstrap`
-- `PRODUCT_LINES.md` → 在 Part 9 "下一步" 段标 T08 done
-- `rfcs/INDEX.md` → RFC-T08 标 `done`；标记 Team MVP 三件套全部完成
+- `CHANGELOG.md` → `[Unreleased]` 加 `RFC-T08 closes Team edition bootstrap
+  command`
+- `rfcs/INDEX.md` → RFC-T08 状态 `done`，Team MVP 三件套全绿
+- `README.md` → Step 5 已加 Team Edition Quickstart 章节
 
 ## Notes for executor
 
-- **最大风险点**：`ServiceContainer.default_on_disk(path)` 接受 `Path` 还是 `str`？先读 `src/redteam_mcp/core/services.py` 确认。Windows 下 `\\` 转义问题要用 `as_posix()` 或 sqlalchemy URL 格式 `sqlite+aiosqlite:///C:/...`。
-- `engagement.create()` 若有 `actor` 必填参数，需要先建默认 actor：可复用 `AUDIT_V2` 里 Actor 概念，传一个"system" actor。如果必填，在 `_do_bootstrap` 里先 `actor = await services.actor.get_or_create_system()` (若该方法不存在，降级用直接 ORM)。
-- `tests/unit/team/__init__.py` 必须是**空文件**；pytest rootdir 靠它识别包。
-- Typer `add_typer` 位置要在 `app` 创建之后、`@app.command` 装饰之前；否则帮助文案顺序乱。
-- CLI 验证命令 `kestrel --edition team team bootstrap --dry-run --name smoke-test` 的 `--edition team` 是全局 callback（RFC-A04 已添加），`team bootstrap` 是子命令 —— 两个 `team` 看似重复但实际不同层级。
+- **ServiceContainer.default_on_disk** 签名是 `(*, data_dir: Path | None = None)`
+  — **全 keyword-only**。不要写成 `default_on_disk(path)`。
+- **EngagementService.create** 全 keyword-only，必填：`name`, `display_name`,
+  `engagement_type`, `client`。v1 漏了 3 个，v2 按真实签名补齐。
+- **engagement_type**：用 `ent.EngagementType.RED_TEAM`（不是 `CTF`，因为
+  PRODUCT_LINES 决策 5 明确砍 CTF domain 概念）。
+- **name 是 slug**：字符仅限 `[a-z0-9_-]`（见 entities.py `_SLUG_CHARS`）。如果
+  用户传含大写或特殊字符的 name，domain 层会在 create 时验证失败。本 RFC 不做
+  前置规范化（让 domain 报错，UX 再加时改）。
+- **Typer `Annotated`**：`__main__.py` 顶部已有 `from typing import Annotated`
+  （RFC-A04 执行时已加）；不要重复 import。
+- **`typer.Option("--name", "-n")`**：`-n` 作为短选项。v1 也这样，此处保留。
+- **asyncio.run in bootstrap()**：Typer handler 是 sync 函数；用 `asyncio.run`
+  起 async core。测试里 `bootstrap()` 直接同步调用，pytest 的 asyncio 不会冲突。
+- **测试 tmp 目录**：用 `monkeypatch.setenv("KESTREL_DATA_DIR", str(tmp_path))`
+  隔离每个测试。`Path.home()` 在 Windows/Linux 行为不同，但我们通过 env 强制
+  固定位置。
+- **team/__init__.py 必须存在且可空**：pytest rootdir 检测 Python 包靠它；若
+  省略，`tests/unit/team/test_bootstrap.py` 的 import 可能失败。
 
 ## Changelog
 
-- **2026-04-21 初版** by AI — delivers Team MVP "fastest time to value" per PRODUCT_LINES.md decision 5
+- **2026-04-21 v1.0** — Initial spec. FAILED pre-flight (3 SEARCH
+  hallucinations, 1 WRITE-not-in-fwt, wrong EngagementService.create
+  signature, wrong ServiceContainer.default_on_disk signature).
+- **2026-04-21 v2.0** — **Full rewrite** after reading real
+  `core/services.py`, `domain/services/engagement_service.py`,
+  `domain/entities.py::EngagementType`, `README.md`. All SEARCH blocks
+  copied from real files. Added README Team Quickstart section. 6 tests.

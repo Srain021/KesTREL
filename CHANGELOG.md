@@ -79,6 +79,21 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   RFC-T00b (needs `core/rate_limit.py`, not yet created).
 - `full_verify.py` still 8/8 (113 tests now, was 105).
 
+### RFC-T08 completed — Team MVP complete
+- RFC-T08 v2.0 rewritten after v1 failed pre-flight (3 SEARCH hallucinations,
+  1 WRITE-not-in-fwt, wrong `EngagementService.create` signature, wrong
+  `ServiceContainer.default_on_disk` signature).
+- Executed RFC-T08 v2.0: adds `src/redteam_mcp/team/__init__.py`,
+  `src/redteam_mcp/team/bootstrap.py` (~130 LOC), `team` subcommand group in
+  CLI with `bootstrap --name <slug> [--scope ...] [--dry-run]`, 6 new tests
+  (including a real I/O test that builds an on-disk SQLite + Engagement).
+- README: new "Team Edition Quickstart" section.
+- Manual smoke test succeeded: dry-run produces a formatted report with
+  banner, engagement details, doctor warnings (nuclei/sliver/caido/SHODAN
+  missing), and next-steps.
+- **Team MVP three-piece set (A04 + T00 + T08) now all `done`.**
+- `full_verify.py` 8/8 (119 tests now, was 113).
+
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
 - `AGENT_EXECUTION_PROTOCOL.md` §6 whitelisted git commands are now functional.

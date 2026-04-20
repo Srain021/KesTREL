@@ -112,6 +112,34 @@ Cursor will auto-invoke `shodan_search`.
 
 ---
 
+## 🧑‍🤝‍🧑 Team Edition Quickstart
+
+Team Edition is the unleashed mode for internal crews (see
+[PRODUCT_LINES.md](./PRODUCT_LINES.md) Part 9). Get operational in one
+command:
+
+```powershell
+# One-liner bootstrap
+kestrel --edition team team bootstrap --name op-winter-2026 --scope "target.lab,*.internal"
+
+# Then start the server, pointing your LLM client at stdio
+kestrel --edition team serve
+$env:KESTREL_ENGAGEMENT = "op-winter-2026"
+```
+
+What "unleashed" means in this edition:
+
+- `scope_enforcement = warn_only` — out-of-scope targets are logged, not
+  blocked (see RFC-T00).
+- `rate_limit_enabled = false` — no throttling of tool calls.
+- `credential_encryption_required = false` — plaintext creds OK inside the
+  vault.
+
+Switch back to Pro strict defaults by dropping `--edition team` or setting
+`KESTREL_EDITION=pro`.
+
+---
+
 ## 🏗️ Architecture
 
 ```
