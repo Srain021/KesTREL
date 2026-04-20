@@ -57,6 +57,19 @@ Or manually with any Python 3.10+:
 pip install -e ".[dev]"
 ```
 
+### Reproducible installs (recommended)
+
+We use [uv](https://github.com/astral-sh/uv) to pin every transitive dependency.
+The committed `uv.lock` file guarantees byte-identical installs across
+developers, CI, and production.
+
+```bash
+pip install uv
+uv sync --frozen --all-extras
+```
+
+See [RFC-001](./rfcs/RFC-001-uv-lock-dependencies.md) for the rationale.
+
 ### 2. Configure
 
 Copy and edit the environment template:

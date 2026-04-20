@@ -12,6 +12,7 @@ dist/
 .env
 .env.local
 .env.*.local
+# NOTE: uv.lock is DELIBERATELY tracked — see RFC-001
 audit.log
 *.log
 

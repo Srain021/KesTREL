@@ -2,7 +2,7 @@
 id: RFC-001
 title: Lock dependencies with uv
 epic: A-Foundations
-status: open
+status: done
 owner: unassigned
 role: backend-engineer
 blocking_on: []

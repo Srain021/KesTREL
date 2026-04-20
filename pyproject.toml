@@ -75,6 +75,15 @@ Homepage = "https://github.com/your-org/redteam-mcp"
 Documentation = "https://github.com/your-org/redteam-mcp#readme"
 Issues = "https://github.com/your-org/redteam-mcp/issues"
 
+[[tool.uv.index]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/redteam_mcp"]
 

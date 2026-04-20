@@ -357,6 +357,8 @@ class InternalError(KestrelError): ...
 
 ## G-E3 | 缺少依赖锁定
 
+**状态**: DONE (RFC-001)
+
 **是什么**
 `pyproject.toml` 用 `>=` 范围。两个人装同一 commit 可能得不同依赖版本。
 

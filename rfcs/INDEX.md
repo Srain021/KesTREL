@@ -49,7 +49,7 @@
 
 | id      | title                             | status | blocking_on | owner |
 |---------|-----------------------------------|--------|-------------|-------|
-| RFC-001 | lock dependencies with uv         | open   |             |       |
+| RFC-001 | lock dependencies with uv         | done   |             |       |
 | RFC-002 | GitHub Actions CI matrix          | open   | RFC-001     |       |
 | RFC-003 | Credential Store (domain + API)   | blocked ⚠ | RFC-002  |       |
 | RFC-004 | Rate limiting decorator           | open   | RFC-002     |       |
@@ -178,7 +178,7 @@
 
 ## 🔓 当前可并行执行的 RFC（最上游，无前置依赖）
 
-- **RFC-001** — lock dependencies with uv
+- **RFC-002** — GitHub Actions CI matrix（RFC-001 已完成，现已解锁）
 - **RFC-G01** — subfinder tool（独立，可平行）
 - **RFC-G03** — nmap wrapper（独立）
 - **RFC-G04** — ffuf wrapper（独立）
