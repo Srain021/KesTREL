@@ -16,13 +16,15 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import yaml
 from typing import Union
 
 from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
+
+from .features import FeatureFlags
 
 
 DEFAULT_CONFIG_FILENAME = "default.yaml"
@@ -147,6 +149,26 @@ class Settings(BaseSettings):
     execution: ExecutionSettings = Field(default_factory=ExecutionSettings)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
     tools: ToolsSettings = Field(default_factory=ToolsSettings)
+    edition: Literal["pro", "team"] = Field(default="pro")
+    features: FeatureFlags = Field(default_factory=FeatureFlags)
+
+    @classmethod
+    def build(cls, edition: str | None = None, **overrides: Any) -> "Settings":
+        """Build Settings with edition defaults applied before overrides.
+
+        Order of precedence: Pro defaults -> edition defaults -> explicit
+        overrides -> env vars (handled by settings_customise_sources).
+        """
+
+        from .editions import get_defaults
+
+        ed = edition or os.getenv("KESTREL_EDITION") or overrides.pop("edition", None) or "pro"
+        base_features = get_defaults(ed).model_dump()
+        user_features = overrides.pop("features", {})
+        if isinstance(user_features, FeatureFlags):
+            user_features = user_features.model_dump(exclude_unset=True)
+        merged = {**base_features, **user_features}
+        return cls(edition=ed, features=FeatureFlags(**merged), **overrides)
 
     @classmethod
     def settings_customise_sources(

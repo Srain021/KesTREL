@@ -33,8 +33,22 @@ app = typer.Typer(
 console = Console(stderr=True)
 
 
+_edition_state: dict[str, str | None] = {"value": None}
+
+
 @app.callback(invoke_without_command=True)
-def _root(ctx: typer.Context) -> None:
+def _root(
+    ctx: typer.Context,
+    edition: Annotated[
+        str | None,
+        typer.Option(
+            "--edition",
+            help="Edition preset to load: 'pro' (default) or 'team'.",
+            envvar="KESTREL_EDITION",
+        ),
+    ] = None,
+) -> None:
+    _edition_state["value"] = edition
     if ctx.invoked_subcommand is None:
         ctx.invoke(serve)
 
@@ -158,6 +172,17 @@ def list_tools_cmd() -> None:
 
     json.dump(payload, sys.stdout, indent=2, ensure_ascii=False)
     sys.stdout.write("\n")
+
+
+@app.command("show-config")
+def show_config_cmd() -> None:
+    """Print resolved Settings (edition + features) as JSON."""
+
+    from .config import Settings
+
+    s = Settings.build(edition=_edition_state["value"])
+    payload = {"edition": s.edition, "features": s.features.model_dump()}
+    typer.echo(json.dumps(payload, indent=2))
 
 
 @app.command()

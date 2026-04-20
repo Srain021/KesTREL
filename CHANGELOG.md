@@ -49,9 +49,21 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 - Discovered when first real RFC execution attempt crashed on Step 4.
 
 ### Marked blocked (spec_failed_preflight)
-- RFC-003, RFC-A04, RFC-T00, RFC-T08, RFC-006, RFC-010 — per
-  RFC_AUDIT_PREFLIGHT.md. Require spec rewrite before they can execute.
+- RFC-003, RFC-T00, RFC-T08, RFC-006, RFC-010 — per RFC_AUDIT_PREFLIGHT.md.
+  Require spec rewrite before they can execute.
 - RFC-007, RFC-008, RFC-009 — blocked transitively on RFC-006 being fixed.
+
+### RFC-A04 completed
+- RFC-A04 v2.0 rewritten after v1 failed pre-flight (2 SEARCH hallucinations).
+  Every SEARCH block now copied from real `src/redteam_mcp/__main__.py` and
+  `config.py`. Passes `validate_rfc.py`.
+- Executed RFC-A04 v2.0: adds `src/redteam_mcp/features.py` (FeatureFlags
+  pydantic model, 6 flags), `src/redteam_mcp/editions/{__init__,pro,team}.py`
+  (preset dispatch), `Settings.edition` + `Settings.features` fields +
+  `Settings.build()` classmethod, CLI `--edition pro|team` global option,
+  `kestrel show-config` command. 10 new tests.
+- `full_verify.py` now 8/8 green (95 -> 105 tests passed). Smoke-tested
+  both editions' `show-config` output. Pro edition runtime behavior unchanged.
 
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
