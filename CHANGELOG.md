@@ -152,6 +152,15 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   `uv.lock`; 4 WebUI smoke tests cover health, docs, empty engagement lists,
   and persisted engagement listing.
 
+### RFC-007 completed
+- Executed RFC-007: `/` now renders a Jinja dashboard using the shared
+  FastAPI `ServiceContainer` context instead of returning JSON.
+- Added the base Web UI template set (`base`, nav partial, dashboard) with
+  htmx, Alpine, and Tailwind CDN hooks and a reusable `templating.py` helper.
+- Added `/__healthz` for the JSON health check and 3 HTML smoke tests; updated
+  the RFC-006 root smoke test for the new HTML behavior.
+- `full_verify.py` remains 8/8 green (154 tests now, was 151).
+
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
 - `AGENT_EXECUTION_PROTOCOL.md` §6 whitelisted git commands are now functional.

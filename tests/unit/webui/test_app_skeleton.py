@@ -33,7 +33,9 @@ async def client(container):
 async def test_root_ok(client):
     response = await client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"ok": True, "service": "kestrel-mcp web"}
+    assert "text/html" in response.headers["content-type"]
+    assert "Dashboard" in response.text
+    assert "kestrel-mcp" in response.text
 
 
 async def test_engagements_empty(client):

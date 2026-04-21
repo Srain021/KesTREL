@@ -2,8 +2,8 @@
 id: RFC-007
 title: htmx + Tailwind base layout + nav
 epic: C-WebUI-Tier1
-status: open
-owner: unassigned
+status: done
+owner: agent
 role: frontend-engineer
 blocking_on: [RFC-006]
 budget:
@@ -14,14 +14,15 @@ budget:
   max_tokens_model: 12000
 files_to_read:
   - src/redteam_mcp/webui/app.py
+  - tests/unit/webui/test_app_skeleton.py
 files_will_touch:
   - src/redteam_mcp/webui/templates/base.html.j2      # new
   - src/redteam_mcp/webui/templates/_nav.html.j2      # new
   - src/redteam_mcp/webui/templates/dashboard.html.j2 # new
   - src/redteam_mcp/webui/templating.py               # new
   - src/redteam_mcp/webui/app.py                      # modified (mount templates + "/" serves HTML)
+  - tests/unit/webui/test_app_skeleton.py             # modified (root now serves HTML)
   - tests/unit/webui/test_html_smoke.py               # new
-  - pyproject.toml                                    # modified (+jinja2 if missing)
 verify_cmd: |
   .venv\Scripts\python.exe -m pytest tests/unit/webui/test_html_smoke.py -v
 rollback_cmd: git checkout -- . && rmdir /S /Q src\redteam_mcp\webui\templates 2>nul
@@ -61,26 +62,7 @@ skill_id: rfc-007-htmx-base
 ### Step 1 — 补依赖
 
 ```
-RUN .venv\Scripts\python.exe -c "import jinja2" 2>nul || echo NEED_JINJA
-```
-
-如果缺失：
-
-```
-REPLACE pyproject.toml
-<<<<<<< SEARCH
-    "uvicorn[standard]>=0.32",
-]
-=======
-    "uvicorn[standard]>=0.32",
-    "jinja2>=3.1",
-]
->>>>>>> REPLACE
-```
-
-```
-RUN .venv\Scripts\python.exe -m uv lock
-RUN .venv\Scripts\python.exe -m uv sync --frozen
+RUN .venv\Scripts\python.exe -c "import jinja2"
 ```
 
 ### Step 2 — templating.py
@@ -195,6 +177,7 @@ from .deps import get_ctx
 from .middleware import RequestContextMiddleware
 =======
 from datetime import datetime, timezone
+from typing import Annotated
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -214,12 +197,15 @@ REPLACE src/redteam_mcp/webui/app.py
         return {"ok": True, "service": "kestrel-mcp web"}
 =======
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
-    async def root(request: Request, ctx: RequestContext = Depends(get_ctx)):
+    async def root(
+        request: Request,
+        ctx: Annotated[RequestContext, Depends(get_ctx)],
+    ):
         engagements = await ctx.engagement.list()
         return templates.TemplateResponse(
+            request,
             "dashboard.html.j2",
             {
-                "request": request,
                 "engagement_count": len(engagements),
                 "active_engagement": None,
                 "now": datetime.now(timezone.utc).strftime("%Y-%m-%d"),

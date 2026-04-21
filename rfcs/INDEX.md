@@ -76,7 +76,7 @@
 | id      | title                             | status | blocking_on | owner |
 |---------|-----------------------------------|--------|-------------|-------|
 | RFC-006 | FastAPI app skeleton              | done   | RFC-002     | agent |
-| RFC-007 | htmx + Tailwind base layout       | open   | RFC-006     |       |
+| RFC-007 | htmx + Tailwind base layout       | done   | RFC-006     | agent |
 | RFC-008 | engagement routes + templates     | blocked-dep | RFC-007 |     |
 | RFC-009 | findings table + transitions      | blocked-dep | RFC-008 |     |
 | RFC-010 | tool launcher + SSE stdout stream | blocked ⚠ | RFC-008  |       |

@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Annotated
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
+from fastapi.responses import HTMLResponse
 
 from ..core import RequestContext, ServiceContainer
 from .deps import get_ctx
 from .middleware import RequestContextMiddleware
+from .templating import templates
 
 
 def create_app(container: ServiceContainer) -> FastAPI:
@@ -22,9 +25,25 @@ def create_app(container: ServiceContainer) -> FastAPI:
     )
     app.add_middleware(RequestContextMiddleware, container=container)
 
-    @app.get("/", include_in_schema=False)
-    async def root() -> dict[str, object]:
-        return {"ok": True, "service": "kestrel-mcp web"}
+    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+    async def root(
+        request: Request,
+        ctx: Annotated[RequestContext, Depends(get_ctx)],
+    ) -> HTMLResponse:
+        engagements = await ctx.engagement.list()
+        return templates.TemplateResponse(
+            request,
+            "dashboard.html.j2",
+            {
+                "engagement_count": len(engagements),
+                "active_engagement": None,
+                "now": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            },
+        )
+
+    @app.get("/__healthz", include_in_schema=False)
+    async def healthz() -> dict[str, bool]:
+        return {"ok": True}
 
     @app.get("/api/v1/engagements")
     async def list_engagements(
