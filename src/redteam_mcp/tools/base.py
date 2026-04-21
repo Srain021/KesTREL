@@ -17,11 +17,14 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ..config import Settings
 from ..logging import get_logger
 from ..security import ScopeGuard
+
+if TYPE_CHECKING:
+    from ..core.rate_limit import RateLimitSpec
 
 ToolHandler = Callable[[dict[str, Any]], Awaitable["ToolResult"]]
 
@@ -97,6 +100,7 @@ class ToolSpec:
     dangerous: bool = False
     requires_scope_field: str | None = None
     tags: list[str] = field(default_factory=list)
+    rate_limit: RateLimitSpec | None = None
 
     # ---- Extended guidance (optional but STRONGLY recommended) ----
     when_to_use: list[str] = field(default_factory=list)

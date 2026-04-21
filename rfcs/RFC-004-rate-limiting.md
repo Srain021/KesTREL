@@ -2,8 +2,8 @@
 id: RFC-004
 title: Per-tool rate limiting
 epic: A-Foundations
-status: open
-owner: unassigned
+status: done
+owner: agent
 role: backend-engineer
 blocking_on:
   - RFC-002

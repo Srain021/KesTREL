@@ -103,6 +103,20 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 - **Team MVP three-piece set (A04 + T00 + T08) now all `done`.**
 - `full_verify.py` 8/8 (119 tests now, was 113).
 
+### RFC-004 completed
+- Executed RFC-004: added `src/redteam_mcp/core/rate_limit.py` with an
+  in-process token-bucket `RateLimiter`, `RateLimitSpec`, and
+  `RateLimitedError` for 429-style refusal handling.
+- `ToolSpec` now supports optional `rate_limit`, and
+  `server.RedTeamMCPServer` consults the limiter before dispatch when
+  `features.rate_limit_enabled` is on. Team edition continues to bypass this
+  path by default (`rate_limit_enabled=false`); Pro keeps it enabled.
+- Added 8 unit tests covering burst behavior, refill, per-key isolation, GC,
+  concurrency, and the Team-vs-Pro feature-flag behavior.
+- This lays the groundwork for concrete per-tool `rate_limit=` policies on
+  high-cost tools; cross-process enforcement remains future work.
+- `full_verify.py` remains 8/8 green (127 tests now, was 119).
+
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
 - `AGENT_EXECUTION_PROTOCOL.md` §6 whitelisted git commands are now functional.

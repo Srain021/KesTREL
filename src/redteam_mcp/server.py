@@ -46,6 +46,7 @@ except ImportError:  # pragma: no cover
 
 from .config import Settings, load_settings
 from .core import RequestContext, ServiceContainer
+from .core.rate_limit import RateLimitedError, RateLimiter
 from .domain.errors import ScopeViolationError
 from .logging import audit_event, configure_logging, get_logger
 from .security import AuthorizationError, ScopeGuard
@@ -76,6 +77,7 @@ class RedTeamMCPServer:
         )
         self.settings = settings
         self.log = get_logger("server")
+        self.limiter = RateLimiter()
 
         # Legacy global scope guard (still consulted for tools that don't yet
         # integrate with RequestContext-driven scope).
@@ -139,6 +141,7 @@ class RedTeamMCPServer:
             call_engagement = args.pop("_engagement", None)
 
             async def _dispatch(ctx: RequestContext) -> ToolResult:
+                await self._apply_rate_limit(ctx, name, spec)
                 if spec.requires_scope_field:
                     target = args.get(spec.requires_scope_field)
                     if isinstance(target, list):
@@ -172,6 +175,21 @@ class RedTeamMCPServer:
             except (AuthorizationError, ScopeViolationError) as exc:
                 self.log.warning("tool.auth_denied", tool=name, reason=str(exc))
                 return [TextContent(type="text", text=f"AUTHORIZATION DENIED: {exc}")]
+            except RateLimitedError as exc:
+                self.log.warning(
+                    "tool.rate_limited",
+                    tool=name,
+                    retry_after_sec=exc.retry_after_sec,
+                )
+                return [
+                    TextContent(
+                        type="text",
+                        text=(
+                            f"RATE LIMITED: Retry after {exc.retry_after_sec:.1f}s "
+                            f"before calling {name!r} again."
+                        ),
+                    )
+                ]
             except Exception as exc:  # noqa: BLE001
                 self.log.exception("tool.unhandled_error", tool=name)
                 return [TextContent(type="text", text=f"ERROR: {exc}")]
@@ -237,6 +255,24 @@ class RedTeamMCPServer:
                 hint="Defaulting to no active engagement.",
             )
             return None
+
+    # ------------------------------------------------------------------
+
+    async def _apply_rate_limit(
+        self,
+        ctx: RequestContext,
+        tool_name: str,
+        spec: ToolSpec,
+    ) -> None:
+        """Apply per-tool rate limiting when the feature flag is enabled."""
+
+        if not self.settings.features.rate_limit_enabled:
+            return
+        if spec.rate_limit is None:
+            return
+
+        engagement_key = str(ctx.engagement_id) if ctx.engagement_id is not None else "<none>"
+        await self.limiter.acquire((tool_name, engagement_key), spec.rate_limit)
 
     # ------------------------------------------------------------------
 
