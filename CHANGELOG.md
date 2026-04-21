@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-T00b` - Consumed Team runtime feature gates: documented existing
+  rate-limit bypass coverage and wired `credential_encryption_required` into
+  `CredentialService`, `ServiceContainer`, and server startup.
 - `RFC-003b` - Wired `CredentialService` into `ServiceContainer` and
   `RequestContext`, closed the split RFC-003 umbrella, and updated release
   security docs for encrypted-at-rest credentials.

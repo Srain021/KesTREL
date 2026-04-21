@@ -145,6 +145,7 @@
 | id      | title                              | status | blocking_on         | owner |
 |---------|------------------------------------|--------|---------------------|-------|
 | RFC-T00 | Team unleashed mode                | done   |             | agent |
+| RFC-T00b | Team runtime feature gates        | done   | RFC-T00,RFC-003b,RFC-004 | agent |
 | RFC-T08 | Team bootstrap command             | done   |             | agent |
 | RFC-T01 | Obsidian Team Vault template       | open   | RFC-T08             | later |
 | RFC-T02 | Vaultwarden integration            | open   | RFC-003, RFC-T08    | later |

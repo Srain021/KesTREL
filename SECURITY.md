@@ -79,9 +79,11 @@ list of known weaknesses. Each has an assigned RFC or is queued for one.
 
 Highest-impact open items:
 
-- **D-9 follow-up** (AUDIT.md): Credentials are encrypted at rest by
-  `CredentialService`; some tool wrappers still accept plaintext input args
-  until follow-up RFCs switch them to `cred://` references.
+- **D-9 follow-up** (AUDIT.md): Pro credentials are encrypted at rest by
+  `CredentialService`. Team edition may intentionally store plaintext-at-rest
+  credentials when `credential_encryption_required=false`; some tool wrappers
+  still accept plaintext input args until follow-up RFCs switch them to
+  `cred://` references.
 - **V-C4** (AUDIT_V2.md): MCP tool shadowing prevention — awaits RFC-V03
 - **V-A4** (AUDIT_V2.md): Tool output untrust wrapping — awaits RFC-V08
 - **D-6/D-7** (AUDIT.md): Brittle parsing of nuclei/sliver stdout — awaits

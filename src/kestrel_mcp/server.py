@@ -357,7 +357,9 @@ async def serve(settings: Settings | None = None) -> None:
     # legacy deployments still work.
     container: ServiceContainer | None = None
     try:
-        container = ServiceContainer.default_on_disk()
+        container = ServiceContainer.default_on_disk(
+            credential_encryption_required=settings.features.credential_encryption_required,
+        )
         await container.initialise()
     except Exception as exc:  # noqa: BLE001
         get_logger("server").warning(

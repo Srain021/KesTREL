@@ -117,6 +117,66 @@ async def test_default_key_file_created(sm, tmp_path: Path) -> None:
     key_path = tmp_path / "credential-master.key"
     svc = CredentialService(sm, key_path=key_path)
 
+    await svc.seal(
+        engagement_id=await _engagement_id(sm),
+        kind=ent.CredentialKind.PASSWORD_PLAINTEXT,
+        identity="alice",
+        plaintext="secret",
+        obtained_from_tool="manual",
+    )
+
     assert key_path.exists()
     assert key_path.read_bytes().strip()
     assert isinstance(svc, CredentialService)
+
+
+async def test_plaintext_mode_stores_plaintext_without_key_file(sm, tmp_path: Path) -> None:
+    key_path = tmp_path / "credential-master.key"
+    svc = CredentialService(sm, key_path=key_path, encryption_required=False)
+    credential = await svc.seal(
+        engagement_id=await _engagement_id(sm),
+        kind=ent.CredentialKind.PASSWORD_PLAINTEXT,
+        identity="team",
+        plaintext="shared-secret",
+        obtained_from_tool="manual",
+    )
+
+    assert credential.secret_kdf == "plaintext-v1"
+    assert credential.secret_ciphertext == b"shared-secret"
+    assert await svc.unseal(credential.reference()) == "shared-secret"
+    assert not key_path.exists()
+
+
+async def test_encrypted_mode_rejects_plaintext_rows(sm) -> None:
+    engagement_id = await _engagement_id(sm)
+    team_svc = CredentialService(sm, encryption_required=False)
+    credential = await team_svc.seal(
+        engagement_id=engagement_id,
+        kind=ent.CredentialKind.PASSWORD_PLAINTEXT,
+        identity="team",
+        plaintext="shared-secret",
+        obtained_from_tool="manual",
+    )
+    pro_svc = CredentialService(sm, key=Fernet.generate_key())
+
+    with pytest.raises(CredentialSealError):
+        await pro_svc.unseal(credential.reference())
+
+
+async def test_container_threads_credential_encryption_gate(tmp_path: Path, monkeypatch) -> None:
+    from kestrel_mcp.core import ServiceContainer
+
+    monkeypatch.setenv("KESTREL_DATA_DIR", str(tmp_path))
+    container = ServiceContainer.in_memory(credential_encryption_required=False)
+    await container.initialise()
+    try:
+        credential = await container.credential.seal(
+            engagement_id=await _engagement_id(container.sessionmaker),
+            kind=ent.CredentialKind.PASSWORD_PLAINTEXT,
+            identity="team",
+            plaintext="shared-secret",
+            obtained_from_tool="manual",
+        )
+        assert credential.secret_kdf == "plaintext-v1"
+    finally:
+        await container.dispose()

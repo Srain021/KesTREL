@@ -9,6 +9,7 @@ from uuid import UUID
 
 from cryptography.fernet import Fernet, InvalidToken
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from ...logging import audit_event
 from .. import entities as ent
@@ -18,6 +19,7 @@ from ._base import _ServiceBase
 
 _KEY_ENV = "KESTREL_MCP_CREDENTIAL_KEY"
 _KDF = "fernet-v1"
+_PLAINTEXT_KDF = "plaintext-v1"
 
 
 class CredentialService(_ServiceBase):
@@ -25,13 +27,17 @@ class CredentialService(_ServiceBase):
 
     def __init__(
         self,
-        *args: object,
+        sessionmaker: async_sessionmaker[AsyncSession],
+        *,
         key: str | bytes | None = None,
         key_path: Path | None = None,
-        **kwargs: object,
+        encryption_required: bool = True,
     ) -> None:
-        super().__init__(*args, **kwargs)  # type: ignore[arg-type]
-        self._fernet = Fernet(_resolve_key(key=key, key_path=key_path))
+        super().__init__(sessionmaker)
+        self.encryption_required = encryption_required
+        self._key = key
+        self._key_path = key_path
+        self._fernet: Fernet | None = None
 
     async def seal(
         self,
@@ -50,10 +56,15 @@ class CredentialService(_ServiceBase):
 
         if not plaintext:
             raise CredentialSealError("Refusing to seal empty plaintext.")
-        try:
-            ciphertext = self._fernet.encrypt(plaintext.encode("utf-8"))
-        except Exception as exc:  # pragma: no cover - Fernet errors are defensive
-            raise CredentialSealError("Credential encryption failed.") from exc
+        if self.encryption_required:
+            try:
+                ciphertext = self._get_fernet().encrypt(plaintext.encode("utf-8"))
+            except Exception as exc:  # pragma: no cover - Fernet errors are defensive
+                raise CredentialSealError("Credential encryption failed.") from exc
+            secret_kdf = _KDF
+        else:
+            ciphertext = plaintext.encode("utf-8")
+            secret_kdf = _PLAINTEXT_KDF
 
         credential = ent.Credential(
             engagement_id=engagement_id,
@@ -62,7 +73,7 @@ class CredentialService(_ServiceBase):
             identity=identity,
             obtained_from_tool=obtained_from_tool,
             secret_ciphertext=ciphertext,
-            secret_kdf=_KDF,
+            secret_kdf=secret_kdf,
             secret_metadata=dict(secret_metadata or {}),
             tags=list(tags or []),
             notes=notes,
@@ -90,10 +101,7 @@ class CredentialService(_ServiceBase):
             raise DomainError(f"Credential not found: {reference!r}")
         if row.revoked:
             raise DomainError(f"Credential revoked: {reference!r}")
-        try:
-            plaintext = self._fernet.decrypt(row.secret_ciphertext).decode("utf-8")
-        except InvalidToken as exc:
-            raise CredentialSealError("Credential decryption failed.") from exc
+        plaintext = self._unseal_row(row)
         audit_event(
             self.log,
             "credential.unseal",
@@ -141,6 +149,28 @@ class CredentialService(_ServiceBase):
         if credential is None:  # pragma: no cover - row existed above
             raise DomainError(f"Credential {credential_id} not found.")
         return credential
+
+    def _get_fernet(self) -> Fernet:
+        if self._fernet is None:
+            self._fernet = Fernet(_resolve_key(key=self._key, key_path=self._key_path))
+        return self._fernet
+
+    def _unseal_row(self, row: CredentialRow) -> str:
+        if row.secret_kdf == _KDF:
+            try:
+                return self._get_fernet().decrypt(row.secret_ciphertext).decode("utf-8")
+            except InvalidToken as exc:
+                raise CredentialSealError("Credential decryption failed.") from exc
+        if row.secret_kdf == _PLAINTEXT_KDF:
+            if self.encryption_required:
+                raise CredentialSealError(
+                    "Plaintext credential storage is disabled by feature gate."
+                )
+            try:
+                return row.secret_ciphertext.decode("utf-8")
+            except UnicodeDecodeError as exc:
+                raise CredentialSealError("Plaintext credential decode failed.") from exc
+        raise CredentialSealError(f"Unsupported credential secret_kdf: {row.secret_kdf!r}")
 
 
 def _resolve_key(*, key: str | bytes | None, key_path: Path | None) -> bytes:

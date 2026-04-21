@@ -145,8 +145,9 @@ What "unleashed" means in this edition:
 - `scope_enforcement = warn_only` — out-of-scope targets are logged, not
   blocked (see RFC-T00).
 - `rate_limit_enabled = false` — no throttling of tool calls.
-- `credential_encryption_required = false` — Team may accept plaintext input
-  into the credential vault, while stored credentials are still sealed at rest.
+- `credential_encryption_required = false` — Team may store plaintext-at-rest
+  credentials in the vault for crew sharing; Pro keeps encrypted-at-rest
+  storage by default.
 
 Switch back to Pro strict defaults by dropping `--edition team` or setting
 `KESTREL_EDITION=pro`.

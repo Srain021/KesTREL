@@ -62,6 +62,8 @@ class ServiceContainer:
         engine: AsyncEngine,
         sessionmaker: async_sessionmaker[AsyncSession],
         database_url: str,
+        *,
+        credential_encryption_required: bool = True,
     ) -> None:
         self.engine = engine
         self.sessionmaker = sessionmaker
@@ -73,24 +75,46 @@ class ServiceContainer:
         self.scope = ScopeService(sessionmaker)
         self.target = TargetService(sessionmaker)
         self.finding = FindingService(sessionmaker)
-        self.credential = CredentialService(sessionmaker)
+        self.credential = CredentialService(
+            sessionmaker,
+            encryption_required=credential_encryption_required,
+        )
 
     # ----- lifecycle -----
 
     @classmethod
-    def from_url(cls, database_url: str, *, echo: bool = False) -> ServiceContainer:
+    def from_url(
+        cls,
+        database_url: str,
+        *,
+        echo: bool = False,
+        credential_encryption_required: bool = True,
+    ) -> ServiceContainer:
         engine = make_engine(database_url, echo=echo)
         sm = make_sessionmaker(engine)
-        return cls(engine=engine, sessionmaker=sm, database_url=database_url)
+        return cls(
+            engine=engine,
+            sessionmaker=sm,
+            database_url=database_url,
+            credential_encryption_required=credential_encryption_required,
+        )
 
     @classmethod
-    def in_memory(cls) -> ServiceContainer:
+    def in_memory(cls, *, credential_encryption_required: bool = True) -> ServiceContainer:
         """Shortcut for tests — single in-memory SQLite, tables created."""
 
-        return cls.from_url("sqlite+aiosqlite:///:memory:")
+        return cls.from_url(
+            "sqlite+aiosqlite:///:memory:",
+            credential_encryption_required=credential_encryption_required,
+        )
 
     @classmethod
-    def default_on_disk(cls, *, data_dir: Path | None = None) -> ServiceContainer:
+    def default_on_disk(
+        cls,
+        *,
+        data_dir: Path | None = None,
+        credential_encryption_required: bool = True,
+    ) -> ServiceContainer:
         """Default production container — single shared SQLite on disk.
 
         Path resolution follows :data:`KESTREL_DATA_DIR` env or XDG style:
@@ -104,7 +128,10 @@ class ServiceContainer:
         root.mkdir(parents=True, exist_ok=True)
         db_file = root / "data.db"
         url = f"sqlite+aiosqlite:///{db_file.as_posix()}"
-        return cls.from_url(url)
+        return cls.from_url(
+            url,
+            credential_encryption_required=credential_encryption_required,
+        )
 
     async def initialise(self) -> None:
         """Create all tables that don't yet exist. Idempotent."""
