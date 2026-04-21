@@ -200,6 +200,15 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   RFC-010b (HTML launcher + SSE endpoint) so each executable RFC stays under
   the hard 400-line budget.
 
+### RFC-010a completed
+- Executed RFC-010a: added an in-memory `JobRunner`, JSON `/tools` listing,
+  `/tools/run`, and `/tools/jobs/{id}` backend routes.
+- Tool execution uses injected `ToolSpec` handlers and a captured
+  `RequestContext`, avoiding dependency on `RedTeamMCPServer`.
+- Added 4 backend tests covering tool listing, job completion, bad JSON, and
+  missing job 404.
+- `full_verify.py` remains 8/8 green (177 tests now, was 173).
+
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
 - `AGENT_EXECUTION_PROTOCOL.md` §6 whitelisted git commands are now functional.

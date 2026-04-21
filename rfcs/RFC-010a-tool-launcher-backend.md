@@ -2,8 +2,8 @@
 id: RFC-010a
 title: Tool launcher backend jobs
 epic: C-WebUI-Tier1
-status: open
-owner: unassigned
+status: done
+owner: agent
 role: backend-engineer
 blocking_on: [RFC-008]
 budget:
