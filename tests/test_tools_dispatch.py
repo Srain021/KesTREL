@@ -25,6 +25,7 @@ class TestToolRegistry:
         assert ids == sorted(
             [
                 "engagement",  # Sprint 3: domain management module
+                "readiness",
                 "shodan",
                 "nuclei",
                 "subfinder",

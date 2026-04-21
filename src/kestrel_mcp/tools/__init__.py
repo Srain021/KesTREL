@@ -32,6 +32,7 @@ def load_modules(settings: Settings, scope_guard: ScopeGuard) -> list[ToolModule
     from .ligolo_tool import LigoloModule
     from .nmap_tool import NmapModule
     from .nuclei_tool import NucleiModule
+    from .readiness_tool import ReadinessModule
     from .shodan_tool import ShodanModule
     from .sliver_tool import SliverModule
     from .subfinder_tool import SubfinderModule
@@ -40,6 +41,7 @@ def load_modules(settings: Settings, scope_guard: ScopeGuard) -> list[ToolModule
         # Management / admin first — these don't depend on external binaries
         # and should always appear in the schema.
         EngagementModule(settings, scope_guard),
+        ReadinessModule(settings, scope_guard),
         # External-tool-backed modules follow.
         ShodanModule(settings, scope_guard),
         NucleiModule(settings, scope_guard),

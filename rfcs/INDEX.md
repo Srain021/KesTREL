@@ -77,6 +77,7 @@
 | RFC-B06 | Tool degradation on missing binary| open   |             |       |
 | RFC-B07a | Offensive readiness scoring      | done   | RFC-003b    | agent |
 | RFC-B07b | CVE enrichment client            | done   | RFC-B07a    | agent |
+| RFC-B07c | Offensive readiness MCP tools    | done   | RFC-B07b    | agent |
 
 ### Epic C — Web UI Tier 1
 

@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-B07c` - Exposed the offensive-readiness brain as advisory MCP tools:
+  exploitability triage, attack-path planning, operator fire-control packets,
+  zero-day hypothesis packaging, and evidence packs without execution.
 - `RFC-B07b` - Added a read-only CVE enrichment client for FIRST EPSS and
   CISA KEV metadata, with mocked HTTP tests and readiness-compatible output.
 - `RFC-B07a` - Added a local offensive-readiness scoring engine that turns
