@@ -186,6 +186,15 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   masking.
 - `full_verify.py` remains 8/8 green (167 tests now, was 164).
 
+### RFC-012 completed
+- Executed RFC-012: added optional app-wide HTTP Basic auth for the FastAPI
+  Web UI, disabled by default and enabled via `Settings.webui.auth_required`.
+- Credentials are read lazily from `KESTREL_WEB_USER`, `KESTREL_WEB_PASS`, or
+  `KESTREL_WEB_TOKEN`; comparisons use `secrets.compare_digest`.
+- Added `WebUISettings` config and 6 auth tests covering protected routes,
+  valid/invalid credentials, and the default anonymous local mode.
+- `full_verify.py` remains 8/8 green (173 tests now, was 167).
+
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
 - `AGENT_EXECUTION_PROTOCOL.md` §6 whitelisted git commands are now functional.

@@ -101,6 +101,13 @@ class LoggingSettings(BaseModel):
         return v.upper()
 
 
+class WebUISettings(BaseModel):
+    auth_required: bool = False
+    username: str = Field(default_factory=lambda: os.getenv("KESTREL_WEB_USER", "kestrel"))
+    password_hash: str = ""
+    session_cookie_name: str = "kestrel_session"
+
+
 class ToolBlock(BaseModel):
     """Common shape for every per-tool config block."""
 
@@ -145,6 +152,7 @@ class Settings(BaseSettings):
     security: SecuritySettings = Field(default_factory=SecuritySettings)
     execution: ExecutionSettings = Field(default_factory=ExecutionSettings)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
+    webui: WebUISettings = Field(default_factory=WebUISettings)
     tools: ToolsSettings = Field(default_factory=ToolsSettings)
     edition: Literal["pro", "team"] = Field(default="pro")
     features: FeatureFlags = Field(default_factory=FeatureFlags)

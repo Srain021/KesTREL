@@ -2,8 +2,8 @@
 id: RFC-012
 title: HTTP Basic auth for shared deployment
 epic: C-WebUI-Tier1
-status: open
-owner: unassigned
+status: done
+owner: agent
 role: backend-engineer
 blocking_on: [RFC-006]
 budget:

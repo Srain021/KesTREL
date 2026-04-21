@@ -81,7 +81,7 @@
 | RFC-009 | findings table + transitions      | done   | RFC-008     | agent |
 | RFC-010 | tool launcher + SSE stdout stream | blocked ⚠ | RFC-008  |       |
 | RFC-011 | settings page (keys + paths)      | done   | RFC-007     | agent |
-| RFC-012 | HTTP Basic auth for shared deploy | open   | RFC-006     |       |
+| RFC-012 | HTTP Basic auth for shared deploy | done   | RFC-006     | agent |
 
 > ⚠ = direct spec defects (phantom paths / bad SEARCH / budget). Rewrite needed.
 > `blocked-dep` = RFC itself is OK but depends on a broken earlier RFC.

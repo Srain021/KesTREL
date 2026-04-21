@@ -8,20 +8,24 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse
 
+from ..config import Settings, load_settings
 from ..core import RequestContext, ServiceContainer
+from .auth import build_basic_auth_dependency
 from .deps import get_ctx
 from .middleware import RequestContextMiddleware
 from .templating import templates
 
 
-def create_app(container: ServiceContainer) -> FastAPI:
+def create_app(container: ServiceContainer, settings: Settings | None = None) -> FastAPI:
     """Build the Web UI app around a shared :class:`ServiceContainer`."""
 
+    settings = settings or load_settings()
     app = FastAPI(
         title="kestrel-mcp web",
         version="0.1.0",
         docs_url="/__docs",
         redoc_url=None,
+        dependencies=[Depends(build_basic_auth_dependency(settings.webui))],
     )
     app.add_middleware(RequestContextMiddleware, container=container)
 
