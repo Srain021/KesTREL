@@ -9,6 +9,7 @@ Subcommands:
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import shutil
@@ -75,6 +76,12 @@ def serve(
         settings.security.authorized_scope = [s.strip() for s in scope.split(",") if s.strip()]
     if dry_run:
         settings.security.dry_run = True
+
+    configure_logging(
+        level=settings.logging.level,
+        log_dir=settings.expanded_path(settings.logging.dir) if settings.logging.dir else None,
+        json_mode=settings.logging.format == "json",
+    )
 
     from .server import run_sync
 
@@ -241,6 +248,12 @@ def _status_for(name: str, block: dict, resolved: str | None) -> str:
             "[green]ready[/green]"
             if os.environ.get("SHODAN_API_KEY")
             else "[red]missing API key[/red]"
+        )
+    if name == "impacket":
+        return (
+            "[green]ready (python module)[/green]"
+            if importlib.util.find_spec("impacket")
+            else "[red]missing Python package[/red]"
         )
     if resolved:
         return "[green]ready[/green]"

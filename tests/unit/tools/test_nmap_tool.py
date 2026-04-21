@@ -41,6 +41,8 @@ def _spec(module: NmapModule, name: str):
 async def test_nmap_scan_parses_xml(monkeypatch: pytest.MonkeyPatch) -> None:
     async def fake_run_command(*args, **kwargs):  # noqa: ANN002, ANN003
         argv = list(args[0])
+        assert "-sT" in argv
+        assert "-Pn" in argv
         assert "-oX" in argv
         assert "10.0.0.5" in argv
         return ExecutionResult(argv=argv, exit_code=0, stdout=NMAP_XML, stderr="", duration_sec=0.1)

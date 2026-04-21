@@ -69,6 +69,7 @@ def configure_logging(
         processors.append(structlog.dev.ConsoleRenderer())
 
     structlog.configure(
+        logger_factory=structlog.stdlib.LoggerFactory(),
         wrapper_class=structlog.make_filtering_bound_logger(numeric),
         processors=processors,
         cache_logger_on_first_use=True,

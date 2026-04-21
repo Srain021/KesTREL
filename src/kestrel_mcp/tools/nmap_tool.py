@@ -105,7 +105,9 @@ class NmapModule(ToolModule):
         except ToolNotFoundError as exc:
             return ToolResult.error(str(exc))
 
-        argv = [binary, "-oX", "-", "-p", str(arguments.get("ports") or "1-1024")]
+        # Use TCP connect scan and skip host discovery by default so Windows
+        # and non-root smoke scans do not require raw packet capture privileges.
+        argv = [binary, "-sT", "-Pn", "-oX", "-", "-p", str(arguments.get("ports") or "1-1024")]
         argv.append(f"-T{int(arguments.get('timing') or 3)}")
         if scripts := arguments.get("scripts"):
             argv += ["--script", ",".join(str(s) for s in scripts)]
