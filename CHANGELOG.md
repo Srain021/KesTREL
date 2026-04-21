@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-H03` - Added a lightweight MkDocs Material documentation site,
+  GitHub Pages workflow, docs landing pages, and dev dependencies for local
+  `mkdocs serve` preview.
 - `RFC-H02` - Added tag-driven release infrastructure: PyPI trusted
   publishing, GHCR Docker image publishing, GitHub Release creation, a
   production Dockerfile, `.dockerignore`, and `docs/releasing.md`.

@@ -1,0 +1,24 @@
+site_name: Kestrel MCP
+site_description: Scope-gated offensive-security MCP server for authorized teams.
+repo_url: https://github.com/your-org/kestrel-mcp
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+nav:
+  - Home: index.md
+  - Releasing: releasing.md
+  - RFCs: rfcs/index.md
+  - Reference:
+      - README: ../README.md
+      - Security: ../SECURITY.md
+      - Contributing: ../CONTRIBUTING.md
+      - Tools Matrix: ../TOOLS_MATRIX.md
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.highlight

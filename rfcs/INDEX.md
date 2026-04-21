@@ -132,7 +132,7 @@
 |---------|-----------------------------------|--------|-------------|-------|
 | RFC-H01 | Rename to kestrel-mcp             | done   | RFC-002     | agent |
 | RFC-H02 | PyPI + Docker release pipeline    | done   | RFC-H01,RFC-002 | agent |
-| RFC-H03 | MkDocs Material site              | open   | RFC-H01     |       |
+| RFC-H03 | MkDocs Material site              | done   | RFC-H01     | agent |
 | RFC-H04 | v1.0 release gate + announcement  | open   | all above   |       |
 
 ### Epic T — Team Edition (unleashed, crew-only)

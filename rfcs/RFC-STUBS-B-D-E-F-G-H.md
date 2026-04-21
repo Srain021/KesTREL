@@ -204,12 +204,6 @@
 - **Notes**: 必须一次 PR 完成，否则 import 断。
 - **Closes**: AUDIT D-1
 
-### RFC-H03 — MkDocs Material site
-
-- **Mission**: 搭 docs 站点；host 到 GitHub Pages。
-- **Blocking**: RFC-H01
-- **Budget**: 10 files, 大量 reorg
-
 ### RFC-H04 — v1.0 release gate + announcement
 
 - **Mission**: 发 v1.0。含 release checklist。
