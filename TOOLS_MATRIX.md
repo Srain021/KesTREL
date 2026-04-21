@@ -271,7 +271,7 @@ ProjectDiscovery binary only, not the Python `httpx` library.
 
 ## 端口与服务扫描 (6 工具)
 
-### 15. nmap ⬜ 待集成
+### 15. nmap ✅ 已集成
 
 | 字段 | 值 |
 |------|---|
@@ -295,6 +295,10 @@ ProjectDiscovery binary only, not the Python `httpx` library.
 - `nmap_scan(targets, ports, scripts, timing_template)`
 - `nmap_os_detect(targets)`
 - `nmap_script_scan(targets, script_category)`
+
+**Kestrel integration**: RFC-G03 done. Exposes `nmap_scan(targets, ports,
+scripts, timing)`, `nmap_os_detect(target)`, and `nmap_version`; Nmap remains
+user-installed and Windows operators need Npcap for common scan modes.
 
 ---
 

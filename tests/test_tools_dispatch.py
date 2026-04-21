@@ -29,6 +29,7 @@ class TestToolRegistry:
                 "nuclei",
                 "subfinder",
                 "httpx",
+                "nmap",
                 "caido",
                 "ligolo",
                 "sliver",

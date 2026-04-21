@@ -39,6 +39,10 @@ tools:
     enabled: false
     binary: null
 
+  nmap:
+    enabled: false
+    binary: null
+
   caido:
     enabled: false
     binary: null

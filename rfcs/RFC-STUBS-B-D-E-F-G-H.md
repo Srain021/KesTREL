@@ -174,12 +174,6 @@
 - 加到 `tools/__init__.py` 的 `load_modules`
 - 更新 TOOLS_MATRIX.md
 
-### RFC-G03 — nmap wrapper
-
-- **Mission**: `nmap_scan(targets, ports, scripts)` + `nmap_os_detect`
-- **Binary**: nmap
-- **Notes**: 输出解析用 `python-nmap>=0.7` 依赖。Windows 需 npcap。
-
 ### RFC-G04 — ffuf wrapper
 
 - **Mission**: `ffuf_dir_bruteforce(url, wordlist)`、`ffuf_param_fuzz`
