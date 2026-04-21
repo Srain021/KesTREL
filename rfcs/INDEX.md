@@ -53,7 +53,7 @@
 | RFC-002 | GitHub Actions CI matrix          | done   | RFC-001     | agent |
 | RFC-003 | Credential Store (domain + API)   | blocked ⚠ | RFC-002  |       |
 | RFC-004 | Rate limiting decorator           | done   | RFC-002     | agent |
-| RFC-005 | Safe path helper + audit          | open   | RFC-002     |       |
+| RFC-005 | Safe path helper + audit          | done   | RFC-002     | agent |
 | RFC-A04 | Edition + FeatureFlags infra      | done   |             | agent |
 
 > ⚠ = `reason: spec_failed_preflight` — see [RFC_AUDIT_PREFLIGHT.md](../RFC_AUDIT_PREFLIGHT.md).
@@ -178,8 +178,6 @@
 
 ## 🔓 当前可并行执行的 RFC（最上游，无前置依赖）
 
-- **RFC-004** — Rate limiting decorator（RFC-002 已完成，现已解锁）
-- **RFC-005** — Safe path helper + audit（RFC-002 已完成，现已解锁）
 - **RFC-G01** — subfinder tool（独立，可平行）
 - **RFC-G03** — nmap wrapper（独立）
 - **RFC-G04** — ffuf wrapper（独立）

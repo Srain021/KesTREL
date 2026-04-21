@@ -20,6 +20,7 @@ from pathlib import Path
 
 import anyio
 
+from .core.redact import redact
 from .logging import get_logger
 
 _log = get_logger(__name__)
@@ -101,6 +102,7 @@ async def run_command(
     cwd: str | os.PathLike[str] | None = None,
     env: Mapping[str, str] | None = None,
     stdin_data: bytes | None = None,
+    redact_stderr: bool = True,
 ) -> ExecutionResult:
     """Run ``argv`` as a subprocess with strict resource bounds.
 
@@ -164,12 +166,15 @@ async def run_command(
             await stdin_task
         out_bytes, out_truncated = await stdout_task
         err_bytes, err_truncated = await stderr_task
+        stderr = err_bytes.decode("utf-8", errors="replace")
+        if redact_stderr:
+            stderr = redact(stderr)
 
         return ExecutionResult(
             argv=list(argv),
             exit_code=exit_code,
             stdout=out_bytes.decode("utf-8", errors="replace"),
-            stderr=err_bytes.decode("utf-8", errors="replace"),
+            stderr=stderr,
             duration_sec=0.0,
             truncated=out_truncated or err_truncated,
         )

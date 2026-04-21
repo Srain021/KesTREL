@@ -2,8 +2,8 @@
 id: RFC-005
 title: Safe path helper + subprocess stderr redaction
 epic: A-Foundations
-status: open
-owner: unassigned
+status: done
+owner: agent
 role: backend-engineer
 blocking_on:
   - RFC-002

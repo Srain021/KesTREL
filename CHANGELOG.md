@@ -117,6 +117,16 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   high-cost tools; cross-process enforcement remains future work.
 - `full_verify.py` remains 8/8 green (127 tests now, was 119).
 
+### RFC-005 completed
+- Executed RFC-005: added `safe_path()` with `PathTraversalError` for
+  path traversal defence and a dependency-free `redact()` helper for common
+  subprocess stderr secrets.
+- `run_command()` now redacts stderr by default and exposes
+  `redact_stderr=False` for tests or narrowly-scoped raw diagnostics.
+- Added 20 tests covering path traversal rejection, safe normalization,
+  token/key/hash/private-key redaction, idempotency, and executor stderr
+  integration.
+
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
 - `AGENT_EXECUTION_PROTOCOL.md` §6 whitelisted git commands are now functional.
