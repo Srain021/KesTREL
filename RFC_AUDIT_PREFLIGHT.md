@@ -255,3 +255,25 @@ The validator catches 80% of defects. Remaining 20%:
 
 - **2026-04-21 v1.0** — Initial audit. 15 RFCs scanned. 10 fail. 24 real
   errors. Built validator tooling. Fixed RFC-001. Marked rest blocked.
+- **2026-04-21 v1.1** — Second sweep after RFC-002/004/005/006/A04/T00/T08
+  all landed on `main`. Also fixed two validator bugs:
+  1. `status=done` / `abandoned` RFCs are now skipped during preflight (they
+     are history — their SEARCH blocks naturally no longer match post-execution,
+     their `# new` files naturally now exist). Old behavior flooded reports
+     with false-positive C4 / C6 errors.
+  2. Forced UTF-8 stdout/stderr on Windows (`sys.stdout.reconfigure`) so
+     multi-RFC glob reports no longer crash on CJK near-miss hints under the
+     default cp936 console codepage.
+
+  Updated status: **10 pass / 5 fail** (was 5 pass / 10 fail).
+  PASS: RFC-001, 002, 004, 005, 006, 011, 012, A04, T00, T08.
+  FAIL: RFC-003 (needs split + SEARCH updates), RFC-007 (fixed in this
+  commit: 1-char SEARCH change), RFC-008 / RFC-009 (depend on webui files
+  RFC-007 will create — will clear once RFC-007 lands), RFC-010 (needs
+  split, budget 450 > 400).
+
+  Also noted agent executed RFC-006 correctly by **updating the spec
+  in-flight** (fixed phantom path `cli/__main__.py` → `__main__.py`, fixed
+  SEARCH from `cryptography>=43` to `jinja2>=3.1` to match the real
+  pyproject state). That's the exact workflow SPEC_AUTHORING_CHECKLIST
+  prescribes — good precedent.

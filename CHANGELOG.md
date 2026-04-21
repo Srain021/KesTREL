@@ -88,6 +88,20 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   RFC-T00b (needs `core/rate_limit.py`, not yet created).
 - `full_verify.py` still 8/8 (113 tests now, was 105).
 
+### Validator bug fixes + RFC-007 spec alignment (post-RFC-006 follow-up)
+- `scripts/validate_rfc.py`: status=done / abandoned RFCs are now skipped for
+  all content checks (C2-C10), receiving only front-matter sanity (C1, C9).
+  Historical RFCs no longer flood reports with false C4/C6 errors.
+- `scripts/validate_rfc.py`: force UTF-8 stdout/stderr on Windows so multi-RFC
+  glob reports don't crash on cp936 encoding errors when a near-miss hint
+  contains CJK.
+- `rfcs/RFC-007-htmx-base-layout.md` Step 6 SEARCH: `async def root():` →
+  `async def root() -> dict[str, object]:` to match real `webui/app.py` after
+  agent added the return annotation during RFC-006 execution (for mypy --strict).
+  RFC-007 now PASS preflight.
+- `RFC_AUDIT_PREFLIGHT.md` v1.1: re-swept all 15 full-fleshed RFCs. Now
+  **10 pass / 5 fail** (was 5 pass / 10 fail).
+
 ### RFC-T08 completed — Team MVP complete
 - RFC-T08 v2.0 rewritten after v1 failed pre-flight (3 SEARCH hallucinations,
   1 WRITE-not-in-fwt, wrong `EngagementService.create` signature, wrong

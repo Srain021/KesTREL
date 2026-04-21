@@ -467,6 +467,14 @@ def validate_rfc(path: Path) -> RFCReport:
         return rep
     assert fm is not None
 
+    # Historical RFCs (status=done / abandoned) get only front-matter sanity.
+    # Their SEARCH blocks naturally won't match anymore (the REPLACE already ran)
+    # and their `# new` files naturally exist — neither is a real problem.
+    status = fm.get("status", "open")
+    if status in ("done", "abandoned"):
+        check_blocking_on(fm, rep)
+        return rep
+
     # Recover the inline `# new` / `# modified` comments from the raw YAML text
     # — yaml.safe_load drops them.
     fm_match = FRONT_MATTER_RE.match(text)
@@ -536,6 +544,14 @@ def format_report_json(reports: list[RFCReport]) -> str:
 
 
 def main() -> None:
+    # Force UTF-8 on Windows consoles (cp936 chokes on near-miss hints that
+    # contain CJK or emoji in a matched line).
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("patterns", nargs="+", help="RFC file paths or globs")
     ap.add_argument("--json", action="store_true", help="machine-readable output")

@@ -210,7 +210,7 @@ from .templating import templates
 REPLACE src/redteam_mcp/webui/app.py
 <<<<<<< SEARCH
     @app.get("/", include_in_schema=False)
-    async def root():
+    async def root() -> dict[str, object]:
         return {"ok": True, "service": "kestrel-mcp web"}
 =======
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
