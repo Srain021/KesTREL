@@ -8,10 +8,11 @@ from __future__ import annotations
 
 from kestrel_mcp.config import Settings
 from kestrel_mcp.security import ScopeGuard
+from kestrel_mcp.tools.base import ToolSpec
 from kestrel_mcp.tools.sliver_tool import SliverModule
 
 
-def _specs_by_name() -> dict[str, object]:
+def _specs_by_name() -> dict[str, ToolSpec]:
     module = SliverModule(Settings(), ScopeGuard([]))
     return {spec.name: spec for spec in module.specs()}
 
@@ -95,3 +96,19 @@ async def test_sliver_all_schema_props_have_descriptions():
             assert "description" in prop_def and prop_def["description"].strip(), (
                 f"{name}.{prop_name}: missing input_schema description (RFC-B05b)."
             )
+
+
+async def test_sliver_ops_guidance_treats_errors_as_stop_signals():
+    specs = _specs_by_name()
+    expectations = {
+        "sliver_stop_server": ("error", "zero sessions"),
+        "sliver_list_sessions": ("errors", "STOP"),
+        "sliver_list_listeners": ("errors", "STOP"),
+        "sliver_generate_implant": ("error", "STOP"),
+        "sliver_execute_in_session": ("errors", "STOP"),
+    }
+
+    for name, required_terms in expectations.items():
+        text = specs[name].render_full_description()
+        for term in required_terms:
+            assert term in text, f"{name}: missing low-param stop guidance for {term!r}."

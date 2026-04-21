@@ -147,6 +147,8 @@ class SliverModule(ToolModule):
                 when_not_to_use=[
                     "Active implants/sessions exist — stopping kills them all with no grace "
                     "period. Run sliver_list_sessions first.",
+                    "sliver_list_sessions errored or could not confirm session state; "
+                    "do not treat an error as zero sessions.",
                     "Other operators are mid-engagement on this server.",
                     "Server was NOT started by this MCP — only the pid-file-tracked one stops.",
                 ],
@@ -168,7 +170,8 @@ class SliverModule(ToolModule):
                 ],
                 local_model_hints=(
                     "This stops ONLY the server YOU started via sliver_start_server. "
-                    "Won't kill an externally-launched sliver-server."
+                    "Won't kill an externally-launched sliver-server. If sliver_list_sessions "
+                    "errors, STOP and ask; an error is not proof there are no sessions."
                 ),
             ),
             ToolSpec(
@@ -320,8 +323,9 @@ class SliverModule(ToolModule):
                     "Do not infer authorization from session presence; scope and rules of engagement still apply.",
                 ],
                 local_model_hints=(
-                    "Call this before sliver_execute_in_session. Never guess a session_id from memory; "
-                    "use the freshest list and ask when more than one plausible session exists."
+                    "Call sliver_server_status first. If running=false or this tool errors, STOP. "
+                    "Never guess a session_id from memory; use the freshest list and ask when more "
+                    "than one plausible session exists."
                 ),
             ),
             ToolSpec(
@@ -354,7 +358,9 @@ class SliverModule(ToolModule):
                     "Parsed rows are best-effort across Sliver versions; inspect raw when output format changes.",
                 ],
                 local_model_hints=(
-                    "Use this as the gate before implant generation. No listener, no implant generation."
+                    "Call sliver_server_status first. Use this as the gate before implant generation. "
+                    "If this tool errors or returns no matching listener, STOP. No listener, no "
+                    "implant generation."
                 ),
             ),
             ToolSpec(
@@ -491,8 +497,9 @@ class SliverModule(ToolModule):
                 ],
                 local_model_hints=(
                     "Before calling this: sliver_server_status, then sliver_list_listeners, then confirm "
-                    "callback_addr is in scope. Prefer evasion=false. Do not generate implants for "
-                    "uncontrolled callback infrastructure."
+                    "callback_addr is in scope. If status/listener checks error or no matching listener "
+                    "exists, STOP. Prefer evasion=false. Do not generate implants for uncontrolled "
+                    "callback infrastructure."
                 ),
                 example_conversation=(
                     'User: "build a Windows lab implant for our mtls listener on c2.lab:443"\n'
@@ -574,10 +581,11 @@ class SliverModule(ToolModule):
                     "Do not assume command syntax is a local OS shell; it is parsed by sliver-client.",
                 ],
                 local_model_hints=(
-                    "Always call sliver_list_sessions first. If more than one session exists, ask for "
-                    "confirmation by host/user/OS/session_id. Start with benign inventory commands; do "
-                    "not run destructive, persistence, credential, or exfiltration actions unless the "
-                    "operator explicitly requested them within scope."
+                    "Always call sliver_server_status and sliver_list_sessions first. If status or "
+                    "session listing errors, STOP. If more than one session exists, ask for confirmation "
+                    "by host/user/OS/session_id. Start with benign inventory commands; do not run "
+                    "destructive, persistence, credential, or exfiltration actions unless the operator "
+                    "explicitly requested them within scope."
                 ),
                 example_conversation=(
                     'User: "check who we are on session abc123"\n'
