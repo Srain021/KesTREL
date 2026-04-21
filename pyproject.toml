@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "kestrel-mcp"
-version = "0.1.0"
+version = "1.0.0"
 description = "Model Context Protocol server exposing 40+ offensive security tools to LLMs (Shodan, Nuclei, Sliver, Havoc, Evilginx, Ligolo-ng, Caido)."
 readme = "README.md"
 requires-python = ">=3.10"

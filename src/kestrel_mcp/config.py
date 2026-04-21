@@ -134,7 +134,7 @@ class ToolsSettings(BaseModel):
 
 class ServerMeta(BaseModel):
     name: str = "kestrel-mcp"
-    version: str = "0.1.0"
+    version: str = "1.0.0"
 
 
 class Settings(BaseSettings):

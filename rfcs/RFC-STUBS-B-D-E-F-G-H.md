@@ -204,11 +204,6 @@
 - **Notes**: 必须一次 PR 完成，否则 import 断。
 - **Closes**: AUDIT D-1
 
-### RFC-H04 — v1.0 release gate + announcement
-
-- **Mission**: 发 v1.0。含 release checklist。
-- **Blocking**: 所有上面的
-
 ---
 
 ## 状态同步

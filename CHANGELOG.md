@@ -10,7 +10,11 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-04-21
+
 ### Added
+- `RFC-H04` - Finalized the v1.0.0 release gate with consistent package,
+  server, shipped config, and lockfile version metadata plus a release checklist.
 - `RFC-H03` - Added a lightweight MkDocs Material documentation site,
   GitHub Pages workflow, docs landing pages, and dev dependencies for local
   `mkdocs serve` preview.
