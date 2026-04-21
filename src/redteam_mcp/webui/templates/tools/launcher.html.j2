@@ -1,0 +1,45 @@
+{% extends "base.html.j2" %}
+{% block title %}Tool launcher &middot; kestrel-mcp{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold">Tool launcher</h1>
+<p class="text-sm text-slate-500 mb-6">
+  Launch one MCP tool as an in-memory Web UI job. Jobs are not persisted across restarts.
+</p>
+
+<div class="grid grid-cols-3 gap-6">
+  <form hx-post="/tools/run" hx-target="#jobs tbody" hx-swap="beforeend"
+        class="col-span-1 bg-white border rounded-xl p-4 text-sm">
+    <label class="block mb-3">
+      <span class="block text-xs text-slate-500 mb-1">Tool</span>
+      <select name="tool_name" required class="w-full border rounded px-2 py-1">
+        {% for tool in tools %}
+        <option value="{{ tool.name }}">{{ tool.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="block mb-3">
+      <span class="block text-xs text-slate-500 mb-1">Arguments JSON</span>
+      <textarea name="arguments_json" rows="8" class="w-full border rounded px-2 py-1 font-mono text-xs">{}</textarea>
+    </label>
+    <button type="submit" class="bg-slate-800 text-white px-4 py-1 rounded">Launch</button>
+  </form>
+
+  <div class="col-span-2 bg-white border rounded-xl overflow-hidden">
+    <table id="jobs" class="w-full text-sm">
+      <thead class="bg-slate-50">
+        <tr>
+          <th class="px-3 py-2 text-left">Job</th>
+          <th class="px-3 py-2 text-left">Tool</th>
+          <th class="px-3 py-2 text-left">Status</th>
+          <th class="px-3 py-2 text-left">Stream</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in jobs %}
+          {% include "tools/_job_row.html.j2" with context %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

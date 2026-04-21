@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+from collections.abc import AsyncIterator
 from typing import Annotated, Any, cast
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
 from ...config import Settings, load_settings
 from ...core import RequestContext
@@ -13,6 +15,7 @@ from ...tools.base import ToolResult, ToolSpec
 from ...workflows import load_workflow_specs
 from ..deps import get_ctx
 from ..job_runner import JobRunner
+from ..templating import templates
 
 router = APIRouter()
 
@@ -61,11 +64,8 @@ def _parse_arguments(arguments_json: str) -> dict[str, Any]:
     return cast("dict[str, Any]", parsed)
 
 
-@router.get("")
-@router.get("/")
-async def list_tools(request: Request) -> dict[str, object]:
-    specs = _get_specs(request)
-    tools = [
+def _tool_payload(specs: dict[str, ToolSpec]) -> list[dict[str, object]]:
+    return [
         {
             "name": spec.name,
             "description": spec.description,
@@ -74,7 +74,24 @@ async def list_tools(request: Request) -> dict[str, object]:
         }
         for spec in specs.values()
     ]
-    return {"count": len(tools), "tools": tools}
+
+
+def _wants_json(request: Request) -> bool:
+    return "application/json" in request.headers.get("accept", "")
+
+
+@router.get("", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
+async def list_tools(request: Request) -> Response:
+    specs = _get_specs(request)
+    tools = _tool_payload(specs)
+    if _wants_json(request):
+        return JSONResponse({"count": len(tools), "tools": tools})
+    return templates.TemplateResponse(
+        request,
+        "tools/launcher.html.j2",
+        {"active_engagement": None, "jobs": [], "tools": tools},
+    )
 
 
 @router.post("/run")
@@ -83,14 +100,16 @@ async def run_tool(
     ctx: Annotated[RequestContext, Depends(get_ctx)],
     tool_name: Annotated[str, Form()],
     arguments_json: Annotated[str, Form()] = "{}",
-) -> dict[str, object]:
+) -> Response:
     specs = _get_specs(request)
     if tool_name not in specs:
         raise HTTPException(404, f"Unknown tool: {tool_name}")
     arguments = _parse_arguments(arguments_json)
     runner = _get_runner(request, specs)
     job = await runner.start(tool_name, arguments, ctx)
-    return job.as_dict()
+    if _wants_json(request):
+        return JSONResponse(job.as_dict())
+    return templates.TemplateResponse(request, "tools/_job_row.html.j2", {"job": job})
 
 
 @router.get("/jobs/{job_id}")
@@ -100,3 +119,17 @@ async def get_job(request: Request, job_id: str) -> dict[str, object]:
     if job is None:
         raise HTTPException(404, f"Unknown job: {job_id}")
     return job.as_dict()
+
+
+@router.get("/jobs/{job_id}/stream")
+async def stream_job(request: Request, job_id: str) -> StreamingResponse:
+    runner = _get_runner(request, _get_specs(request))
+    if runner.get(job_id) is None:
+        raise HTTPException(404, f"Unknown job: {job_id}")
+    return StreamingResponse(_sse_events(runner, job_id), media_type="text/event-stream")
+
+
+async def _sse_events(runner: JobRunner, job_id: str) -> AsyncIterator[str]:
+    async for event, data in runner.stream(job_id):
+        payload = data.replace("\r", "").replace("\n", "\\n")
+        yield f"event: {event}\ndata: {payload}\n\n"

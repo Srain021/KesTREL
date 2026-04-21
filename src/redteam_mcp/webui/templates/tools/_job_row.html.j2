@@ -1,0 +1,10 @@
+<tr id="job-{{ job.id }}" class="border-t">
+  <td class="px-3 py-2 font-mono text-xs">{{ job.id }}</td>
+  <td class="px-3 py-2">{{ job.tool_name }}</td>
+  <td class="px-3 py-2">{{ job.status }}</td>
+  <td class="px-3 py-2">
+    <a class="text-xs text-blue-700 hover:underline" href="/tools/jobs/{{ job.id }}/stream">
+      open SSE
+    </a>
+  </td>
+</tr>

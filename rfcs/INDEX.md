@@ -81,7 +81,7 @@
 | RFC-009 | findings table + transitions      | done   | RFC-008     | agent |
 | RFC-010 | tool launcher + SSE stdout stream | abandoned | RFC-008 | agent |
 | RFC-010a | tool launcher backend jobs      | done   | RFC-008     | agent |
-| RFC-010b | tool launcher SSE UI            | open   | RFC-010a    |       |
+| RFC-010b | tool launcher SSE UI            | done   | RFC-010a    | agent |
 | RFC-011 | settings page (keys + paths)      | done   | RFC-007     | agent |
 | RFC-012 | HTTP Basic auth for shared deploy | done   | RFC-006     | agent |
 

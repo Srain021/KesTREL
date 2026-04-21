@@ -2,8 +2,8 @@
 id: RFC-010b
 title: Tool launcher SSE UI
 epic: C-WebUI-Tier1
-status: open
-owner: unassigned
+status: done
+owner: agent
 role: fullstack-engineer
 blocking_on: [RFC-010a]
 budget:

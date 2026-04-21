@@ -209,6 +209,14 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   missing job 404.
 - `full_verify.py` remains 8/8 green (177 tests now, was 173).
 
+### RFC-010b completed
+- Executed RFC-010b: added the `/tools` HTML launcher, htmx job-row partial,
+  and `/tools/jobs/{id}/stream` SSE endpoint.
+- Preserved RFC-010a's JSON behavior for `Accept: application/json` clients.
+- Added 3 UI/SSE tests covering launcher render, htmx row response, and done
+  event streaming.
+- `full_verify.py` remains 8/8 green (180 tests now, was 177).
+
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
 - `AGENT_EXECUTION_PROTOCOL.md` §6 whitelisted git commands are now functional.
