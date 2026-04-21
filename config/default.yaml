@@ -35,6 +35,10 @@ tools:
     enabled: false
     binary: null
 
+  httpx:
+    enabled: false
+    binary: null
+
   caido:
     enabled: false
     binary: null

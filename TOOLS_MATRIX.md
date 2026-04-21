@@ -120,7 +120,7 @@ user-installed and disabled by default in `config/default.yaml`.
 
 ---
 
-### 5. httpx ⬜ 待集成
+### 5. httpx ✅ 已集成
 
 | 字段 | 值 |
 |------|---|
@@ -136,6 +136,10 @@ user-installed and disabled by default in `config/default.yaml`.
 
 **计划的 MCP tools**:
 - `httpx_probe(targets, tech_detect, status_code, title)`
+
+**Kestrel integration**: RFC-G02 done. Exposes `httpx_probe(targets,
+tech_detect, status_code, title)` and `httpx_version`; this wraps the
+ProjectDiscovery binary only, not the Python `httpx` library.
 
 ---
 

@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-G02` - Added an opt-in ProjectDiscovery `httpx` binary wrapper with
+  `httpx_probe` and `httpx_version`, per-target scope checks, stdin-fed JSONL
+  parsing, config defaults, registry wiring, and mocked subprocess tests.
 - `RFC-G01` - Added an opt-in ProjectDiscovery `subfinder` wrapper with
   `subfinder_enum` and `subfinder_version`, JSONL parsing, scope enforcement,
   config defaults, registry wiring, and mocked subprocess tests.

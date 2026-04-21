@@ -28,6 +28,7 @@ class TestToolRegistry:
                 "shodan",
                 "nuclei",
                 "subfinder",
+                "httpx",
                 "caido",
                 "ligolo",
                 "sliver",

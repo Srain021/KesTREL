@@ -25,6 +25,7 @@ def load_modules(settings: Settings, scope_guard: ScopeGuard) -> list[ToolModule
     from .engagement_tool import EngagementModule
     from .evilginx_tool import EvilginxModule
     from .havoc_tool import HavocModule
+    from .httpx_tool import HttpxModule
     from .ligolo_tool import LigoloModule
     from .nuclei_tool import NucleiModule
     from .shodan_tool import ShodanModule
@@ -39,6 +40,7 @@ def load_modules(settings: Settings, scope_guard: ScopeGuard) -> list[ToolModule
         ShodanModule(settings, scope_guard),
         NucleiModule(settings, scope_guard),
         SubfinderModule(settings, scope_guard),
+        HttpxModule(settings, scope_guard),
         CaidoModule(settings, scope_guard),
         LigoloModule(settings, scope_guard),
         SliverModule(settings, scope_guard),

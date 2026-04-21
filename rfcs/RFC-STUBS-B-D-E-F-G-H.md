@@ -174,13 +174,6 @@
 - 加到 `tools/__init__.py` 的 `load_modules`
 - 更新 TOOLS_MATRIX.md
 
-### RFC-G02 — httpx probe tool
-
-- **Mission**: `httpx_probe(targets, tech_detect, status_code)`
-- **Binary**: projectdiscovery/httpx
-- **Blocking**: RFC-G01（顺序，不 hard 依赖）
-- **Budget**: 3 files, 280 lines
-
 ### RFC-G03 — nmap wrapper
 
 - **Mission**: `nmap_scan(targets, ports, scripts)` + `nmap_os_detect`
