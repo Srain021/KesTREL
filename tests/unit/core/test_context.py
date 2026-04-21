@@ -33,7 +33,8 @@ pytestmark = pytest.mark.asyncio
 
 
 @pytest.fixture
-async def container():
+async def container(tmp_path, monkeypatch):
+    monkeypatch.setenv("KESTREL_DATA_DIR", str(tmp_path))
     c = ServiceContainer.in_memory()
     await c.initialise()
     try:
@@ -87,6 +88,25 @@ async def test_require_engagement_with(container):
     async with container.open_context(engagement_id=e.id) as ctx:
         assert ctx.require_engagement() == e.id
         assert ctx.has_engagement()
+
+
+async def test_context_exposes_credential_service(container):
+    e = await container.engagement.create(
+        name="credctx",
+        display_name="credctx",
+        engagement_type=ent.EngagementType.CTF,
+        client="c",
+    )
+    async with container.open_context(engagement_id=e.id) as ctx:
+        credential = await ctx.credential.seal(
+            engagement_id=e.id,
+            kind=ent.CredentialKind.PASSWORD_PLAINTEXT,
+            identity="alice",
+            plaintext="secret",
+            obtained_from_tool="test",
+        )
+        assert ctx.credential is container.credential
+        assert await ctx.credential.unseal(credential.reference()) == "secret"
 
 
 async def test_ensure_scope_noop_without_engagement(container):

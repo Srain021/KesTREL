@@ -43,7 +43,13 @@ from uuid import UUID
 from ..domain import entities as ent
 
 if TYPE_CHECKING:
-    from ..domain.services import EngagementService, FindingService, ScopeService, TargetService
+    from ..domain.services import (
+        CredentialService,
+        EngagementService,
+        FindingService,
+        ScopeService,
+        TargetService,
+    )
     from .services import ServiceContainer
 
 
@@ -91,6 +97,10 @@ class RequestContext:
     @property
     def finding(self) -> FindingService:
         return self.container.finding
+
+    @property
+    def credential(self) -> CredentialService:
+        return self.container.credential
 
     # ---- engagement helpers ----
 

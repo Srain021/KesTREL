@@ -39,6 +39,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from ..domain import entities as ent
 from ..domain.services import (
+    CredentialService,
     EngagementService,
     FindingService,
     ScopeService,
@@ -72,6 +73,7 @@ class ServiceContainer:
         self.scope = ScopeService(sessionmaker)
         self.target = TargetService(sessionmaker)
         self.finding = FindingService(sessionmaker)
+        self.credential = CredentialService(sessionmaker)
 
     # ----- lifecycle -----
 

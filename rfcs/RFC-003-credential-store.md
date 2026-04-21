@@ -2,15 +2,15 @@
 id: RFC-003
 title: Credential store (domain + seal/unseal)
 epic: A-Foundations
-status: open
-owner: unassigned
+status: done
+owner: agent
 role: backend-engineer
 blocking_on:
   - RFC-002
 budget:
   max_files_touched: 7
   max_new_files: 4
-  max_lines_added: 450
+  max_lines_added: 400
   max_minutes_human: 30
   max_tokens_model: 20000
 files_to_read:

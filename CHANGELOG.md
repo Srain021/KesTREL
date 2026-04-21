@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-003b` - Wired `CredentialService` into `ServiceContainer` and
+  `RequestContext`, closed the split RFC-003 umbrella, and updated release
+  security docs for encrypted-at-rest credentials.
 - `RFC-003a` - Added encrypted credential seal/unseal domain service,
   Fernet key resolution, direct `cryptography` dependency, and unit tests.
 

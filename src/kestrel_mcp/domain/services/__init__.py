@@ -14,12 +14,14 @@ Postgres at runtime.
 
 from __future__ import annotations
 
+from .credential_service import CredentialService
 from .engagement_service import EngagementService
 from .finding_service import FindingService
 from .scope_service import ScopeService
 from .target_service import TargetService
 
 __all__ = [
+    "CredentialService",
     "EngagementService",
     "FindingService",
     "ScopeService",
