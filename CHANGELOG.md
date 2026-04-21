@@ -10,6 +10,10 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 
 ## [Unreleased]
 
+### Added
+- `RFC-003a` - Added encrypted credential seal/unseal domain service,
+  Fernet key resolution, direct `cryptography` dependency, and unit tests.
+
 ## [1.0.0] - 2026-04-21
 
 ### Added

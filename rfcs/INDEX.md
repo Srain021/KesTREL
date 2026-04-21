@@ -51,7 +51,8 @@
 |---------|-----------------------------------|--------|-------------|-------|
 | RFC-001 | lock dependencies with uv         | done   |             |       |
 | RFC-002 | GitHub Actions CI matrix          | done   | RFC-001     | agent |
-| RFC-003 | Credential Store (domain + API)   | blocked ⚠ | RFC-002  |       |
+| RFC-003 | Credential Store (split umbrella) | blocked ⚠ | RFC-002  | agent |
+| RFC-003a | Credential service seal/unseal   | done   | RFC-002     | agent |
 | RFC-004 | Rate limiting decorator           | done   | RFC-002     | agent |
 | RFC-005 | Safe path helper + audit          | done   | RFC-002     | agent |
 | RFC-A04 | Edition + FeatureFlags infra      | done   |             | agent |
