@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-B07d` - Added Web UI readiness cards to the findings table, showing
+  local readiness score, operator-review state, evidence gaps, and
+  fire-control requirement without adding execution buttons.
 - `RFC-B07c` - Exposed the offensive-readiness brain as advisory MCP tools:
   exploitability triage, attack-path planning, operator fire-control packets,
   zero-day hypothesis packaging, and evidence packs without execution.

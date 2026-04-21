@@ -13,6 +13,37 @@
     <div class="text-xs text-slate-500">{{ f.category or "uncategorized" }}</div>
   </td>
   <td class="px-3 py-2">{{ f.discovered_by_tool }}</td>
+  {% set readiness = readiness_by_id.get(f.id|string) if readiness_by_id is defined else none %}
+  <td class="px-3 py-2">
+    {% if readiness %}
+    <div class="rounded-lg border px-3 py-2
+      {% if readiness.rating == 'operator_review' %}border-red-200 bg-red-50
+      {% elif readiness.rating == 'ready_to_validate' %}border-orange-200 bg-orange-50
+      {% elif readiness.rating == 'investigate' %}border-amber-200 bg-amber-50
+      {% else %}border-slate-200 bg-slate-50{% endif %}">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs font-semibold uppercase tracking-wide
+          {% if readiness.rating == 'operator_review' %}text-red-700
+          {% elif readiness.rating == 'ready_to_validate' %}text-orange-700
+          {% elif readiness.rating == 'investigate' %}text-amber-700
+          {% else %}text-slate-600{% endif %}">
+          {{ readiness.rating.replace("_", " ") }}
+        </span>
+        <span class="text-xs font-mono text-slate-700">{{ readiness.score }}/100</span>
+      </div>
+      {% if readiness.requires_human_approval %}
+      <div class="mt-1 text-xs font-medium text-red-700">Human fire-control required</div>
+      {% endif %}
+      {% if readiness.first_gap %}
+      <div class="mt-1 text-xs text-slate-600">Gap: {{ readiness.first_gap }}</div>
+      {% elif readiness.first_step %}
+      <div class="mt-1 text-xs text-slate-600">{{ readiness.first_step }}</div>
+      {% endif %}
+    </div>
+    {% else %}
+    <span class="text-xs text-slate-400">not assessed</span>
+    {% endif %}
+  </td>
   <td class="px-3 py-2">
     <form hx-post="/engagements/{{ slug }}/findings/{{ f.id }}/transition"
           hx-target="closest tr"

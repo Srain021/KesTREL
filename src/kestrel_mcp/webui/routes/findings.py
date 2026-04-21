@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
+from ...analysis import assess_exploitability
 from ...core import RequestContext
 from ...domain import entities as ent
 from ...domain.errors import EngagementNotFoundError, InvalidStateTransitionError
@@ -40,6 +41,24 @@ def _parse_status(value: str | None) -> ent.FindingStatus | None:
         raise HTTPException(400, f"Invalid status '{value}'") from exc
 
 
+def _readiness_by_id(findings: list[ent.Finding]) -> dict[str, dict[str, object]]:
+    return {str(f.id): _readiness_card(f) for f in findings}
+
+
+def _readiness_card(finding: ent.Finding) -> dict[str, object]:
+    assessment = assess_exploitability(finding)
+    first_gap = assessment.evidence_gaps[0] if assessment.evidence_gaps else ""
+    first_step = assessment.recommended_next_steps[0] if assessment.recommended_next_steps else ""
+    return {
+        "score": assessment.score,
+        "rating": assessment.rating.value,
+        "confidence": assessment.confidence,
+        "requires_human_approval": assessment.requires_human_approval,
+        "first_gap": first_gap,
+        "first_step": first_step,
+    }
+
+
 @router.get("", response_class=HTMLResponse)
 @router.get("/", response_class=HTMLResponse)
 async def list_findings(
@@ -64,6 +83,7 @@ async def list_findings(
             "active_engagement": engagement,
             "engagement": engagement,
             "findings": findings,
+            "readiness_by_id": _readiness_by_id(findings),
             "severities": list(ent.FindingSeverity),
             "statuses": list(ent.FindingStatus),
             "selected_severity": severity,
@@ -101,6 +121,7 @@ async def transition_finding(
         "findings/_row.html.j2",
         {
             "f": finding,
+            "readiness_by_id": _readiness_by_id([finding]),
             "slug": slug,
             "statuses": list(ent.FindingStatus),
         },

@@ -41,6 +41,7 @@
         <th class="px-3 py-2 text-left">Severity</th>
         <th class="px-3 py-2 text-left">Title</th>
         <th class="px-3 py-2 text-left">Tool</th>
+        <th class="px-3 py-2 text-left">Readiness</th>
         <th class="px-3 py-2 text-left">Status</th>
       </tr>
     </thead>
@@ -49,7 +50,7 @@
         {% include "findings/_row.html.j2" with context %}
       {% else %}
       <tr>
-        <td colspan="4" class="px-3 py-8 text-center text-slate-500">No findings match this filter.</td>
+        <td colspan="5" class="px-3 py-8 text-center text-slate-500">No findings match this filter.</td>
       </tr>
       {% endfor %}
     </tbody>

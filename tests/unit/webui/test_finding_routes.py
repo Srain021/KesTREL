@@ -28,6 +28,9 @@ async def setup():
             title="Critical RCE",
             severity=ent.FindingSeverity.CRITICAL,
             discovered_by_tool="nuclei",
+            cve=["CVE-2024-9999"],
+            cvss_score=9.8,
+            verified=True,
         ),
         await c.finding.create(
             engagement_id=engagement.id,
@@ -57,6 +60,9 @@ async def test_list_findings(setup):
     assert "Critical RCE" in r.text
     assert "High SSRF" in r.text
     assert "Info banner" in r.text
+    assert "Readiness" in r.text
+    assert "ready to validate" in r.text
+    assert "Human fire-control required" in r.text
 
 
 async def test_filter_by_severity(setup):
@@ -75,6 +81,7 @@ async def test_transition_finding(setup):
     )
     assert r.status_code == 200
     assert "triaged" in r.text
+    assert "ready to validate" in r.text
     updated = await c.finding.get(findings[0].id)
     assert updated is not None
     assert updated.status == ent.FindingStatus.TRIAGED
