@@ -120,6 +120,7 @@ class ToolBlock(BaseModel):
 class ToolsSettings(BaseModel):
     nuclei: ToolBlock = Field(default_factory=lambda: ToolBlock(enabled=True))
     shodan: ToolBlock = Field(default_factory=lambda: ToolBlock(enabled=True))
+    subfinder: ToolBlock = Field(default_factory=ToolBlock)
     caido: ToolBlock = Field(default_factory=ToolBlock)
     evilginx: ToolBlock = Field(default_factory=ToolBlock)
     sliver: ToolBlock = Field(default_factory=ToolBlock)

@@ -29,6 +29,7 @@ def load_modules(settings: Settings, scope_guard: ScopeGuard) -> list[ToolModule
     from .nuclei_tool import NucleiModule
     from .shodan_tool import ShodanModule
     from .sliver_tool import SliverModule
+    from .subfinder_tool import SubfinderModule
 
     candidates: list[ToolModule] = [
         # Management / admin first — these don't depend on external binaries
@@ -37,6 +38,7 @@ def load_modules(settings: Settings, scope_guard: ScopeGuard) -> list[ToolModule
         # External-tool-backed modules follow.
         ShodanModule(settings, scope_guard),
         NucleiModule(settings, scope_guard),
+        SubfinderModule(settings, scope_guard),
         CaidoModule(settings, scope_guard),
         LigoloModule(settings, scope_guard),
         SliverModule(settings, scope_guard),

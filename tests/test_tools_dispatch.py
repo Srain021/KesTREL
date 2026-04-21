@@ -27,6 +27,7 @@ class TestToolRegistry:
                 "engagement",  # Sprint 3: domain management module
                 "shodan",
                 "nuclei",
+                "subfinder",
                 "caido",
                 "ligolo",
                 "sliver",

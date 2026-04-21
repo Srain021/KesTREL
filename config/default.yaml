@@ -31,6 +31,10 @@ tools:
     api_key_env: "SHODAN_API_KEY"
     default_limit: 100
 
+  subfinder:
+    enabled: false
+    binary: null
+
   caido:
     enabled: false
     binary: null

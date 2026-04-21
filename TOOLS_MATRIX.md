@@ -68,7 +68,7 @@
 
 ---
 
-### 3. subfinder ⬜ 待集成
+### 3. subfinder ✅ 已集成
 
 | 字段 | 值 |
 |------|---|
@@ -94,6 +94,10 @@ macOS:   subfinder_X.Y.Z_macOS_amd64.zip / macOS_arm64.zip
 **计划的 MCP tools**:
 - `subfinder_enum(domain, all_sources, recursive)`
 - `subfinder_version()`
+
+**Kestrel integration**: RFC-G01 done. Exposes `subfinder_enum(domain,
+all_sources, silent, timeout_sec)` and `subfinder_version`; binary remains
+user-installed and disabled by default in `config/default.yaml`.
 
 ---
 

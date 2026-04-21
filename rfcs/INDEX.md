@@ -117,7 +117,7 @@
 
 | id      | title                             | status | blocking_on | owner |
 |---------|-----------------------------------|--------|-------------|-------|
-| RFC-G01 | subfinder tool                    | open   |             |       |
+| RFC-G01 | subfinder tool                    | done   |             | agent |
 | RFC-G02 | httpx probe tool                  | open   | RFC-G01     |       |
 | RFC-G03 | nmap wrapper                      | open   |             |       |
 | RFC-G04 | ffuf wrapper                      | open   |             |       |

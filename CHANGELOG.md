@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-G01` - Added an opt-in ProjectDiscovery `subfinder` wrapper with
+  `subfinder_enum` and `subfinder_version`, JSONL parsing, scope enforcement,
+  config defaults, registry wiring, and mocked subprocess tests.
 - Git baseline: initial `git init` + first commit establishing pre-RFC-001
   working tree.
 - `CHANGELOG.md` — this file.

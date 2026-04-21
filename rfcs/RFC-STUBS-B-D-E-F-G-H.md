@@ -174,13 +174,6 @@
 - 加到 `tools/__init__.py` 的 `load_modules`
 - 更新 TOOLS_MATRIX.md
 
-### RFC-G01 — subfinder tool
-
-- **Mission**: `subfinder_enum(domain, all_sources)` + `subfinder_version`
-- **Binary**: projectdiscovery/subfinder
-- **Budget**: 3 files, 300 lines
-- **Tests**: mock subprocess + 1 real integration test（有 binary 时）
-
 ### RFC-G02 — httpx probe tool
 
 - **Mission**: `httpx_probe(targets, tech_detect, status_code)`
