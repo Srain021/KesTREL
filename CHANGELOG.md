@@ -161,6 +161,14 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   the RFC-006 root smoke test for the new HTML behavior.
 - `full_verify.py` remains 8/8 green (154 tests now, was 151).
 
+### RFC-008 completed
+- Executed RFC-008: added `/engagements`, `/engagements/{slug}`, and htmx
+  create flows backed by the shared `RequestContext` and `EngagementService`.
+- Added the engagements route package, list/detail templates, reusable table
+  row partial, and 5 route tests covering empty list, create, duplicate 409,
+  detail page, and missing engagement 404.
+- `full_verify.py` remains 8/8 green (159 tests now, was 154).
+
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
 - `AGENT_EXECUTION_PROTOCOL.md` §6 whitelisted git commands are now functional.

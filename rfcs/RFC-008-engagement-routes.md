@@ -2,13 +2,13 @@
 id: RFC-008
 title: Engagement routes + templates (list / create / show)
 epic: C-WebUI-Tier1
-status: open
-owner: unassigned
+status: done
+owner: agent
 role: fullstack-engineer
 blocking_on: [RFC-007]
 budget:
-  max_files_touched: 6
-  max_new_files: 5
+  max_files_touched: 7
+  max_new_files: 6
   max_lines_added: 400
   max_minutes_human: 30
   max_tokens_model: 16000
@@ -89,6 +89,8 @@ WRITE src/redteam_mcp/webui/routes/engagements.py
 ```python
 from __future__ import annotations
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
@@ -103,22 +105,26 @@ router = APIRouter()
 
 
 @router.get("/", response_class=HTMLResponse)
-async def list_engagements(request: Request, ctx: RequestContext = Depends(get_ctx)):
+async def list_engagements(
+    request: Request,
+    ctx: Annotated[RequestContext, Depends(get_ctx)],
+):
     engagements = await ctx.engagement.list()
     return templates.TemplateResponse(
+        request,
         "engagements/list.html.j2",
-        {"request": request, "engagements": engagements, "active_engagement": None},
+        {"engagements": engagements, "active_engagement": None},
     )
 
 
 @router.post("/", response_class=HTMLResponse)
 async def create_engagement(
     request: Request,
-    name: str = Form(...),
-    display_name: str = Form(...),
-    engagement_type: str = Form("ctf"),
-    client: str = Form(...),
-    ctx: RequestContext = Depends(get_ctx),
+    ctx: Annotated[RequestContext, Depends(get_ctx)],
+    name: Annotated[str, Form()],
+    display_name: Annotated[str, Form()],
+    client: Annotated[str, Form()],
+    engagement_type: Annotated[str, Form()] = "ctf",
 ):
     try:
         e = await ctx.engagement.create(
@@ -134,13 +140,18 @@ async def create_engagement(
 
     # htmx partial: just the new row
     return templates.TemplateResponse(
+        request,
         "engagements/_form.html.j2",
-        {"request": request, "engagement": e, "append_row": True},
+        {"engagement": e, "append_row": True},
     )
 
 
 @router.get("/{slug}", response_class=HTMLResponse)
-async def show_engagement(slug: str, request: Request, ctx: RequestContext = Depends(get_ctx)):
+async def show_engagement(
+    slug: str,
+    request: Request,
+    ctx: Annotated[RequestContext, Depends(get_ctx)],
+):
     try:
         e = await ctx.engagement.get_by_name(slug)
     except EngagementNotFoundError:
@@ -149,9 +160,9 @@ async def show_engagement(slug: str, request: Request, ctx: RequestContext = Dep
     findings = await ctx.finding.list_for_engagement(e.id)
     targets = await ctx.target.list_for_engagement(e.id)
     return templates.TemplateResponse(
+        request,
         "engagements/show.html.j2",
         {
-            "request": request,
             "engagement": e,
             "scope": scope,
             "findings": findings,

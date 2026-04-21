@@ -1,0 +1,20 @@
+{# rendered both as a full row and as the htmx create response #}
+{% set e = engagement if engagement is defined else e %}
+<tr class="border-t">
+  <td class="px-3 py-2 font-medium">
+    <a class="text-blue-700 hover:underline" href="/engagements/{{ e.name }}">{{ e.name }}</a>
+    <div class="text-xs text-slate-500">{{ e.display_name }}</div>
+  </td>
+  <td class="px-3 py-2">
+    <span class="text-xs px-2 py-0.5 rounded
+      {% if e.status.value == 'active' %}bg-emerald-100 text-emerald-800
+      {% elif e.status.value == 'closed' %}bg-slate-100 text-slate-500
+      {% else %}bg-amber-100 text-amber-800{% endif %}
+    ">{{ e.status.value }}</span>
+  </td>
+  <td class="px-3 py-2">{{ e.engagement_type.value }}</td>
+  <td class="px-3 py-2">{{ e.client }}</td>
+  <td class="px-3 py-2 text-right">
+    <a href="/engagements/{{ e.name }}" class="text-xs text-slate-600 hover:text-slate-900">view &rarr;</a>
+  </td>
+</tr>

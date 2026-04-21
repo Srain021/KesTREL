@@ -1,0 +1,45 @@
+{% extends "base.html.j2" %}
+{% block title %}Engagements &middot; kestrel-mcp{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Engagements</h1>
+
+<div class="mb-6 bg-white border rounded-xl p-4">
+  <h2 class="text-sm font-medium mb-3">New engagement</h2>
+  <form hx-post="/engagements" hx-target="#engagement-table tbody" hx-swap="beforeend"
+        class="grid grid-cols-4 gap-3 text-sm">
+    <input name="name" required placeholder="slug (a-z0-9-_)" pattern="^[a-z0-9_-]{1,64}$"
+           class="border rounded px-2 py-1">
+    <input name="display_name" required placeholder="Display name"
+           class="border rounded px-2 py-1">
+    <select name="engagement_type" class="border rounded px-2 py-1">
+      <option value="ctf">CTF</option>
+      <option value="pentest">Pentest</option>
+      <option value="red_team">Red Team</option>
+      <option value="bug_bounty">Bug Bounty</option>
+    </select>
+    <input name="client" required placeholder="Client"
+           class="border rounded px-2 py-1">
+    <button type="submit"
+            class="col-span-4 justify-self-start bg-slate-800 text-white px-4 py-1 rounded">Create</button>
+  </form>
+</div>
+
+<div class="bg-white border rounded-xl overflow-hidden">
+  <table id="engagement-table" class="w-full text-sm">
+    <thead class="bg-slate-50">
+      <tr>
+        <th class="px-3 py-2 text-left">Name</th>
+        <th class="px-3 py-2 text-left">Status</th>
+        <th class="px-3 py-2 text-left">Type</th>
+        <th class="px-3 py-2 text-left">Client</th>
+        <th class="px-3 py-2"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in engagements %}
+        {% include "engagements/_form.html.j2" with context %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

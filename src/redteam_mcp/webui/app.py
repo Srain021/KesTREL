@@ -25,6 +25,10 @@ def create_app(container: ServiceContainer) -> FastAPI:
     )
     app.add_middleware(RequestContextMiddleware, container=container)
 
+    from .routes import router as api_router
+
+    app.include_router(api_router)
+
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
     async def root(
         request: Request,

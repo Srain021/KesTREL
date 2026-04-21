@@ -1,0 +1,42 @@
+{% extends "base.html.j2" %}
+{% block title %}{{ engagement.name }} &middot; kestrel-mcp{% endblock %}
+{% block content %}
+<a href="/engagements" class="text-xs text-slate-500">&larr; back</a>
+<h1 class="text-2xl font-semibold mt-2">{{ engagement.display_name }}</h1>
+<div class="text-sm text-slate-500">slug: <code>{{ engagement.name }}</code> &middot; status:
+  <strong>{{ engagement.status.value }}</strong> &middot; type: {{ engagement.engagement_type.value }}</div>
+
+<div class="grid grid-cols-3 gap-4 mt-6">
+  <div class="p-4 bg-white border rounded-xl">
+    <div class="text-xs text-slate-500">Scope entries</div>
+    <div class="text-2xl font-bold">{{ scope|length }}</div>
+  </div>
+  <div class="p-4 bg-white border rounded-xl">
+    <div class="text-xs text-slate-500">Targets</div>
+    <div class="text-2xl font-bold">{{ targets|length }}</div>
+  </div>
+  <div class="p-4 bg-white border rounded-xl">
+    <div class="text-xs text-slate-500">Findings</div>
+    <div class="text-2xl font-bold">{{ findings|length }}</div>
+  </div>
+</div>
+
+{% if findings %}
+<h2 class="text-lg font-medium mt-8 mb-2">Recent findings</h2>
+<ul class="bg-white border rounded-xl divide-y text-sm">
+  {% for f in findings[:10] %}
+  <li class="px-3 py-2 flex items-center">
+    <span class="text-xs px-2 py-0.5 rounded mr-3
+      {% if f.severity.value == 'critical' %}bg-red-100 text-red-800
+      {% elif f.severity.value == 'high' %}bg-orange-100 text-orange-800
+      {% elif f.severity.value == 'medium' %}bg-amber-100 text-amber-800
+      {% elif f.severity.value == 'low' %}bg-sky-100 text-sky-800
+      {% else %}bg-slate-100 text-slate-600{% endif %}
+    ">{{ f.severity.value }}</span>
+    <span class="font-medium">{{ f.title }}</span>
+    <span class="ml-auto text-xs text-slate-400">{{ f.status.value }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}
