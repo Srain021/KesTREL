@@ -21,6 +21,7 @@ def load_modules(settings: Settings, scope_guard: ScopeGuard) -> list[ToolModule
     where dangerous modules are opt-in.
     """
 
+    from .bloodhound_tool import BloodHoundModule
     from .caido_tool import CaidoModule
     from .engagement_tool import EngagementModule
     from .evilginx_tool import EvilginxModule
@@ -47,6 +48,7 @@ def load_modules(settings: Settings, scope_guard: ScopeGuard) -> list[ToolModule
         NmapModule(settings, scope_guard),
         FfufModule(settings, scope_guard),
         ImpacketModule(settings, scope_guard),
+        BloodHoundModule(settings, scope_guard),
         CaidoModule(settings, scope_guard),
         LigoloModule(settings, scope_guard),
         SliverModule(settings, scope_guard),

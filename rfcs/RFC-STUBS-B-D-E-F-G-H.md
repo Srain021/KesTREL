@@ -187,12 +187,6 @@
 - **Binary**: NetExec (pipx)
 - **Blocking**: RFC-003
 
-### RFC-G08 — BloodHound-CE REST client
-
-- **Mission**: 从 BloodHound-CE 容器拉取 AD 图分析结果
-- **Binary**: docker-compose (用户自己起)
-- **Budget**: 5 files
-
 ---
 
 ## Epic H — Release & community

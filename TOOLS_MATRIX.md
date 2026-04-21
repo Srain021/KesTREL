@@ -617,7 +617,7 @@ RFC-003 rewires these handlers through CredentialService.
 
 ---
 
-### 37. BloodHound CE ⬜ 待集成
+### 37. BloodHound CE ✅ 已集成
 
 | 字段 | 值 |
 |------|---|
@@ -627,6 +627,10 @@ RFC-003 rewires these handlers through CredentialService.
 | License | GPL v3 |
 | 部署 | ✅ Docker 推荐 |
 | 集成难度 | 🔴 (通过 REST API) |
+
+**Kestrel integration**: RFC-G08 done. Exposes `bloodhound_query(cypher,
+engagement_id)`, `bloodhound_list_datasets`, and `bloodhound_version` against a
+user-managed BloodHound-CE API configured with `tools.bloodhound.api_url`.
 
 ---
 

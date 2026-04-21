@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-G08` - Added an opt-in BloodHound-CE REST client with
+  `bloodhound_query`, `bloodhound_list_datasets`, and `bloodhound_version`,
+  config defaults, bearer-token support, registry wiring, and mocked HTTP tests.
 - `RFC-G06` - Added an opt-in Impacket wrapper for `psexec`, `smbexec`,
   `wmiexec`, `secretsdump`, and `GetUserSPNs`, with `impacket>=0.12` locked,
   scope enforcement, credential-redacted structured outputs, and mocked tests.
