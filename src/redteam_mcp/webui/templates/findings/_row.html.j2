@@ -1,0 +1,31 @@
+<tr id="finding-{{ f.id }}" class="border-t">
+  <td class="px-3 py-2">
+    <span class="text-xs px-2 py-0.5 rounded
+      {% if f.severity.value == 'critical' %}bg-red-100 text-red-800
+      {% elif f.severity.value == 'high' %}bg-orange-100 text-orange-800
+      {% elif f.severity.value == 'medium' %}bg-amber-100 text-amber-800
+      {% elif f.severity.value == 'low' %}bg-sky-100 text-sky-800
+      {% else %}bg-slate-100 text-slate-600{% endif %}
+    ">{{ f.severity.value }}</span>
+  </td>
+  <td class="px-3 py-2">
+    <div class="font-medium">{{ f.title }}</div>
+    <div class="text-xs text-slate-500">{{ f.category or "uncategorized" }}</div>
+  </td>
+  <td class="px-3 py-2">{{ f.discovered_by_tool }}</td>
+  <td class="px-3 py-2">
+    <form hx-post="/engagements/{{ slug }}/findings/{{ f.id }}/transition"
+          hx-target="closest tr"
+          hx-swap="outerHTML"
+          class="flex items-center gap-2">
+      <select name="status" class="border rounded px-2 py-1">
+        {% for state in statuses %}
+        <option value="{{ state.value }}" {% if f.status.value == state.value %}selected{% endif %}>
+          {{ state.value }}
+        </option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="text-xs bg-slate-800 text-white px-2 py-1 rounded">Update</button>
+    </form>
+  </td>
+</tr>

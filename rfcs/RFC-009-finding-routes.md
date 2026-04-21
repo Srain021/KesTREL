@@ -2,8 +2,8 @@
 id: RFC-009
 title: Findings table + transitions
 epic: C-WebUI-Tier1
-status: open
-owner: unassigned
+status: done
+owner: agent
 role: fullstack-engineer
 blocking_on: [RFC-008]
 budget:

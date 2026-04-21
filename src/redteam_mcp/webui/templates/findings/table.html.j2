@@ -1,0 +1,58 @@
+{% extends "base.html.j2" %}
+{% block title %}Findings &middot; {{ engagement.name }}{% endblock %}
+{% block content %}
+<a href="/engagements/{{ engagement.name }}" class="text-xs text-slate-500">&larr; engagement</a>
+<h1 class="text-2xl font-semibold mt-2">Findings</h1>
+<p class="text-sm text-slate-500 mb-5">{{ engagement.display_name }}</p>
+
+<form method="get" class="mb-5 grid grid-cols-3 gap-3 text-sm bg-white border rounded-xl p-4">
+  <label>
+    <span class="block text-xs text-slate-500 mb-1">Severity</span>
+    <select name="severity" class="w-full border rounded px-2 py-1">
+      <option value="">All severities</option>
+      {% for sev in severities %}
+      <option value="{{ sev.value }}" {% if selected_severity == sev.value %}selected{% endif %}>
+        {{ sev.value }}
+      </option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>
+    <span class="block text-xs text-slate-500 mb-1">Status</span>
+    <select name="status" class="w-full border rounded px-2 py-1">
+      <option value="">All statuses</option>
+      {% for state in statuses %}
+      <option value="{{ state.value }}" {% if selected_status == state.value %}selected{% endif %}>
+        {{ state.value }}
+      </option>
+      {% endfor %}
+    </select>
+  </label>
+  <div class="flex items-end gap-2">
+    <button type="submit" class="bg-slate-800 text-white px-4 py-1 rounded">Filter</button>
+    <a href="/engagements/{{ engagement.name }}/findings" class="text-slate-500 hover:text-slate-900">Clear</a>
+  </div>
+</form>
+
+<div class="bg-white border rounded-xl overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50">
+      <tr>
+        <th class="px-3 py-2 text-left">Severity</th>
+        <th class="px-3 py-2 text-left">Title</th>
+        <th class="px-3 py-2 text-left">Tool</th>
+        <th class="px-3 py-2 text-left">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in findings %}
+        {% include "findings/_row.html.j2" with context %}
+      {% else %}
+      <tr>
+        <td colspan="4" class="px-3 py-8 text-center text-slate-500">No findings match this filter.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

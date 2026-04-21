@@ -169,6 +169,14 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   detail page, and missing engagement 404.
 - `full_verify.py` remains 8/8 green (159 tests now, was 154).
 
+### RFC-009 completed
+- Executed RFC-009: added `/engagements/{slug}/findings` with severity/status
+  filtering and htmx row-level status transitions.
+- Added findings table and row templates plus 5 route tests covering list,
+  severity filtering, successful transition, invalid transition 409, and
+  missing engagement 404.
+- `full_verify.py` remains 8/8 green (164 tests now, was 159).
+
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
 - `AGENT_EXECUTION_PROTOCOL.md` §6 whitelisted git commands are now functional.
