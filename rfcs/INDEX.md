@@ -75,6 +75,7 @@
 | RFC-B04 | log schema versioning             | open   | RFC-B01     |       |
 | RFC-B05 | Subprocess stderr redaction       | open   | RFC-005     |       |
 | RFC-B06 | Tool degradation on missing binary| open   |             |       |
+| RFC-B07a | Offensive readiness scoring      | done   | RFC-003b    | agent |
 
 ### Epic C — Web UI Tier 1
 

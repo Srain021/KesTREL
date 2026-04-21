@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-B07a` - Added a local offensive-readiness scoring engine that turns
+  findings, CVE metadata, enrichment records, and exposure context into
+  transparent operator-review assessments without executing any offensive action.
 - `RFC-T00b` - Consumed Team runtime feature gates: documented existing
   rate-limit bypass coverage and wired `credential_encryption_required` into
   `CredentialService`, `ServiceContainer`, and server startup.
