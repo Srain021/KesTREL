@@ -332,7 +332,19 @@ def check_files_to_read(fm: dict, rep: RFCReport, write_targets: set[str]) -> No
 def check_files_will_touch(
     fm: dict, rep: RFCReport, new_paths: set[str], all_paths: set[str]
 ) -> None:
+    rfc_id = str(fm.get("id", "")).strip()
     for p in all_paths:
+        # Chicken-and-egg skip: the RFC's own .md file is listed `# new` in
+        # files_will_touch, but preflight runs AFTER the spec has been written.
+        # Treat `rfcs/<rfc_id>-*.md` as exempt from C4.
+        basename = p.rsplit("/", 1)[-1]
+        if (
+            rfc_id
+            and p.startswith("rfcs/")
+            and basename.startswith(f"{rfc_id}-")
+            and basename.endswith(".md")
+        ):
+            continue
         abs_p = REPO_ROOT / p
         if p in new_paths:
             if abs_p.exists():

@@ -90,3 +90,47 @@ async def test_impacket_get_user_spns_and_registry_load(monkeypatch: pytest.Monk
 
     ids = {m.id for m in load_modules(module.settings, ScopeGuard(["10.0.0.0/8"]))}
     assert "impacket" in ids
+
+
+async def test_impacket_tools_have_complete_guidance():
+    """Every Impacket ToolSpec (all dangerous) must ship full guidance + param descriptions.
+
+    This is a regression guard: adding a new Impacket tool without guidance
+    will fail this test. Re-enable fields as coverage grows across B05b-f.
+    """
+
+    from kestrel_mcp.config import Settings
+    from kestrel_mcp.security import ScopeGuard
+    from kestrel_mcp.tools.impacket_tool import ImpacketModule
+
+    module = ImpacketModule(Settings(), ScopeGuard([]))
+    specs = module.specs()
+    assert len(specs) == 5, "Impacket module ships exactly 5 tools today."
+
+    required_nonempty = (
+        "when_to_use",
+        "when_not_to_use",
+        "prerequisites",
+        "follow_ups",
+        "pitfalls",
+    )
+    for spec in specs:
+        assert spec.dangerous, f"{spec.name}: all Impacket tools must stay dangerous=True."
+        for field_name in required_nonempty:
+            value = getattr(spec, field_name)
+            assert value, (
+                f"{spec.name}: guidance field '{field_name}' is empty. "
+                "Every high-risk Impacket ToolSpec must populate it (see RFC-B05a)."
+            )
+        assert spec.local_model_hints, (
+            f"{spec.name}: local_model_hints is None. "
+            "Dangerous tools must carry an explicit weak-model hint (RFC-B05a)."
+        )
+
+        props = spec.input_schema.get("properties", {})
+        assert props, f"{spec.name}: input_schema has no properties."
+        for prop_name, prop_def in props.items():
+            assert "description" in prop_def and prop_def["description"].strip(), (
+                f"{spec.name}: property '{prop_name}' is missing a description "
+                "(RFC-B05a requires every param to be self-documenting)."
+            )

@@ -293,3 +293,25 @@ Prior state, now captured as the initial commit.
 - No release pipeline (awaits RFC-H02).
 
 See [AUDIT.md](./AUDIT.md) and [AUDIT_V2.md](./AUDIT_V2.md) for the full gap log.
+
+### Tool guidance hardening — Impacket (RFC-B05a)
+- `src/kestrel_mcp/tools/impacket_tool.py`:
+  - `_credential_schema()` — every param now carries a `description`
+    (closes the 28 missing-param-description gap peer flagged for Impacket).
+  - `_exec_spec()` helper accepts per-tool `when_to_use`, `when_not_to_use`,
+    `follow_ups`, `transport_hint`, `pitfalls_extra`, `local_hint`, `example`
+    kwargs.
+  - `psexec`, `smbexec`, `wmiexec` — each ships distinct guidance covering
+    transport, stealth tradeoffs, event-log footprint, follow-up playbook.
+  - `secretsdump`, `get_user_spns` — inline full guidance blocks including
+    krbtgt-sensitivity warning, Kerberoast mode requirements, offline-crack
+    follow-ups.
+- `tests/unit/tools/test_impacket_tool.py`:
+  - New `test_impacket_tools_have_complete_guidance` regression guard;
+    any future Impacket spec without full guidance fails pytest.
+- `scripts/validate_rfc.py` (small bug fix): C4 now exempts the RFC's own
+  .md file (`rfcs/<rfc_id>-*.md`) which is listed `# new` in
+  files_will_touch but already exists at preflight time.
+- First phase of the B05 series (tool guidance completeness). Follow-ups:
+  B05b (Sliver), B05c (Havoc+Evilginx), B05d (Ligolo+Caido), B05e
+  (Engagement+Workflow), B05f (Epic G gaps + cross-module param sweep).
