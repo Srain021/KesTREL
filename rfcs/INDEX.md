@@ -120,7 +120,7 @@
 | RFC-G01 | subfinder tool                    | done   |             | agent |
 | RFC-G02 | httpx probe tool                  | done   | RFC-G01     | agent |
 | RFC-G03 | nmap wrapper                      | done   |             | agent |
-| RFC-G04 | ffuf wrapper                      | open   |             |       |
+| RFC-G04 | ffuf wrapper                      | done   |             | agent |
 | RFC-G05 | Metasploit RPC client             | open   | RFC-003     |       |
 | RFC-G06 | Impacket scripts (5 key ones)     | open   |             |       |
 | RFC-G07 | NetExec wrapper                   | open   | RFC-003     |       |

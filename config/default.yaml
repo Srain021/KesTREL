@@ -43,6 +43,11 @@ tools:
     enabled: false
     binary: null
 
+  ffuf:
+    enabled: false
+    binary: null
+    wordlists_dir: "."
+
   caido:
     enabled: false
     binary: null

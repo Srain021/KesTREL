@@ -118,6 +118,8 @@ class ToolBlock(BaseModel):
 
 
 class ToolsSettings(BaseModel):
+    model_config = {"extra": "allow"}
+
     nuclei: ToolBlock = Field(default_factory=lambda: ToolBlock(enabled=True))
     shodan: ToolBlock = Field(default_factory=lambda: ToolBlock(enabled=True))
     subfinder: ToolBlock = Field(default_factory=ToolBlock)

@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-G04` - Added an opt-in ffuf wrapper with `ffuf_dir_bruteforce`,
+  `ffuf_param_fuzz`, and `ffuf_version`, safe wordlist path handling, config
+  defaults, registry wiring, and mocked subprocess tests.
 - `RFC-G03` - Added an opt-in Nmap wrapper with `nmap_scan`,
   `nmap_os_detect`, and `nmap_version`, XML parsing, scope checks,
   `python-nmap` lockfile support, config defaults, registry wiring, and

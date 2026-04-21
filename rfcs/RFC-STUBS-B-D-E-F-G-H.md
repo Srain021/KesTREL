@@ -174,11 +174,6 @@
 - 加到 `tools/__init__.py` 的 `load_modules`
 - 更新 TOOLS_MATRIX.md
 
-### RFC-G04 — ffuf wrapper
-
-- **Mission**: `ffuf_dir_bruteforce(url, wordlist)`、`ffuf_param_fuzz`
-- **Binary**: ffuf/ffuf
-
 ### RFC-G05 — Metasploit RPC client
 
 - **Mission**: `msf_list_modules`, `msf_run_exploit`, `msf_list_sessions`, `msf_interact`

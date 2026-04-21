@@ -372,7 +372,7 @@ user-installed and Windows operators need Npcap for common scan modes.
 
 ## Web 渗透 (12 工具)
 
-### 21. ffuf ⬜ 待集成
+### 21. ffuf ✅ 已集成
 
 | 字段 | 值 |
 |------|---|
@@ -384,6 +384,11 @@ user-installed and Windows operators need Npcap for common scan modes.
 | 体积 | ~10MB |
 | 集成难度 | 🟢 2h |
 | Must-have | ⭐⭐⭐⭐⭐ CTF/赛必备 |
+
+**Kestrel integration**: RFC-G04 done. Exposes `ffuf_dir_bruteforce(url,
+wordlist, extensions, threads)`, `ffuf_param_fuzz(url, wordlist)`, and
+`ffuf_version`; wordlists are constrained with `safe_path()` under
+`tools.ffuf.wordlists_dir`.
 
 ---
 
