@@ -13,18 +13,18 @@ budget:
   max_minutes_human: 35
   max_tokens_model: 18000
 files_to_read:
-  - src/redteam_mcp/tools/base.py
-  - src/redteam_mcp/server.py
-  - src/redteam_mcp/core/services.py
+  - src/kestrel_mcp/tools/base.py
+  - src/kestrel_mcp/server.py
+  - src/kestrel_mcp/core/services.py
 files_will_touch:
-  - src/redteam_mcp/webui/routes/tools.py                  # new
-  - src/redteam_mcp/webui/routes/__init__.py               # modified
-  - src/redteam_mcp/webui/templates/tools/launcher.html.j2 # new
-  - src/redteam_mcp/webui/templates/tools/_job_row.html.j2 # new
-  - src/redteam_mcp/webui/job_runner.py                    # new (async queue + SSE)
+  - src/kestrel_mcp/webui/routes/tools.py                  # new
+  - src/kestrel_mcp/webui/routes/__init__.py               # modified
+  - src/kestrel_mcp/webui/templates/tools/launcher.html.j2 # new
+  - src/kestrel_mcp/webui/templates/tools/_job_row.html.j2 # new
+  - src/kestrel_mcp/webui/job_runner.py                    # new (async queue + SSE)
   - tests/unit/webui/test_tools_routes.py                  # new
 verify_cmd: .venv\Scripts\python.exe -m pytest tests/unit/webui/test_tools_routes.py -v
-rollback_cmd: git checkout -- . && rmdir /S /Q src\redteam_mcp\webui\templates\tools 2>nul
+rollback_cmd: git checkout -- . && rmdir /S /Q src\kestrel_mcp\webui\templates\tools 2>nul
 skill_id: rfc-010-tool-launcher
 ---
 

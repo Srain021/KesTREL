@@ -4,7 +4,7 @@ include pyproject.toml
 include .env.example
 recursive-include config *.yaml *.json *.example
 recursive-include scripts *.ps1 *.sh *.py
-recursive-include src/redteam_mcp py.typed *.py
+recursive-include src/kestrel_mcp py.typed *.py
 recursive-exclude tests *
 global-exclude __pycache__
 global-exclude *.py[co]

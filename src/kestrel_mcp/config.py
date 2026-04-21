@@ -3,9 +3,9 @@
 Layered resolution (later overrides earlier):
 
     1. Built-in defaults (``config/default.yaml`` shipped with the package)
-    2. User config (``~/.redteam-mcp/config.yaml``)
-    3. Project config (``$CWD/redteam-mcp.yaml``)
-    4. Environment variables prefixed ``REDTEAM_MCP_``
+    2. User config (``~/.kestrel/config.yaml``)
+    3. Project config (``$CWD/kestrel.yaml``)
+    4. Environment variables prefixed ``KESTREL_MCP_``
     5. ``--config PATH`` CLI override
 
 Config surface is a single :class:`Settings` pydantic model so it can be
@@ -25,9 +25,9 @@ from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, Settings
 from .features import FeatureFlags
 
 DEFAULT_CONFIG_FILENAME = "default.yaml"
-USER_CONFIG_DIR = Path.home() / ".redteam-mcp"
+USER_CONFIG_DIR = Path.home() / ".kestrel"
 USER_CONFIG_FILE = USER_CONFIG_DIR / "config.yaml"
-PROJECT_CONFIG_FILE = Path.cwd() / "redteam-mcp.yaml"
+PROJECT_CONFIG_FILE = Path.cwd() / "kestrel.yaml"
 
 
 class SecuritySettings(BaseModel):
@@ -51,7 +51,7 @@ class SecuritySettings(BaseModel):
     authorized_scope: list[str] | str = Field(default_factory=list)
     require_ack: bool = True
     dry_run: bool = False
-    audit_log: str = "~/.redteam-mcp/audit.log"
+    audit_log: str = "~/.kestrel/audit.log"
     dangerous_ops_require_scope: bool = True
 
     @field_validator("authorized_scope", mode="after")
@@ -87,13 +87,13 @@ class SecuritySettings(BaseModel):
 class ExecutionSettings(BaseModel):
     timeout_sec: int = Field(300, ge=1, le=86_400)
     max_output_bytes: int = Field(5 * 1024 * 1024, ge=1024)
-    working_dir: str = "~/.redteam-mcp/runs"
+    working_dir: str = "~/.kestrel/runs"
 
 
 class LoggingSettings(BaseModel):
     level: str = "INFO"
     format: str = "json"
-    dir: str = "~/.redteam-mcp/logs"
+    dir: str = "~/.kestrel/logs"
 
     @field_validator("level")
     @classmethod
@@ -128,7 +128,7 @@ class ToolsSettings(BaseModel):
 
 
 class ServerMeta(BaseModel):
-    name: str = "redteam-mcp"
+    name: str = "kestrel-mcp"
     version: str = "0.1.0"
 
 
@@ -143,7 +143,7 @@ class Settings(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_prefix="REDTEAM_MCP_",
+        env_prefix="KESTREL_MCP_",
         env_nested_delimiter="__",
         extra="ignore",
     )
@@ -224,9 +224,9 @@ def load_settings(config_path: str | os.PathLike[str] | None = None) -> Settings
     user/project search. Precedence (later wins):
 
         1. Built-in ``config/default.yaml``
-        2. ``~/.redteam-mcp/config.yaml`` (or ``config_path`` if given)
-        3. ``./redteam-mcp.yaml``
-        4. Environment variables prefixed ``REDTEAM_MCP_``
+        2. ``~/.kestrel/config.yaml`` (or ``config_path`` if given)
+        3. ``./kestrel.yaml``
+        4. Environment variables prefixed ``KESTREL_MCP_``
 
     The YAML values are fed to ``Settings(**merged)`` as init kwargs;
     pydantic-settings then overlays ``EnvSettingsSource`` on top
@@ -246,5 +246,5 @@ def load_settings(config_path: str | os.PathLike[str] | None = None) -> Settings
 
     # IMPORTANT: Use Settings(**merged) — NOT Settings.model_validate(merged) —
     # because the latter bypasses pydantic-settings' EnvSettingsSource, which
-    # means REDTEAM_MCP_* env vars would never be picked up.
+    # means KESTREL_MCP_* env vars would never be picked up.
     return Settings(**merged)

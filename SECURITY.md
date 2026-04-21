@@ -36,7 +36,7 @@ We commit to:
 
 ### In scope
 
-- Authentication / authorization bypass in `redteam_mcp.security`
+- Authentication / authorization bypass in `kestrel_mcp.security`
 - Path traversal via `safe_path()` bypass
 - Prompt injection via tool output not being redacted
 - Subprocess argument injection (argv concatenation bugs)

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import os
 
-from redteam_mcp.config import load_settings
+from kestrel_mcp.config import load_settings
 
 
 def main() -> None:
-    env_keys = sorted(k for k in os.environ if k.startswith("REDTEAM_MCP_"))
-    print("Active REDTEAM_MCP_* env vars:")
+    env_keys = sorted(k for k in os.environ if k.startswith("KESTREL_MCP_"))
+    print("Active KESTREL_MCP_* env vars:")
     for k in env_keys:
         print(f"  {k}={os.environ[k]!r}")
     if not env_keys:

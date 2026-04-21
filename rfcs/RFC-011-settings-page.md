@@ -13,15 +13,15 @@ budget:
   max_minutes_human: 20
   max_tokens_model: 10000
 files_to_read:
-  - src/redteam_mcp/config.py
-  - src/redteam_mcp/__main__.py  # doctor 逻辑
+  - src/kestrel_mcp/config.py
+  - src/kestrel_mcp/__main__.py  # doctor 逻辑
 files_will_touch:
-  - src/redteam_mcp/webui/routes/settings.py               # new
-  - src/redteam_mcp/webui/routes/__init__.py               # modified
-  - src/redteam_mcp/webui/templates/settings/page.html.j2  # new
+  - src/kestrel_mcp/webui/routes/settings.py               # new
+  - src/kestrel_mcp/webui/routes/__init__.py               # modified
+  - src/kestrel_mcp/webui/templates/settings/page.html.j2  # new
   - tests/unit/webui/test_settings_routes.py               # new
 verify_cmd: .venv\Scripts\python.exe -m pytest tests/unit/webui/test_settings_routes.py -v
-rollback_cmd: git checkout -- . && rmdir /S /Q src\redteam_mcp\webui\templates\settings 2>nul
+rollback_cmd: git checkout -- . && rmdir /S /Q src\kestrel_mcp\webui\templates\settings 2>nul
 skill_id: rfc-011-settings-page
 ---
 
@@ -60,7 +60,7 @@ skill_id: rfc-011-settings-page
 
 ## Notes
 
-- 既有 `cli.__main__.doctor` 命令里用了 rich.Table 直接 print 到 stderr。要重构：把核心判断逻辑抽到 `redteam_mcp.cli.readiness` 纯函数 `build_readiness_report() -> list[dict]`，`doctor` 和 settings route 都调它。
+- 既有 `cli.__main__.doctor` 命令里用了 rich.Table 直接 print 到 stderr。要重构：把核心判断逻辑抽到 `kestrel_mcp.cli.readiness` 纯函数 `build_readiness_report() -> list[dict]`，`doctor` 和 settings route 都调它。
 - 重构这一步可以放在 RFC-011 里，一起做（budget 留了余量）。
 
 ## verify_cmd

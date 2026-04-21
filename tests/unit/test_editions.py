@@ -5,9 +5,9 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from redteam_mcp.config import Settings
-from redteam_mcp.editions import PRO_DEFAULTS, TEAM_DEFAULTS, get_defaults
-from redteam_mcp.features import FeatureFlags
+from kestrel_mcp.config import Settings
+from kestrel_mcp.editions import PRO_DEFAULTS, TEAM_DEFAULTS, get_defaults
+from kestrel_mcp.features import FeatureFlags
 
 
 def test_feature_flags_frozen():

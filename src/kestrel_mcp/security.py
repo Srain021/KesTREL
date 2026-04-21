@@ -1,7 +1,7 @@
 """Authorization & scope enforcement.
 
 A target is a hostname, IP, or URL supplied by the LLM. Before any tool
-acts on a target we check it against :class:`~redteam_mcp.config.SecuritySettings`
+acts on a target we check it against :class:`~kestrel_mcp.config.SecuritySettings`
 ``authorized_scope``. This is a BEST-EFFORT safeguard — the user is still
 responsible for only adding in-scope entries.
 
@@ -131,7 +131,7 @@ class ScopeGuard:
         if self.empty:
             raise AuthorizationError(
                 f"Tool '{tool_name}' refused: authorized_scope is empty. "
-                "Set REDTEAM_MCP_AUTHORIZED_SCOPE or config.security.authorized_scope "
+                "Set KESTREL_MCP_AUTHORIZED_SCOPE or config.security.authorized_scope "
                 "to the engagement's in-scope targets before running offensive tools."
             )
         if not self.matches(target):

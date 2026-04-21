@@ -14,15 +14,15 @@ budget:
   max_minutes_human: 30
   max_tokens_model: 20000
 files_to_read:
-  - src/redteam_mcp/domain/entities.py
-  - src/redteam_mcp/domain/storage.py
-  - src/redteam_mcp/domain/services/__init__.py
-  - src/redteam_mcp/core/services.py
+  - src/kestrel_mcp/domain/entities.py
+  - src/kestrel_mcp/domain/storage.py
+  - src/kestrel_mcp/domain/services/__init__.py
+  - src/kestrel_mcp/core/services.py
 files_will_touch:
-  - src/redteam_mcp/domain/services/credential_service.py   # new
-  - src/redteam_mcp/domain/services/__init__.py             # modified (export)
-  - src/redteam_mcp/core/services.py                        # modified (register)
-  - src/redteam_mcp/core/context.py                         # modified (expose ctx.credential)
+  - src/kestrel_mcp/domain/services/credential_service.py   # new
+  - src/kestrel_mcp/domain/services/__init__.py             # modified (export)
+  - src/kestrel_mcp/core/services.py                        # modified (register)
+  - src/kestrel_mcp/core/context.py                         # modified (expose ctx.credential)
   - tests/unit/domain/test_credential_service.py            # new
   - CHANGELOG.md                                            # modified
   - THREAT_MODEL.md                                         # modified (T-I1 status)
@@ -30,7 +30,7 @@ verify_cmd: |
   .venv\Scripts\python.exe -m pytest tests/unit/domain/test_credential_service.py -v
 rollback_cmd: |
   git checkout -- .
-  if exist src\redteam_mcp\domain\services\credential_service.py del src\redteam_mcp\domain\services\credential_service.py
+  if exist src\kestrel_mcp\domain\services\credential_service.py del src\kestrel_mcp\domain\services\credential_service.py
   if exist tests\unit\domain\test_credential_service.py del tests\unit\domain\test_credential_service.py
 skill_id: rfc-003-credential-store
 ---
@@ -116,7 +116,7 @@ RUN .venv\Scripts\python.exe -m uv sync --frozen
 ### Step 2 — CredentialService 实现
 
 ```
-WRITE src/redteam_mcp/domain/services/credential_service.py
+WRITE src/kestrel_mcp/domain/services/credential_service.py
 ```
 ```python
 """CredentialService — sealed secret storage bound to an engagement."""
@@ -317,7 +317,7 @@ def _row_to_entity(r: CredentialRow) -> ent.Credential:
 ### Step 3 — 导出
 
 ```
-REPLACE src/redteam_mcp/domain/services/__init__.py
+REPLACE src/kestrel_mcp/domain/services/__init__.py
 <<<<<<< SEARCH
 from .engagement_service import EngagementService
 from .scope_service import ScopeService
@@ -350,7 +350,7 @@ __all__ = [
 ### Step 4 — ServiceContainer 注册
 
 ```
-REPLACE src/redteam_mcp/core/services.py
+REPLACE src/kestrel_mcp/core/services.py
 <<<<<<< SEARCH
 from ..domain.services import (
     EngagementService,
@@ -370,7 +370,7 @@ from ..domain.services import (
 ```
 
 ```
-REPLACE src/redteam_mcp/core/services.py
+REPLACE src/kestrel_mcp/core/services.py
 <<<<<<< SEARCH
         self.engagement = EngagementService(sessionmaker)
         self.scope = ScopeService(sessionmaker)
@@ -388,7 +388,7 @@ REPLACE src/redteam_mcp/core/services.py
 ### Step 5 — RequestContext 快捷方式
 
 ```
-REPLACE src/redteam_mcp/core/context.py
+REPLACE src/kestrel_mcp/core/context.py
 <<<<<<< SEARCH
     @property
     def finding(self):
@@ -418,9 +418,9 @@ import os
 
 import pytest
 
-from redteam_mcp.core import ServiceContainer
-from redteam_mcp.domain import entities as ent
-from redteam_mcp.domain.errors import CredentialSealError, DomainError
+from kestrel_mcp.core import ServiceContainer
+from kestrel_mcp.domain import entities as ent
+from kestrel_mcp.domain.errors import CredentialSealError, DomainError
 
 
 @pytest.fixture

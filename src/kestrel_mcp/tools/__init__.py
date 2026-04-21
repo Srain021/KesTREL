@@ -1,7 +1,7 @@
 """Tool registry.
 
 Adding a new tool module:
-    1. Create ``redteam_mcp/tools/<name>_tool.py`` subclassing ``ToolModule``.
+    1. Create ``kestrel_mcp/tools/<name>_tool.py`` subclassing ``ToolModule``.
     2. Import it below and append an instance to :func:`load_modules`.
     3. Add a matching ``tools.<name>`` block to ``config/default.yaml``.
 """

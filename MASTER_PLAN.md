@@ -52,7 +52,7 @@ Defender      hacking-tools/ 已排除
 ### ❌ 未完成（从产品化角度）
 ```
 许可证         MIT → 需升级 Apache 2.0 + Responsible Use Addendum
-品牌           名字 "redteam-mcp" 太 generic
+品牌           名字 "kestrel-mcp" 太 generic
 跨平台         当前只在 Windows 验证
 CI/CD          无（手动测试）
 PyPI/Docker    未发布
@@ -221,7 +221,7 @@ Havoc          因 CGO 依赖未编译
 #### 执行步骤
 ```
 1. GitHub 创建新 repo: kestrel-mcp
-2. 重命名 Python package: redteam_mcp → kestrel_mcp
+2. 重命名 Python package: kestrel_mcp → kestrel_mcp
 3. 更新 pyproject.toml, __init__.py
 4. 全局 grep 替换旧名
 5. 更新所有文档（README / QUICKSTART / CTF_CHEATSHEET / 本文档）
@@ -232,7 +232,7 @@ Havoc          因 CGO 依赖未编译
 **验收标准**:
 - `pytest` 全绿
 - `pip install kestrel-mcp` 查询返回"package exists"
-- 不存在任何遗留 "redteam-mcp" 字符串
+- 不存在任何遗留 "kestrel-mcp" 字符串
 
 ---
 
@@ -414,7 +414,7 @@ v1.0.0-alpha.N  预发布
   * Tool.input_schema (JSON Schema)
   * Tool.return type (TextContent / structured)
   * ScopeGuard.ensure() 签名
-  * CLI 参数（redteam-mcp serve/doctor/list-tools）
+  * CLI 参数（kestrel-mcp serve/doctor/list-tools）
 
 不稳定（可能任意变更）:
   * 内部 executor.py 实现
@@ -1307,7 +1307,7 @@ RUN pip install --no-cache-dir .
 RUN useradd -m -u 1000 kestrel
 USER kestrel
 
-ENV REDTEAM_MCP_SECURITY__AUTHORIZED_SCOPE="" \
+ENV KESTREL_MCP_SECURITY__AUTHORIZED_SCOPE="" \
     PYTHONUNBUFFERED=1
 
 ENTRYPOINT ["kestrel-mcp"]
@@ -1327,7 +1327,7 @@ CMD ["serve"]
 [ ] B. armory           (军械库)
 [ ] C. redwing          (红翼)
 [ ] D. 其他: ______     (你提)
-[ ] E. 保留 redteam-mcp (不改)
+[ ] E. 保留 kestrel-mcp (不改)
 ```
 
 ## 决策 2 — License

@@ -1,12 +1,12 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    One-shot Windows installer for redteam-mcp.
+    One-shot Windows installer for kestrel-mcp.
 
 .DESCRIPTION
-    1. Creates / re-uses a Python venv at %USERPROFILE%\.redteam-mcp\venv
+    1. Creates / re-uses a Python venv at %USERPROFILE%\.kestrel\venv
     2. Installs this project in editable mode along with its deps.
-    3. Runs `redteam-mcp doctor` to surface missing tools / API keys.
+    3. Runs `kestrel-mcp doctor` to surface missing tools / API keys.
     4. Offers to register the server with Cursor via register_cursor.py.
 
 .EXAMPLE
@@ -15,14 +15,14 @@
 
 [CmdletBinding()]
 param(
-    [string]$VenvDir = "$env:USERPROFILE\.redteam-mcp\venv",
+    [string]$VenvDir = "$env:USERPROFILE\.kestrel\venv",
     [switch]$SkipCursorRegister
 )
 
 $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 
-Write-Host "==> redteam-mcp installer" -ForegroundColor Cyan
+Write-Host "==> kestrel-mcp installer" -ForegroundColor Cyan
 Write-Host "    Repo:  $repoRoot"
 Write-Host "    Venv:  $VenvDir"
 
@@ -41,11 +41,11 @@ if (-not (Test-Path $venvPy)) { throw "venv python not found at $venvPy" }
 Write-Host "==> Upgrading pip / build tooling..." -ForegroundColor Cyan
 & $venvPy -m pip install --upgrade pip wheel setuptools
 
-Write-Host "==> Installing redteam-mcp (editable + dev extras)..." -ForegroundColor Cyan
+Write-Host "==> Installing kestrel-mcp (editable + dev extras)..." -ForegroundColor Cyan
 & $venvPy -m pip install -e "$repoRoot[dev]"
 
 Write-Host "==> Running doctor..." -ForegroundColor Cyan
-& $venvPy -m redteam_mcp doctor
+& $venvPy -m kestrel_mcp doctor
 
 if (-not $SkipCursorRegister) {
     Write-Host ""

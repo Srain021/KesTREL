@@ -14,18 +14,18 @@ budget:
   max_minutes_human: 25
   max_tokens_model: 10000
 files_to_read:
-  - src/redteam_mcp/server.py
-  - src/redteam_mcp/security.py
-  - src/redteam_mcp/features.py
+  - src/kestrel_mcp/server.py
+  - src/kestrel_mcp/security.py
+  - src/kestrel_mcp/features.py
 files_will_touch:
-  - src/redteam_mcp/server.py                # modified: _check_scope feature-aware
+  - src/kestrel_mcp/server.py                # modified: _check_scope feature-aware
   - tests/unit/test_team_unleashed.py        # new
   - CHANGELOG.md                             # modified
   - rfcs/INDEX.md                            # modified (status done + unblock T08)
 verify_cmd: |
   .venv\Scripts\python.exe -m pytest tests/unit/test_team_unleashed.py -v
 rollback_cmd: |
-  git checkout -- src/redteam_mcp/server.py CHANGELOG.md rfcs/INDEX.md
+  git checkout -- src/kestrel_mcp/server.py CHANGELOG.md rfcs/INDEX.md
   if exist tests\unit\test_team_unleashed.py del tests\unit\test_team_unleashed.py
 skill_id: rfc-t00-unleashed
 ---
@@ -78,7 +78,7 @@ warn_only 用 try/except 包裹原逻辑；off 直接 `return`。
 ### Step 1 — 替换 server._check_scope
 
 ```
-REPLACE src/redteam_mcp/server.py
+REPLACE src/kestrel_mcp/server.py
 <<<<<<< SEARCH
     async def _check_scope(
         self,
@@ -157,10 +157,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from redteam_mcp.domain.errors import ScopeViolationError
-from redteam_mcp.features import FeatureFlags
-from redteam_mcp.security import AuthorizationError, ScopeGuard
-from redteam_mcp.server import RedTeamMCPServer
+from kestrel_mcp.domain.errors import ScopeViolationError
+from kestrel_mcp.features import FeatureFlags
+from kestrel_mcp.security import AuthorizationError, ScopeGuard
+from kestrel_mcp.server import RedTeamMCPServer
 
 
 def _fake_server(scope_enforcement: str, authorized_scope: list[str] | None = None):

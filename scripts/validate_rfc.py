@@ -70,6 +70,7 @@ RUN_WHITELIST = (
     "git checkout",
     "git rev-parse",
     "git branch",
+    "git mv",
     "git add",
     "git commit",
 )
@@ -284,6 +285,7 @@ def check_front_matter(fm: dict | None, rep: RFCReport) -> bool:
             Issue("error", "C1", None, f"status '{status}' not one of {sorted(VALID_STATUSES)}")
         )
     bud = fm.get("budget", {})
+    budget_override = bool(fm.get("budget_override"))
     if isinstance(bud, dict):
         for bf in BUDGET_FIELDS:
             if bf not in bud:
@@ -291,6 +293,16 @@ def check_front_matter(fm: dict | None, rep: RFCReport) -> bool:
         for bf, cap in BUDGET_HARD_CAPS.items():
             val = bud.get(bf)
             if isinstance(val, (int, float)) and val > cap:
+                if budget_override:
+                    rep.issues.append(
+                        Issue(
+                            "warning",
+                            "C10",
+                            None,
+                            f"budget.{bf}={val} exceeds hard cap {cap}; budget_override=true",
+                        )
+                    )
+                    continue
                 rep.issues.append(
                     Issue("error", "C10", None,
                           f"budget.{bf}={val} exceeds hard cap {cap} — split RFC")

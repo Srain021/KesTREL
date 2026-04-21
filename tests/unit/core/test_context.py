@@ -15,19 +15,19 @@ import asyncio
 
 import pytest
 
-from redteam_mcp.core import (
+from kestrel_mcp.core import (
     RequestContext,
     ServiceContainer,
     bind_context,
     current_context,
     current_context_or_none,
 )
-from redteam_mcp.core.context import (
+from kestrel_mcp.core.context import (
     NoActiveContextError,
     NoActiveEngagementError,
 )
-from redteam_mcp.domain import entities as ent
-from redteam_mcp.domain.errors import ScopeViolationError
+from kestrel_mcp.domain import entities as ent
+from kestrel_mcp.domain.errors import ScopeViolationError
 
 pytestmark = pytest.mark.asyncio
 

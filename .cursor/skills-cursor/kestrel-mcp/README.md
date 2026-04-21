@@ -1,6 +1,6 @@
 # Kestrel-MCP Skills
 
-Cursor skills for the Kestrel-MCP (`d:\TG PROJECT\redteam-mcp`) project.
+Cursor skills for the Kestrel-MCP (`d:\TG PROJECT\kestrel-mcp`) project.
 
 ## Install
 

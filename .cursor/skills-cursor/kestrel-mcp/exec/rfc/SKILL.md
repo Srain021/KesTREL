@@ -1,7 +1,7 @@
 ---
 name: kestrel-mcp-exec-rfc
 description: >
-  Execute a single RFC from d:\TG PROJECT\redteam-mcp\rfcs\. Load when user says
+  Execute a single RFC from d:\TG PROJECT\kestrel-mcp\rfcs\. Load when user says
   "run RFC-NNN", "execute RFC-NNN", "做 RFC-NNN", "implement RFC-NNN", "跑 RFC",
   or when bootstrap routed here. Follows AGENT_EXECUTION_PROTOCOL v1.0. Strict
   8-step protocol. No freestyle.

@@ -479,7 +479,7 @@ def test_scope_guard_1k_entries(benchmark):
 ## G-E9 | 没有 CLI UX 一致性
 
 **是什么**
-`redteam-mcp doctor` / `list-tools` 输出格式不一致。错误消息有的带颜色有的不带。
+`kestrel-mcp doctor` / `list-tools` 输出格式不一致。错误消息有的带颜色有的不带。
 
 **补救**
 `rich.console.Console` 统一输出层。定义错误消息格式。用 `typer` 的 `help_panel` 功能。
@@ -874,7 +874,7 @@ OpenTelemetry：
 ## G-O3 | 日志没轮转
 
 **是什么**
-`~/.redteam-mcp/logs/server.log` 无限增长。
+`~/.kestrel/logs/server.log` 无限增长。
 
 **补救**
 `RotatingFileHandler`（当前代码已有 basic 但非标准）。加 `--log-max-bytes`、`--log-backup-count`。

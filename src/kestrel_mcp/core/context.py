@@ -117,7 +117,7 @@ class RequestContext:
 
         No-op if there is no active engagement (the old global-scope path
         is expected to catch violations elsewhere — see
-        :mod:`redteam_mcp.security` fallback).
+        :mod:`kestrel_mcp.security` fallback).
         """
 
         if self.engagement_id is None:

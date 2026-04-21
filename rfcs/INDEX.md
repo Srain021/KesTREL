@@ -130,7 +130,7 @@
 
 | id      | title                             | status | blocking_on | owner |
 |---------|-----------------------------------|--------|-------------|-------|
-| RFC-H01 | Rename to kestrel-mcp             | open   | RFC-002     |       |
+| RFC-H01 | Rename to kestrel-mcp             | done   | RFC-002     | agent |
 | RFC-H02 | PyPI + Docker release pipeline    | open   | RFC-H01,RFC-002 |   |
 | RFC-H03 | MkDocs Material site              | open   | RFC-H01     |       |
 | RFC-H04 | v1.0 release gate + announcement  | open   | all above   |       |
@@ -212,7 +212,7 @@ RFC-A04 (FeatureFlags) ─► RFC-T00 (Unleashed) ─► RFC-T08 (Bootstrap)
 | E    | 3      | 0           | 3    |
 | F    | 3      | 0           | 3    |
 | G    | 8      | 0           | 8    |
-| H    | 4      | 0           | 4    |
+| H    | 4      | 1           | 3    |
 | T    | 10     | 2           | 8    |
 | V    | 12     | 0           | 12   |
 | **Total** | **63** | **15** | **48** |

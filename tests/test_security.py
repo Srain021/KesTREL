@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from redteam_mcp.security import AuthorizationError, ScopeGuard
+from kestrel_mcp.security import AuthorizationError, ScopeGuard
 
 
 class TestScopeGuard:

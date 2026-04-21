@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from redteam_mcp.config import Settings
-from redteam_mcp.security import ScopeGuard
+from kestrel_mcp.config import Settings
+from kestrel_mcp.security import ScopeGuard
 
 
 def _all_enabled_settings() -> Settings:
@@ -18,7 +18,7 @@ class TestToolRegistry:
     def test_all_modules_load_when_enabled(self) -> None:
         settings = _all_enabled_settings()
         guard = ScopeGuard(["*.example.com"])
-        from redteam_mcp.tools import load_modules
+        from kestrel_mcp.tools import load_modules
 
         modules = load_modules(settings, guard)
         ids = sorted(m.id for m in modules)
@@ -38,7 +38,7 @@ class TestToolRegistry:
     def test_every_spec_has_unique_name(self) -> None:
         settings = _all_enabled_settings()
         guard = ScopeGuard(["*.example.com"])
-        from redteam_mcp.tools import load_modules
+        from kestrel_mcp.tools import load_modules
 
         modules = load_modules(settings, guard)
         names: set[str] = set()
@@ -64,7 +64,7 @@ class TestToolRegistry:
 
         settings = _all_enabled_settings()
         guard = ScopeGuard(["*.example.com"])
-        from redteam_mcp.tools import load_modules
+        from kestrel_mcp.tools import load_modules
 
         dangerous_indicators = {
             "url",
@@ -96,7 +96,7 @@ class TestToolRegistry:
     def test_workflows_load_when_shodan_enabled(self) -> None:
         settings = _all_enabled_settings()
         guard = ScopeGuard(["*.example.com"])
-        from redteam_mcp.workflows import load_workflow_specs
+        from kestrel_mcp.workflows import load_workflow_specs
 
         specs = load_workflow_specs(settings, guard)
         names = {s.name for s in specs}

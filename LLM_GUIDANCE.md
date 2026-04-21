@@ -836,7 +836,7 @@ When a tool returns an error, check which class it falls into before retrying.
 ### E-2: ToolNotFoundError / "binary not found"
 
 **Signal**: error mentions "not found on PATH" or "does not exist".
-**DO**: suggest user run `redteam-mcp doctor` and install the missing tool.
+**DO**: suggest user run `kestrel-mcp doctor` and install the missing tool.
 **DON'T**: try raw OS commands as workaround.
 
 ### E-3: Shodan 403
@@ -982,7 +982,7 @@ If user literal words... call this tool first (no exceptions):
 | "generate report" / "write up" | generate_pentest_report |
 | "list phishlets" | evilginx_list_phishlets |
 | "my credits" / "my plan" / "my key works" | shodan_account_info |
-| "doctor" / "tool status" / "what's ready" | advise user to run `redteam-mcp doctor` CLI |
+| "doctor" / "tool status" / "what's ready" | advise user to run `kestrel-mcp doctor` CLI |
 | "my sessions" / "c2 sessions" | sliver_list_sessions |
 | "in scope" / "scope check" / "authorized" | (future: scope_check tool) |
 
@@ -995,7 +995,7 @@ If user literal words... call this tool first (no exceptions):
 ## 10. Meta
 
 Maintainers: this doc is loaded by the MCP server and exposed as a `Resource`. Keep it in sync with:
-- [base.py](./src/redteam_mcp/tools/base.py) — the ToolSpec fields
+- [base.py](./src/kestrel_mcp/tools/base.py) — the ToolSpec fields
 - [DOMAIN_MODEL.md](./DOMAIN_MODEL.md) — the business entities
 - [THREAT_MODEL.md](./THREAT_MODEL.md) — for the "never" rules
 

@@ -7,7 +7,7 @@ import sys
 
 import pytest
 
-from redteam_mcp.executor import (
+from kestrel_mcp.executor import (
     ExecutionTimeout,
     ToolNotFoundError,
     resolve_binary,

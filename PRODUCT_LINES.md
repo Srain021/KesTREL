@@ -69,7 +69,7 @@ github.com/yourorg/kestrel-team     (private, 队内 fork)
 
 ```
 kestrel-mcp/
-├── src/redteam_mcp/
+├── src/kestrel_mcp/
 │   ├── core/                 # Pro + Team 共享
 │   ├── domain/               # Pro + Team 共享
 │   ├── tools/                # Pro + Team 共享
@@ -133,7 +133,7 @@ kestrel-mcp/
 **推荐理由**:
 - v2 里 28 个新 gap 大部分是**增量**，不是**替代**，天然适合 feature flag
 - CI 可以跑 `--edition=pro` 和 `--edition=team` 两遍 regression
-- Team 版特殊代码用子包隔离（`src/redteam_mcp/team/`），清晰边界
+- Team 版特殊代码用子包隔离（`src/kestrel_mcp/team/`），清晰边界
 - 遇到真正不可调和的 domain 差异（如 V-D1 Challenge/Flag）时再升级到方案 C
 
 ---
@@ -310,10 +310,10 @@ kestrel server --profile=custom --config=my.yaml
 ### 候选 2: 核心开源 + 商业功能闭源 ⭐ **推荐**
 
 - **开源部分** (MIT + Responsible Use Addendum):
-  - `src/redteam_mcp/core/`
-  - `src/redteam_mcp/domain/` (除 Challenge/Flag)
-  - `src/redteam_mcp/tools/` (所有 tool module，除 team 专属工具)
-  - `src/redteam_mcp/webui/` 基础
+  - `src/kestrel_mcp/core/`
+  - `src/kestrel_mcp/domain/` (除 Challenge/Flag)
+  - `src/kestrel_mcp/tools/` (所有 tool module，除 team 专属工具)
+  - `src/kestrel_mcp/webui/` 基础
   - RFC 体系、skills
 - **私有部分**（Pro 商业）:
   - Multi-tenant
@@ -338,7 +338,7 @@ kestrel server --profile=custom --config=my.yaml
 
 ```
 kestrel-mcp/
-├── src/redteam_mcp/
+├── src/kestrel_mcp/
 │   ├── __init__.py
 │   ├── core/                          # 共享
 │   │   ├── context.py

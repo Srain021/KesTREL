@@ -44,7 +44,7 @@ If `full_verify.py` is green and user asks for "deep check":
 ```
 RUN .venv\Scripts\pytest.exe tests/ -x --tb=short -q
 RUN .venv\Scripts\ruff.exe check src/
-RUN .venv\Scripts\mypy.exe src/redteam_mcp/core/ src/redteam_mcp/domain/
+RUN .venv\Scripts\mypy.exe src/kestrel_mcp/core/ src/kestrel_mcp/domain/
 ```
 
 ### Step 4 — Report

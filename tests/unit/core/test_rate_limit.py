@@ -6,11 +6,11 @@ import asyncio
 
 import pytest
 
-from redteam_mcp.config import Settings
-from redteam_mcp.core import RequestContext, ServiceContainer
-from redteam_mcp.core.rate_limit import RateLimitedError, RateLimiter, RateLimitSpec
-from redteam_mcp.server import RedTeamMCPServer
-from redteam_mcp.tools.base import ToolResult, ToolSpec
+from kestrel_mcp.config import Settings
+from kestrel_mcp.core import RequestContext, ServiceContainer
+from kestrel_mcp.core.rate_limit import RateLimitedError, RateLimiter, RateLimitSpec
+from kestrel_mcp.server import RedTeamMCPServer
+from kestrel_mcp.tools.base import ToolResult, ToolSpec
 
 pytestmark = pytest.mark.asyncio
 

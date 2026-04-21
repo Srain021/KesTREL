@@ -6,9 +6,9 @@ from contextlib import asynccontextmanager
 import pytest
 from httpx import ASGITransport, AsyncClient, BasicAuth
 
-from redteam_mcp.config import Settings, WebUISettings
-from redteam_mcp.core import ServiceContainer
-from redteam_mcp.webui import create_app
+from kestrel_mcp.config import Settings, WebUISettings
+from kestrel_mcp.core import ServiceContainer
+from kestrel_mcp.webui import create_app
 
 
 @asynccontextmanager

@@ -40,10 +40,10 @@ Depending on scope, read key files with Read tool:
 
 | Scope | Files |
 |-------|-------|
-| security | `src/redteam_mcp/security.py`, `core/redact.py`, `core/paths.py`, `executor.py` |
-| domain | `src/redteam_mcp/domain/entities.py`, `services/*.py`, `storage.py` |
-| tools | `src/redteam_mcp/tools/__init__.py`, any flagged tool_*.py |
-| webui | `src/redteam_mcp/webui/app.py`, `routes/*.py`, templates |
+| security | `src/kestrel_mcp/security.py`, `core/redact.py`, `core/paths.py`, `executor.py` |
+| domain | `src/kestrel_mcp/domain/entities.py`, `services/*.py`, `storage.py` |
+| tools | `src/kestrel_mcp/tools/__init__.py`, any flagged tool_*.py |
+| webui | `src/kestrel_mcp/webui/app.py`, `routes/*.py`, templates |
 | tests | `pytest --collect-only -q` then sample 3 directories |
 
 Use `Grep` for specific patterns (**only** for audit findings, not exploration):

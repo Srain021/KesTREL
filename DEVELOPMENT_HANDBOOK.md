@@ -702,7 +702,7 @@ Chosen option: **Option X**, because [rationale]
 
 - RFC-002 is the current baseline: `.github/workflows/ci.yml` must stay green
   on `ruff check`, `ruff format --check`, `mypy --strict` for
-  `src/redteam_mcp/core` + `src/redteam_mcp/domain`, plus `pytest` and
+  `src/kestrel_mcp/core` + `src/kestrel_mcp/domain`, plus `pytest` and
   `scripts/full_verify.py` across Ubuntu/macOS/Windows on Python
   3.10/3.11/3.12.
 - Weekly security automation lives in `.github/workflows/codeql.yml` and
@@ -906,7 +906,7 @@ kestrel-mcp replay tests/fixtures/mcp/shodan_search_req.json
 | 症状 | 排查 |
 |------|-----|
 | Tool 报 ToolNotFound | `kestrel-mcp doctor` 看 binary 解析 |
-| Scope guard 拒绝 | `REDTEAM_MCP_SECURITY__AUTHORIZED_SCOPE` 检查 |
+| Scope guard 拒绝 | `KESTREL_MCP_SECURITY__AUTHORIZED_SCOPE` 检查 |
 | MCP 连接不上 | 在 MCP host 开 trace log; stdio 严禁 print 到 stdout |
 | Subprocess 悬挂 | `execution.timeout_sec` 调小；看 log 的 duration |
 | 测试挂但本地过 | CI matrix 某 OS/Python 版本差异 |

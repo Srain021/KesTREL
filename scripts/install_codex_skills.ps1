@@ -59,7 +59,7 @@ $Skills = @(
     [pscustomobject]@{
         Name = "kestrel-mcp"
         SourceRel = "SKILL.md"
-        Description = "Root skill for the Kestrel-MCP repo. Trigger on redteam-mcp, kestrel, RFC execution, 审计, 查进度, 交接, or repo-wide workflow questions."
+        Description = "Root skill for the Kestrel-MCP repo. Trigger on kestrel-mcp, kestrel, RFC execution, 审计, 查进度, 交接, or repo-wide workflow questions."
     },
     [pscustomobject]@{
         Name = "kestrel-mcp-bootstrap"

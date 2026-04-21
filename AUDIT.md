@@ -6,15 +6,15 @@
 
 **Audit date**: 2026-04-21
 **Auditor**: pair (human + Claude, no web-search)
-**Scope**: everything under `d:\TG PROJECT\redteam-mcp\`
+**Scope**: everything under `d:\TG PROJECT\kestrel-mcp\`
 
 ---
 
 ## Part 1 — 危险 / 脆弱 / 返工风险
 
-### D-1. 包名 `redteam_mcp` 与未来品牌 `kestrel-mcp` 错位
+### D-1. 包名 `kestrel_mcp` 与未来品牌 `kestrel-mcp` 错位
 
-- `pyproject.toml` 里 package=`redteam_mcp`，CLI=`redteam-mcp`
+- `pyproject.toml` 里 package=`kestrel_mcp`，CLI=`kestrel-mcp`
 - 多个文档声明未来会重命名为 `kestrel-mcp`
 - 如果先发布 v1.0 再改名，会**破坏所有外部依赖**
 - **必须在 v1.0 前决策**，不然后期无法挽救

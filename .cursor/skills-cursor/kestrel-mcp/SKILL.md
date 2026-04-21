@@ -1,21 +1,21 @@
 ---
 name: kestrel-mcp
 description: >
-  Root skill for the Kestrel-MCP / redteam-mcp project (d:\TG PROJECT\redteam-mcp).
+  Root skill for the Kestrel-MCP / kestrel-mcp project (d:\TG PROJECT\kestrel-mcp).
   Always load when the user works in this repo. Routes agent to specialized
   sub-skills: bootstrap, exec (rfc), plan, audit, handoff, query, health, roles, team.
-  Trigger on: "kestrel", "redteam-mcp", any RFC number, "run RFC-*", "audit",
+  Trigger on: "kestrel", "kestrel-mcp", any RFC number, "run RFC-*", "audit",
   "next step", "交接", "审计", "执行 RFC".
 ---
 
 # Kestrel-MCP — Root Skill
 
-You are working on **Kestrel-MCP** (project root: `d:\TG PROJECT\redteam-mcp`).
+You are working on **Kestrel-MCP** (project root: `d:\TG PROJECT\kestrel-mcp`).
 
 ## Project facts (memorize)
 
 - **Stack**: Python 3.12, Pydantic v2, SQLAlchemy 2.0 async, FastAPI, Typer, pytest
-- **Package name**: `redteam_mcp` (being renamed → `kestrel_mcp` via RFC-H01)
+- **Package name**: `kestrel_mcp` (being renamed → `kestrel_mcp` via RFC-H01)
 - **Editions**: `pro` (strict, default) and `team` (unleashed). See `PRODUCT_LINES.md`.
 - **Protocol**: Every change goes through an RFC. See `AGENT_EXECUTION_PROTOCOL.md`.
 - **Authoritative docs**:

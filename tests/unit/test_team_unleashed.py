@@ -6,10 +6,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from redteam_mcp.domain.errors import ScopeViolationError
-from redteam_mcp.features import FeatureFlags
-from redteam_mcp.security import AuthorizationError, ScopeGuard
-from redteam_mcp.server import RedTeamMCPServer
+from kestrel_mcp.domain.errors import ScopeViolationError
+from kestrel_mcp.features import FeatureFlags
+from kestrel_mcp.security import AuthorizationError, ScopeGuard
+from kestrel_mcp.server import RedTeamMCPServer
 
 
 def _fake_server(scope_enforcement: str, authorized_scope: list[str] | None = None):

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from redteam_mcp.config import Settings, _deep_merge, load_settings
+from kestrel_mcp.config import Settings, _deep_merge, load_settings
 
 
 class TestDeepMerge:
@@ -31,21 +31,21 @@ class TestDeepMerge:
 class TestSettings:
     def test_defaults(self) -> None:
         settings = Settings()
-        assert settings.server.name == "redteam-mcp"
+        assert settings.server.name == "kestrel-mcp"
         assert settings.execution.timeout_sec == 300
         assert settings.security.authorized_scope == []
         assert settings.tools.shodan.enabled is True
 
     def test_env_override_security(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("REDTEAM_MCP_SECURITY__DRY_RUN", "true")
-        monkeypatch.setenv("REDTEAM_MCP_LOGGING__LEVEL", "debug")
+        monkeypatch.setenv("KESTREL_MCP_SECURITY__DRY_RUN", "true")
+        monkeypatch.setenv("KESTREL_MCP_LOGGING__LEVEL", "debug")
         settings = Settings()
         assert settings.security.dry_run is True
         assert settings.logging.level == "DEBUG"
 
     def test_expanded_path(self) -> None:
         settings = Settings()
-        p = settings.expanded_path("~/.redteam-mcp/logs")
+        p = settings.expanded_path("~/.kestrel/logs")
         assert str(p).startswith(str(Path.home()))
 
     def test_load_settings_with_explicit_file(self, tmp_path: Path) -> None:
@@ -60,7 +60,7 @@ tools:
 """,
             encoding="utf-8",
         )
-        os.environ.pop("REDTEAM_MCP_SECURITY__AUTHORIZED_SCOPE", None)
+        os.environ.pop("KESTREL_MCP_SECURITY__AUTHORIZED_SCOPE", None)
         settings = load_settings(cfg)
         assert settings.security.authorized_scope == ["*.lab.test"]
         assert settings.tools.nuclei.enabled is False

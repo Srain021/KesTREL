@@ -163,8 +163,8 @@ Docs:
 Run:
 
 ```
-RUN .venv\Scripts\python.exe -m redteam_mcp.__main__ --edition pro show-config
-RUN .venv\Scripts\python.exe -m redteam_mcp.__main__ --edition team show-config
+RUN .venv\Scripts\python.exe -m kestrel_mcp.__main__ --edition pro show-config
+RUN .venv\Scripts\python.exe -m kestrel_mcp.__main__ --edition team show-config
 ```
 
 (If `show-config` doesn't exist yet, RFC-A04 not done; say so.)
@@ -188,5 +188,5 @@ credential_encryption_required   | true      | false
 
 - Do not modify any files during query.
 - Do not run `verify_cmd` or tests beyond `--collect-only`.
-- Do not read into `src/` files unless § E needs it (and only `redteam_mcp.__main__`).
+- Do not read into `src/` files unless § E needs it (and only `kestrel_mcp.__main__`).
 - Do not recommend an RFC whose `blocking_on` isn't all done.

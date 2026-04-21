@@ -6,9 +6,9 @@ import sys
 
 import pytest
 
-from redteam_mcp.core.paths import PathTraversalError, safe_path
-from redteam_mcp.core.redact import redact
-from redteam_mcp.executor import run_command
+from kestrel_mcp.core.paths import PathTraversalError, safe_path
+from kestrel_mcp.core.redact import redact
+from kestrel_mcp.executor import run_command
 
 
 def test_safe_path_basic_join(tmp_path):

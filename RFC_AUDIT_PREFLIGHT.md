@@ -58,18 +58,18 @@ a file that doesn't exist in the current tree.
 **Detection**: validator C2 (files_to_read) / C6 (REPLACE target).
 
 **Victims**:
-- **RFC-006 `files_to_read`**: references `src/redteam_mcp/cli/__main__.py`
-  — actual file is `src/redteam_mcp/__main__.py` (no `cli/` subdir).
-- **RFC-008 `files_to_read`**: `src/redteam_mcp/webui/templating.py`
+- **RFC-006 `files_to_read`**: references `src/kestrel_mcp/cli/__main__.py`
+  — actual file is `src/kestrel_mcp/__main__.py` (no `cli/` subdir).
+- **RFC-008 `files_to_read`**: `src/kestrel_mcp/webui/templating.py`
   — `webui/` doesn't exist yet (transitive dep on RFC-007).
-- **RFC-009 `files_to_read`**: `src/redteam_mcp/webui/routes/engagements.py`
+- **RFC-009 `files_to_read`**: `src/kestrel_mcp/webui/routes/engagements.py`
   — doesn't exist (transitive dep on RFC-008).
-- **RFC-T00 `files_to_read`**: `src/redteam_mcp/features.py`
+- **RFC-T00 `files_to_read`**: `src/kestrel_mcp/features.py`
   — transitive dep on RFC-A04.
-- **RFC-007 Step 6 REPLACE target**: `src/redteam_mcp/webui/app.py` doesn't
+- **RFC-007 Step 6 REPLACE target**: `src/kestrel_mcp/webui/app.py` doesn't
   exist (assumes RFC-006 ran).
 - **RFC-008 Step 6 REPLACE target**: same.
-- **RFC-T00 Step 5 REPLACE target**: `src/redteam_mcp/core/rate_limit.py`
+- **RFC-T00 Step 5 REPLACE target**: `src/kestrel_mcp/core/rate_limit.py`
   doesn't exist (assumes RFC-004 ran — but RFC-T00 only lists RFC-A04 as
   `blocking_on`; missing implicit transitive dep).
 
@@ -82,7 +82,7 @@ the actual target file. The string never matches, or matches nothing close.
 
 **Victims** (14 SEARCH blocks across 7 RFCs):
 - **RFC-A04 Step 4**: SEARCH `app = typer.Typer(help="Red Team MCP server CLI")`
-  — real file has `app = typer.Typer(name="redteam-mcp", ...)` over multiple
+  — real file has `app = typer.Typer(name="kestrel-mcp", ...)` over multiple
   lines. Validator reported near-miss `app = typer.Typer(`.
 - **RFC-A04 Step 4 (2nd)**: SEARCH `if __name__ == "__main__":\n    app()` —
   real code ends with `main()`, not `app()`.
@@ -113,7 +113,7 @@ unlisted files (§6).
 **Victims**:
 - **RFC-003 Step 1**: conditional `REPLACE pyproject.toml` if `cryptography`
   is missing — `pyproject.toml` not in `files_will_touch`.
-- **RFC-T00 Step 4**: `REPLACE src/redteam_mcp/domain/services/scope_service.py`
+- **RFC-T00 Step 4**: `REPLACE src/kestrel_mcp/domain/services/scope_service.py`
   — not in `files_will_touch` (RFC only lists `core/context.py`, `server.py`,
   `security.py`, `core/rate_limit.py`).
 - **RFC-T08 Step 4**: `WRITE tests/unit/team/__init__.py` — not in

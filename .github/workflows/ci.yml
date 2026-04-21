@@ -35,7 +35,7 @@ jobs:
         run: uv run --no-sync ruff format --check src tests
 
       - name: Mypy (core + domain)
-        run: uv run --no-sync mypy --strict src/redteam_mcp/core src/redteam_mcp/domain
+        run: uv run --no-sync mypy --strict src/kestrel_mcp/core src/kestrel_mcp/domain
 
   test:
     needs: lint

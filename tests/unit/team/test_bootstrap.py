@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from redteam_mcp.team.bootstrap import BootstrapReport, bootstrap
+from kestrel_mcp.team.bootstrap import BootstrapReport, bootstrap
 
 
 def test_dry_run_reports_no_mutation(tmp_path, monkeypatch):

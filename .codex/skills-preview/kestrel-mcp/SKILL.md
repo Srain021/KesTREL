@@ -1,7 +1,7 @@
 ﻿---
 name: kestrel-mcp
 description: >
-  Root skill for the Kestrel-MCP repo. Trigger on redteam-mcp, kestrel, RFC execution, 瀹¤, 鏌ヨ繘搴? 浜ゆ帴, or repo-wide workflow questions.
+  Root skill for the Kestrel-MCP repo. Trigger on kestrel-mcp, kestrel, RFC execution, 瀹¤, 鏌ヨ繘搴? 浜ゆ帴, or repo-wide workflow questions.
 ---
 
 # kestrel-mcp
@@ -11,15 +11,15 @@ This is the Codex wrapper for the Kestrel-MCP Cursor skill set.
 ## Canonical source
 
 Open and follow this file as the authoritative workflow before taking action:
-- D:\TG PROJECT\redteam-mcp\.cursor\skills-cursor\kestrel-mcp\SKILL.md
+- D:\TG PROJECT\kestrel-mcp\.cursor\skills-cursor\kestrel-mcp\SKILL.md
 
 ## Repo anchors
 
-- Repo root: D:\TG PROJECT\redteam-mcp
-- Cursor skill tree: D:\TG PROJECT\redteam-mcp\.cursor\skills-cursor\kestrel-mcp
-- Agent entry: D:\TG PROJECT\redteam-mcp\README_FOR_AGENT.md
-- Execution protocol: D:\TG PROJECT\redteam-mcp\AGENT_EXECUTION_PROTOCOL.md
-- RFC index: D:\TG PROJECT\redteam-mcp\rfcs\INDEX.md
+- Repo root: D:\TG PROJECT\kestrel-mcp
+- Cursor skill tree: D:\TG PROJECT\kestrel-mcp\.cursor\skills-cursor\kestrel-mcp
+- Agent entry: D:\TG PROJECT\kestrel-mcp\README_FOR_AGENT.md
+- Execution protocol: D:\TG PROJECT\kestrel-mcp\AGENT_EXECUTION_PROTOCOL.md
+- RFC index: D:\TG PROJECT\kestrel-mcp\rfcs\INDEX.md
 
 ## Wrapper rules
 

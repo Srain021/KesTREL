@@ -1,6 +1,6 @@
 """ScopeService — persistent, engagement-scoped authorization.
 
-This replaces the in-memory :class:`redteam_mcp.security.ScopeGuard`, keeping
+This replaces the in-memory :class:`kestrel_mcp.security.ScopeGuard`, keeping
 the same matching semantics but backing it with the engagement DB so rules
 survive restart and can be shared across MCP / REST / TUI.
 

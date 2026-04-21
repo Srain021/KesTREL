@@ -5,8 +5,8 @@ Usage:
 
 Behaviour:
     * Locates (or creates) ``~/.cursor/mcp.json``.
-    * Adds an entry named ``redteam-mcp`` pointing at the current Python's
-      ``python -m redteam_mcp serve`` launch.
+    * Adds an entry named ``kestrel-mcp`` pointing at the current Python's
+      ``python -m kestrel_mcp serve`` launch.
     * Pre-populates environment variables from the current shell so Shodan
       and tool paths are picked up automatically.
     * Idempotent: re-running updates the existing entry unless ``--force``
@@ -24,19 +24,19 @@ from pathlib import Path
 
 
 CURSOR_MCP_FILE = Path.home() / ".cursor" / "mcp.json"
-SERVER_KEY = "redteam-mcp"
+SERVER_KEY = "kestrel-mcp"
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Register redteam-mcp with Cursor")
+    parser = argparse.ArgumentParser(description="Register kestrel-mcp with Cursor")
     parser.add_argument(
         "--python-exe",
         default=sys.executable,
-        help="Python interpreter that has redteam-mcp installed.",
+        help="Python interpreter that has kestrel-mcp installed.",
     )
     parser.add_argument(
         "--scope",
-        default=os.environ.get("REDTEAM_MCP_AUTHORIZED_SCOPE", ""),
+        default=os.environ.get("KESTREL_MCP_AUTHORIZED_SCOPE", ""),
         help="Initial authorized scope (comma-separated).",
     )
     parser.add_argument("--force", action="store_true", help="Overwrite existing entry.")
@@ -64,21 +64,21 @@ def main() -> int:
 
     entry = {
         "command": args.python_exe,
-        "args": ["-m", "redteam_mcp", "serve"],
+        "args": ["-m", "kestrel_mcp", "serve"],
         "env": {
-            "REDTEAM_MCP_AUTHORIZED_SCOPE": args.scope,
+            "KESTREL_MCP_AUTHORIZED_SCOPE": args.scope,
             "SHODAN_API_KEY": os.environ.get("SHODAN_API_KEY", ""),
             "PYTHONUNBUFFERED": "1",
         },
     }
     for env_key in (
-        "REDTEAM_MCP_TOOL_NUCLEI",
-        "REDTEAM_MCP_TOOL_SLIVER_SERVER",
-        "REDTEAM_MCP_TOOL_SLIVER_CLIENT",
-        "REDTEAM_MCP_TOOL_LIGOLO_PROXY",
-        "REDTEAM_MCP_TOOL_CAIDO_CLI",
-        "REDTEAM_MCP_TOOL_EVILGINX",
-        "REDTEAM_MCP_TOOL_HAVOC",
+        "KESTREL_MCP_TOOL_NUCLEI",
+        "KESTREL_MCP_TOOL_SLIVER_SERVER",
+        "KESTREL_MCP_TOOL_SLIVER_CLIENT",
+        "KESTREL_MCP_TOOL_LIGOLO_PROXY",
+        "KESTREL_MCP_TOOL_CAIDO_CLI",
+        "KESTREL_MCP_TOOL_EVILGINX",
+        "KESTREL_MCP_TOOL_HAVOC",
     ):
         if value := os.environ.get(env_key):
             entry["env"][env_key] = value
@@ -89,7 +89,7 @@ def main() -> int:
     print(f"[ok] Registered '{SERVER_KEY}' in {CURSOR_MCP_FILE}")
     print(f"      command: {entry['command']} {' '.join(entry['args'])}")
     if not args.scope:
-        print("[warn] REDTEAM_MCP_AUTHORIZED_SCOPE is empty — offensive tools will refuse to run")
+        print("[warn] KESTREL_MCP_AUTHORIZED_SCOPE is empty — offensive tools will refuse to run")
         print("       until you set it. Pass --scope or export the env variable.")
     if not entry["env"].get("SHODAN_API_KEY"):
         print("[warn] SHODAN_API_KEY is empty — Shodan tools will return an error.")

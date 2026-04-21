@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# One-shot installer for redteam-mcp on Linux/macOS.
+# One-shot installer for kestrel-mcp on Linux/macOS.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VENV_DIR="${VENV_DIR:-$HOME/.redteam-mcp/venv}"
+VENV_DIR="${VENV_DIR:-$HOME/.kestrel/venv}"
 
-echo "==> redteam-mcp installer"
+echo "==> kestrel-mcp installer"
 echo "    Repo:  $REPO_ROOT"
 echo "    Venv:  $VENV_DIR"
 
@@ -25,11 +25,11 @@ source "$VENV_DIR/bin/activate"
 echo "==> Upgrading pip"
 python -m pip install --upgrade pip wheel setuptools
 
-echo "==> Installing redteam-mcp (editable + dev extras)"
+echo "==> Installing kestrel-mcp (editable + dev extras)"
 python -m pip install -e "${REPO_ROOT}[dev]"
 
 echo "==> Running doctor"
-python -m redteam_mcp doctor || true
+python -m kestrel_mcp doctor || true
 
 echo
 read -r -p "Register with Cursor now? [y/N] " ans

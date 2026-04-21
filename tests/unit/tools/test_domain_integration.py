@@ -12,17 +12,17 @@ from __future__ import annotations
 
 import pytest
 
-from redteam_mcp.config import Settings
-from redteam_mcp.core import ServiceContainer
-from redteam_mcp.domain import entities as ent
-from redteam_mcp.security import ScopeGuard
-from redteam_mcp.tools.nuclei_tool import (
+from kestrel_mcp.config import Settings
+from kestrel_mcp.core import ServiceContainer
+from kestrel_mcp.domain import entities as ent
+from kestrel_mcp.security import ScopeGuard
+from kestrel_mcp.tools.nuclei_tool import (
     NucleiModule,
     _best_target_for,
     _coerce_cvss,
     _nuclei_severity_to_domain,
 )
-from redteam_mcp.tools.shodan_tool import ShodanModule
+from kestrel_mcp.tools.shodan_tool import ShodanModule
 
 
 @pytest.fixture

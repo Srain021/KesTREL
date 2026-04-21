@@ -13,20 +13,20 @@ budget:
   max_minutes_human: 30
   max_tokens_model: 16000
 files_to_read:
-  - src/redteam_mcp/webui/app.py
-  - src/redteam_mcp/webui/templating.py
-  - src/redteam_mcp/domain/services/engagement_service.py
+  - src/kestrel_mcp/webui/app.py
+  - src/kestrel_mcp/webui/templating.py
+  - src/kestrel_mcp/domain/services/engagement_service.py
 files_will_touch:
-  - src/redteam_mcp/webui/routes/__init__.py           # new
-  - src/redteam_mcp/webui/routes/engagements.py        # new
-  - src/redteam_mcp/webui/templates/engagements/list.html.j2     # new
-  - src/redteam_mcp/webui/templates/engagements/show.html.j2     # new
-  - src/redteam_mcp/webui/templates/engagements/_form.html.j2    # new (htmx partial)
-  - src/redteam_mcp/webui/app.py                       # modified (include router)
+  - src/kestrel_mcp/webui/routes/__init__.py           # new
+  - src/kestrel_mcp/webui/routes/engagements.py        # new
+  - src/kestrel_mcp/webui/templates/engagements/list.html.j2     # new
+  - src/kestrel_mcp/webui/templates/engagements/show.html.j2     # new
+  - src/kestrel_mcp/webui/templates/engagements/_form.html.j2    # new (htmx partial)
+  - src/kestrel_mcp/webui/app.py                       # modified (include router)
   - tests/unit/webui/test_engagement_routes.py         # new
 verify_cmd: |
   .venv\Scripts\python.exe -m pytest tests/unit/webui/test_engagement_routes.py -v
-rollback_cmd: git checkout -- . && rmdir /S /Q src\redteam_mcp\webui\routes 2>nul && rmdir /S /Q src\redteam_mcp\webui\templates\engagements 2>nul
+rollback_cmd: git checkout -- . && rmdir /S /Q src\kestrel_mcp\webui\routes 2>nul && rmdir /S /Q src\kestrel_mcp\webui\templates\engagements 2>nul
 skill_id: rfc-008-engagement-routes
 ---
 
@@ -70,7 +70,7 @@ URL 结构：
 ### Step 1 — routes 包
 
 ```
-WRITE src/redteam_mcp/webui/routes/__init__.py
+WRITE src/kestrel_mcp/webui/routes/__init__.py
 ```
 ```python
 from fastapi import APIRouter
@@ -84,7 +84,7 @@ router.include_router(engagements_router, prefix="/engagements", tags=["engageme
 ### Step 2 — engagements.py
 
 ```
-WRITE src/redteam_mcp/webui/routes/engagements.py
+WRITE src/kestrel_mcp/webui/routes/engagements.py
 ```
 ```python
 from __future__ import annotations
@@ -175,7 +175,7 @@ async def show_engagement(
 ### Step 3 — list.html.j2
 
 ```
-WRITE src/redteam_mcp/webui/templates/engagements/list.html.j2
+WRITE src/kestrel_mcp/webui/templates/engagements/list.html.j2
 ```
 ```html
 {% extends "base.html.j2" %}
@@ -228,7 +228,7 @@ WRITE src/redteam_mcp/webui/templates/engagements/list.html.j2
 ### Step 4 — _form.html.j2 (partial row)
 
 ```
-WRITE src/redteam_mcp/webui/templates/engagements/_form.html.j2
+WRITE src/kestrel_mcp/webui/templates/engagements/_form.html.j2
 ```
 ```html
 {# rendered both as a full row (in list.html.j2) and as htmx partial response #}
@@ -256,7 +256,7 @@ WRITE src/redteam_mcp/webui/templates/engagements/_form.html.j2
 ### Step 5 — show.html.j2
 
 ```
-WRITE src/redteam_mcp/webui/templates/engagements/show.html.j2
+WRITE src/kestrel_mcp/webui/templates/engagements/show.html.j2
 ```
 ```html
 {% extends "base.html.j2" %}
@@ -306,7 +306,7 @@ WRITE src/redteam_mcp/webui/templates/engagements/show.html.j2
 ### Step 6 — 装载 router
 
 ```
-REPLACE src/redteam_mcp/webui/app.py
+REPLACE src/kestrel_mcp/webui/app.py
 <<<<<<< SEARCH
     app.add_middleware(RequestContextMiddleware, container=container)
 =======
@@ -328,9 +328,9 @@ from __future__ import annotations
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from redteam_mcp.core import ServiceContainer
-from redteam_mcp.domain import entities as ent
-from redteam_mcp.webui import create_app
+from kestrel_mcp.core import ServiceContainer
+from kestrel_mcp.domain import entities as ent
+from kestrel_mcp.webui import create_app
 
 
 @pytest.fixture

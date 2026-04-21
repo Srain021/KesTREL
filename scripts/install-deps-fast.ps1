@@ -1,13 +1,13 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Install the smallest possible subset of redteam-mcp dependencies
+    Install the smallest possible subset of kestrel-mcp dependencies
     tolerant of slow/unstable networks (typical of split-tunnel VPN).
 
 .DESCRIPTION
     Splits the dependency list into two tiers:
-      * Tier 1 — REQUIRED for `redteam-mcp doctor` & offline tests
-      * Tier 2 — REQUIRED for `redteam-mcp serve`
+      * Tier 1 — REQUIRED for `kestrel-mcp doctor` & offline tests
+      * Tier 2 — REQUIRED for `kestrel-mcp serve`
       * Tier 3 — nice-to-have
     If Tier 1 fails we stop early so the user knows to fix network first.
 
@@ -43,7 +43,7 @@ function Install-Tier([string]$Name, [string[]]$Packages) {
     return $ok
 }
 
-Write-Host "==> redteam-mcp dependency installer (slow-network tolerant)" -ForegroundColor Cyan
+Write-Host "==> kestrel-mcp dependency installer (slow-network tolerant)" -ForegroundColor Cyan
 Write-Host "    Index: $Index"
 Write-Host "    Per-package timeout: $Timeout s, retries: $Retries`n"
 

@@ -1,7 +1,7 @@
 """EngagementModule — MCP tools that manage engagements, scope, targets, findings.
 
 These tools let the LLM (or human via CLI) drive the domain layer without
-leaving the chat. They consume the :class:`~redteam_mcp.core.ServiceContainer`
+leaving the chat. They consume the :class:`~kestrel_mcp.core.ServiceContainer`
 accessed through :func:`current_context`.
 
 Exposed tools (16)::

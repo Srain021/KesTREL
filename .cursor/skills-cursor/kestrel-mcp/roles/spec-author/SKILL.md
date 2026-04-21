@@ -23,7 +23,7 @@ reach the same result a senior engineer would.
 ### P1 — Specificity over cleverness
 
 Bad: "Update the config to support the new mode."
-Good: `REPLACE src/redteam_mcp/config.py` + exact SEARCH/REPLACE block.
+Good: `REPLACE src/kestrel_mcp/config.py` + exact SEARCH/REPLACE block.
 
 ### P2 — One RFC, one concept
 

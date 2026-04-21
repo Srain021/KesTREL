@@ -144,13 +144,13 @@
 
 ### RFC-F01 — Textual skeleton + nav
 
-- **Mission**: `redteam-mcp tui` 启动 Textual，左侧 nav（Engagements / Tools / Audit），右侧 content area。
+- **Mission**: `kestrel-mcp tui` 启动 Textual，左侧 nav（Engagements / Tools / Audit），右侧 content area。
 - **Blocking**: RFC-002
 - **Budget**: 5 files
 - **Steps**:
   1. `pyproject.toml` 加 `textual>=0.80`
-  2. `src/redteam_mcp/tui/__init__.py` + `app.py`
-  3. 加 CLI subcommand `redteam-mcp tui`
+  2. `src/kestrel_mcp/tui/__init__.py` + `app.py`
+  3. 加 CLI subcommand `kestrel-mcp tui`
 
 ### RFC-F02 — Engagement + Finding views
 
@@ -234,7 +234,7 @@
 - **Blocking**: RFC-002
 - **Budget**: 30+ files (sed-like replace)
 - **Steps**:
-  1. grep `redteam_mcp` 全替换 `kestrel_mcp`
+  1. grep `kestrel_mcp` 全替换 `kestrel_mcp`
   2. `pyproject.toml` name 改
   3. venv 重新创建
   4. 验证 all tests green

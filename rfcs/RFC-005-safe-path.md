@@ -14,21 +14,21 @@ budget:
   max_minutes_human: 25
   max_tokens_model: 12000
 files_to_read:
-  - src/redteam_mcp/executor.py
-  - src/redteam_mcp/tools/caido_tool.py
-  - src/redteam_mcp/tools/ligolo_tool.py
+  - src/kestrel_mcp/executor.py
+  - src/kestrel_mcp/tools/caido_tool.py
+  - src/kestrel_mcp/tools/ligolo_tool.py
 files_will_touch:
-  - src/redteam_mcp/core/paths.py            # new
-  - src/redteam_mcp/core/redact.py           # new
-  - src/redteam_mcp/executor.py              # modified (redact stderr)
+  - src/kestrel_mcp/core/paths.py            # new
+  - src/kestrel_mcp/core/redact.py           # new
+  - src/kestrel_mcp/executor.py              # modified (redact stderr)
   - tests/unit/core/test_paths_and_redact.py # new
   - CHANGELOG.md                             # modified
 verify_cmd: |
   .venv\Scripts\python.exe -m pytest tests/unit/core/test_paths_and_redact.py -v
 rollback_cmd: |
   git checkout -- .
-  if exist src\redteam_mcp\core\paths.py del src\redteam_mcp\core\paths.py
-  if exist src\redteam_mcp\core\redact.py del src\redteam_mcp\core\redact.py
+  if exist src\kestrel_mcp\core\paths.py del src\kestrel_mcp\core\paths.py
+  if exist src\kestrel_mcp\core\redact.py del src\kestrel_mcp\core\redact.py
   if exist tests\unit\core\test_paths_and_redact.py del tests\unit\core\test_paths_and_redact.py
 skill_id: rfc-005-safe-path
 ---
@@ -81,7 +81,7 @@ skill_id: rfc-005-safe-path
 ### Step 1 — paths.py
 
 ```
-WRITE src/redteam_mcp/core/paths.py
+WRITE src/kestrel_mcp/core/paths.py
 ```
 ```python
 """Path traversal defence.
@@ -144,7 +144,7 @@ def safe_path(base: Path | str, user_input: str) -> Path:
 ### Step 2 — redact.py
 
 ```
-WRITE src/redteam_mcp/core/redact.py
+WRITE src/kestrel_mcp/core/redact.py
 ```
 ```python
 """Sensitive-string redaction for logs and subprocess output.
@@ -188,7 +188,7 @@ def redact(text: str) -> str:
 ### Step 3 — executor 接入
 
 ```
-REPLACE src/redteam_mcp/executor.py
+REPLACE src/kestrel_mcp/executor.py
 <<<<<<< SEARCH
 from .logging import get_logger
 =======
@@ -198,7 +198,7 @@ from .logging import get_logger
 ```
 
 ```
-REPLACE src/redteam_mcp/executor.py
+REPLACE src/kestrel_mcp/executor.py
 <<<<<<< SEARCH
         return ExecutionResult(
             argv=list(argv),
@@ -234,8 +234,8 @@ from pathlib import Path
 
 import pytest
 
-from redteam_mcp.core.paths import PathTraversalError, safe_path
-from redteam_mcp.core.redact import redact
+from kestrel_mcp.core.paths import PathTraversalError, safe_path
+from kestrel_mcp.core.redact import redact
 
 
 # ---------------------------------------------------------------- safe_path

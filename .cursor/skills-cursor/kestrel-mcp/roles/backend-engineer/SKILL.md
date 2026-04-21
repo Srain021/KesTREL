@@ -27,8 +27,8 @@ indicators exactly.
 - **Domain → Services → Tools → UI**. Dependencies only flow down.
 - Domain entities are Pydantic BaseModel with `model_config = {"frozen": True}`
   when appropriate.
-- Services live in `src/redteam_mcp/domain/services/`, inherit from `_base.py`.
-- Tools live in `src/redteam_mcp/tools/<name>_tool.py`, inherit ToolSpec pattern.
+- Services live in `src/kestrel_mcp/domain/services/`, inherit from `_base.py`.
+- Tools live in `src/kestrel_mcp/tools/<name>_tool.py`, inherit ToolSpec pattern.
 - UI never imports directly from storage — goes through services.
 
 ## Idioms you always follow
@@ -44,7 +44,7 @@ or explicit `select` for related data.
 
 ### I-2: Error handling
 ```python
-from redteam_mcp.core_errors import AuthorizationError, ToolExecutionError
+from kestrel_mcp.core_errors import AuthorizationError, ToolExecutionError
 
 if not allowed:
     raise AuthorizationError("target out of scope", target=target_str)
@@ -64,7 +64,7 @@ shell string.
 
 ### I-4: Paths
 ```python
-from redteam_mcp.core.paths import safe_path
+from kestrel_mcp.core.paths import safe_path
 
 resolved = safe_path(base=artifact_dir, user_input=filename)
 ```
@@ -72,7 +72,7 @@ Never `Path(base) / user_input` without `safe_path`.
 
 ### I-5: Secrets in logs
 ```python
-from redteam_mcp.core.redact import redact
+from kestrel_mcp.core.redact import redact
 log.info("api response", body=redact(body_str))
 ```
 Any potentially-sensitive string passes through `redact()`.
@@ -89,7 +89,7 @@ class MyEntity(BaseModel):
 `extra="forbid"` catches typos at parse time.
 
 ### I-7: Tests mirror source
-- New function `foo()` in `src/redteam_mcp/domain/services/engagement_service.py`
+- New function `foo()` in `src/kestrel_mcp/domain/services/engagement_service.py`
   → test in `tests/unit/domain/test_engagement_service.py::test_foo`
 - One test = one behavior; name test after the behavior, not the function
 

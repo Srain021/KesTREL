@@ -113,10 +113,10 @@ Use the following PR template (paste into PR description):
 
 ### Error handling
 
-Use specific classes from `src/redteam_mcp/core_errors.py`:
+Use specific classes from `src/kestrel_mcp/core_errors.py`:
 
 ```python
-from redteam_mcp.core_errors import AuthorizationError
+from kestrel_mcp.core_errors import AuthorizationError
 
 if not allowed:
     raise AuthorizationError("target out of scope", target=target_str)
@@ -141,7 +141,7 @@ subprocess.run(f"nuclei -u {target}", shell=True)
 User-supplied paths must go through `core.paths.safe_path()`:
 
 ```python
-from redteam_mcp.core.paths import safe_path
+from kestrel_mcp.core.paths import safe_path
 
 resolved = safe_path(base=artifact_dir, user_input=filename)
 ```

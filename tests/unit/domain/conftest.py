@@ -8,7 +8,7 @@ from __future__ import annotations
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 
-from redteam_mcp.domain.storage import create_all, make_engine, make_sessionmaker
+from kestrel_mcp.domain.storage import create_all, make_engine, make_sessionmaker
 
 
 @pytest_asyncio.fixture

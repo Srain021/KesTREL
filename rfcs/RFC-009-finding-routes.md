@@ -13,16 +13,16 @@ budget:
   max_minutes_human: 25
   max_tokens_model: 14000
 files_to_read:
-  - src/redteam_mcp/webui/routes/engagements.py
-  - src/redteam_mcp/domain/services/finding_service.py
+  - src/kestrel_mcp/webui/routes/engagements.py
+  - src/kestrel_mcp/domain/services/finding_service.py
 files_will_touch:
-  - src/redteam_mcp/webui/routes/findings.py              # new
-  - src/redteam_mcp/webui/routes/__init__.py              # modified
-  - src/redteam_mcp/webui/templates/findings/table.html.j2  # new
-  - src/redteam_mcp/webui/templates/findings/_row.html.j2   # new (htmx partial)
+  - src/kestrel_mcp/webui/routes/findings.py              # new
+  - src/kestrel_mcp/webui/routes/__init__.py              # modified
+  - src/kestrel_mcp/webui/templates/findings/table.html.j2  # new
+  - src/kestrel_mcp/webui/templates/findings/_row.html.j2   # new (htmx partial)
   - tests/unit/webui/test_finding_routes.py               # new
 verify_cmd: .venv\Scripts\python.exe -m pytest tests/unit/webui/test_finding_routes.py -v
-rollback_cmd: git checkout -- . && rmdir /S /Q src\redteam_mcp\webui\templates\findings 2>nul
+rollback_cmd: git checkout -- . && rmdir /S /Q src\kestrel_mcp\webui\templates\findings 2>nul
 skill_id: rfc-009-findings
 ---
 

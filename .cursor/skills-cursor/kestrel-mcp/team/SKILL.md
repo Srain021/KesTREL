@@ -42,7 +42,7 @@ Ask the user (all required):
 ### Step 2 — Verify environment
 
 ```
-RUN .venv\Scripts\python.exe -m redteam_mcp.__main__ --edition team show-config
+RUN .venv\Scripts\python.exe -m kestrel_mcp.__main__ --edition team show-config
 ```
 
 Confirm output shows:
@@ -55,7 +55,7 @@ If not → environment misconfigured, route to `health/`.
 ### Step 3 — Run bootstrap
 
 ```
-RUN .venv\Scripts\python.exe -m redteam_mcp.__main__ --edition team team bootstrap --name <name> --scope "<scope>"
+RUN .venv\Scripts\python.exe -m kestrel_mcp.__main__ --edition team team bootstrap --name <name> --scope "<scope>"
 ```
 
 Capture the report. Note the `engagement_id` from output.
@@ -94,7 +94,7 @@ Ask each crew member (if agent), or prompt human operator:
 ### Step 2 — Create session record
 
 ```
-RUN .venv\Scripts\python.exe -m redteam_mcp.__main__ --edition team session new --engagement <name> --operator <actor>
+RUN .venv\Scripts\python.exe -m kestrel_mcp.__main__ --edition team session new --engagement <name> --operator <actor>
 ```
 
 (Placeholder — may need RFC-T05 for full actor tracking. Use simple `session new`
@@ -136,8 +136,8 @@ When done, say "end session" to wrap up.
 ### Step 1 — Snapshot findings
 
 ```
-RUN .venv\Scripts\python.exe -m redteam_mcp.__main__ --edition team finding_list --engagement <name>
-RUN .venv\Scripts\python.exe -m redteam_mcp.__main__ --edition team target_list --engagement <name>
+RUN .venv\Scripts\python.exe -m kestrel_mcp.__main__ --edition team finding_list --engagement <name>
+RUN .venv\Scripts\python.exe -m kestrel_mcp.__main__ --edition team target_list --engagement <name>
 ```
 
 Capture outputs.
@@ -170,7 +170,7 @@ If yes → route to `handoff/SKILL.md` § Snapshot.
 ### Step 1 — Read engagement state
 
 ```
-RUN .venv\Scripts\python.exe -m redteam_mcp.__main__ --edition team engagement_get --name <current_engagement>
+RUN .venv\Scripts\python.exe -m kestrel_mcp.__main__ --edition team engagement_get --name <current_engagement>
 ```
 
 ### Step 2 — Report

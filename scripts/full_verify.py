@@ -28,7 +28,6 @@ def _venv_executable(name: str) -> pathlib.Path:
 
 
 VENV_PYTHON = _venv_executable("python")
-VENV_CLI = _venv_executable("redteam-mcp")
 
 
 class Check:
@@ -67,27 +66,27 @@ def check_syntax() -> tuple[bool, str]:
 
 def check_imports() -> tuple[bool, str]:
     modules = [
-        "redteam_mcp",
-        "redteam_mcp.config",
-        "redteam_mcp.logging",
-        "redteam_mcp.security",
-        "redteam_mcp.executor",
-        "redteam_mcp.server",
-        "redteam_mcp.tools",
-        "redteam_mcp.tools.base",
-        "redteam_mcp.tools.shodan_tool",
-        "redteam_mcp.tools.nuclei_tool",
-        "redteam_mcp.tools.caido_tool",
-        "redteam_mcp.tools.ligolo_tool",
-        "redteam_mcp.tools.sliver_tool",
-        "redteam_mcp.tools.havoc_tool",
-        "redteam_mcp.tools.evilginx_tool",
-        "redteam_mcp.workflows",
-        "redteam_mcp.workflows.recon",
-        "redteam_mcp.workflows.report",
-        "redteam_mcp.parsers",
-        "redteam_mcp.resources",
-        "redteam_mcp.prompts",
+        "kestrel_mcp",
+        "kestrel_mcp.config",
+        "kestrel_mcp.logging",
+        "kestrel_mcp.security",
+        "kestrel_mcp.executor",
+        "kestrel_mcp.server",
+        "kestrel_mcp.tools",
+        "kestrel_mcp.tools.base",
+        "kestrel_mcp.tools.shodan_tool",
+        "kestrel_mcp.tools.nuclei_tool",
+        "kestrel_mcp.tools.caido_tool",
+        "kestrel_mcp.tools.ligolo_tool",
+        "kestrel_mcp.tools.sliver_tool",
+        "kestrel_mcp.tools.havoc_tool",
+        "kestrel_mcp.tools.evilginx_tool",
+        "kestrel_mcp.workflows",
+        "kestrel_mcp.workflows.recon",
+        "kestrel_mcp.workflows.report",
+        "kestrel_mcp.parsers",
+        "kestrel_mcp.resources",
+        "kestrel_mcp.prompts",
     ]
     broken: list[str] = []
     for m in modules:
@@ -117,7 +116,7 @@ def _run_cli(args: list[str], extra_env: dict[str, str] | None = None) -> subpro
     if extra_env:
         env.update(extra_env)
     return subprocess.run(
-        [str(VENV_CLI), *args],
+        [str(VENV_PYTHON), "-m", "kestrel_mcp", *args],
         capture_output=True,
         cwd=str(REPO),
         env=env,
@@ -142,12 +141,12 @@ def check_cli_doctor() -> tuple[bool, str]:
 
 def check_cli_list_tools() -> tuple[bool, str]:
     extra = {
-        "REDTEAM_MCP_TOOLS__CAIDO__ENABLED": "true",
-        "REDTEAM_MCP_TOOLS__EVILGINX__ENABLED": "true",
-        "REDTEAM_MCP_TOOLS__SLIVER__ENABLED": "true",
-        "REDTEAM_MCP_TOOLS__HAVOC__ENABLED": "true",
-        "REDTEAM_MCP_TOOLS__LIGOLO__ENABLED": "true",
-        "REDTEAM_MCP_SECURITY__AUTHORIZED_SCOPE": "*.lab.test",
+        "KESTREL_MCP_TOOLS__CAIDO__ENABLED": "true",
+        "KESTREL_MCP_TOOLS__EVILGINX__ENABLED": "true",
+        "KESTREL_MCP_TOOLS__SLIVER__ENABLED": "true",
+        "KESTREL_MCP_TOOLS__HAVOC__ENABLED": "true",
+        "KESTREL_MCP_TOOLS__LIGOLO__ENABLED": "true",
+        "KESTREL_MCP_SECURITY__AUTHORIZED_SCOPE": "*.lab.test",
     }
     res = _run_cli(["list-tools"], extra)
     if res.returncode != 0:
@@ -165,8 +164,8 @@ def check_cli_list_tools() -> tuple[bool, str]:
 async def _mcp_handler_roundtrip() -> tuple[bool, str]:
     """Exercise an in-process tool dispatch through the MCP server wiring."""
 
-    from redteam_mcp.config import load_settings
-    from redteam_mcp.server import RedTeamMCPServer
+    from kestrel_mcp.config import load_settings
+    from kestrel_mcp.server import RedTeamMCPServer
 
     settings = load_settings()
     server = RedTeamMCPServer(settings)
@@ -194,7 +193,7 @@ def check_mcp_roundtrip() -> tuple[bool, str]:
 
 
 def check_scope_guard() -> tuple[bool, str]:
-    from redteam_mcp.security import AuthorizationError, ScopeGuard
+    from kestrel_mcp.security import AuthorizationError, ScopeGuard
 
     # 1. Empty scope denies
     empty = ScopeGuard([])

@@ -30,12 +30,18 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   in the 2026-04-21 audit.
 
 ### Changed
+- `RFC-H01` - Renamed the Python package and project identity from
+  `redteam_mcp` / `redteam-mcp` to `kestrel_mcp` / `kestrel-mcp` in one
+  atomic commit. This updates imports, tests, docs, RFC references, the CLI
+  entry point (`kestrel`), env prefix (`KESTREL_MCP_`), user config dir
+  (`~/.kestrel`), project config (`kestrel.yaml`), `pyproject.toml`,
+  `uv.lock`, packaging manifests, Alembic path, and GitHub workflow refs.
 - `RFC-002` - GitHub Actions CI is now checked in: lint (`ruff`), type checks
   (`mypy` on `core` + `domain`), 3 OS x 3 Python test matrix, weekly CodeQL,
   Dependabot, and a PR template. Team edition now has a real CI baseline.
 - `scripts/full_verify.py` now resolves `.venv` executables cross-platform, so
   the same end-to-end verification script runs on Linux, macOS, and Windows.
-- `src/redteam_mcp/core` + `src/redteam_mcp/domain` are now green under
+- `src/kestrel_mcp/core` + `src/kestrel_mcp/domain` are now green under
   `mypy --strict`, and `ruff check src tests` is back to zero for CI.
 - `RFC-001` - dependencies are now locked with `uv.lock`; reproducible installs
   use `uv sync --frozen --all-extras`. Closes GAP G-E3.
@@ -64,10 +70,10 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 
 ### RFC-A04 completed
 - RFC-A04 v2.0 rewritten after v1 failed pre-flight (2 SEARCH hallucinations).
-  Every SEARCH block now copied from real `src/redteam_mcp/__main__.py` and
+  Every SEARCH block now copied from real `src/kestrel_mcp/__main__.py` and
   `config.py`. Passes `validate_rfc.py`.
-- Executed RFC-A04 v2.0: adds `src/redteam_mcp/features.py` (FeatureFlags
-  pydantic model, 6 flags), `src/redteam_mcp/editions/{__init__,pro,team}.py`
+- Executed RFC-A04 v2.0: adds `src/kestrel_mcp/features.py` (FeatureFlags
+  pydantic model, 6 flags), `src/kestrel_mcp/editions/{__init__,pro,team}.py`
   (preset dispatch), `Settings.edition` + `Settings.features` fields +
   `Settings.build()` classmethod, CLI `--edition pro|team` global option,
   `kestrel show-config` command. 10 new tests.
@@ -106,8 +112,8 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 - RFC-T08 v2.0 rewritten after v1 failed pre-flight (3 SEARCH hallucinations,
   1 WRITE-not-in-fwt, wrong `EngagementService.create` signature, wrong
   `ServiceContainer.default_on_disk` signature).
-- Executed RFC-T08 v2.0: adds `src/redteam_mcp/team/__init__.py`,
-  `src/redteam_mcp/team/bootstrap.py` (~130 LOC), `team` subcommand group in
+- Executed RFC-T08 v2.0: adds `src/kestrel_mcp/team/__init__.py`,
+  `src/kestrel_mcp/team/bootstrap.py` (~130 LOC), `team` subcommand group in
   CLI with `bootstrap --name <slug> [--scope ...] [--dry-run]`, 6 new tests
   (including a real I/O test that builds an on-disk SQLite + Engagement).
 - README: new "Team Edition Quickstart" section.
@@ -118,7 +124,7 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 - `full_verify.py` 8/8 (119 tests now, was 113).
 
 ### RFC-004 completed
-- Executed RFC-004: added `src/redteam_mcp/core/rate_limit.py` with an
+- Executed RFC-004: added `src/kestrel_mcp/core/rate_limit.py` with an
   in-process token-bucket `RateLimiter`, `RateLimitSpec`, and
   `RateLimitedError` for 429-style refusal handling.
 - `ToolSpec` now supports optional `rate_limit`, and
@@ -143,7 +149,7 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 
 ### RFC-006 completed
 - Rewrote the stale RFC-006 spec against the real repo layout, then executed
-  the FastAPI skeleton: `redteam_mcp.webui.create_app(container)` now exposes
+  the FastAPI skeleton: `kestrel_mcp.webui.create_app(container)` now exposes
   `/` and `/api/v1/engagements` over a shared `ServiceContainer`.
 - Added request middleware that opens a fresh `RequestContext` per HTTP request
   and attaches it to `request.state.ctx`, plus a small dependency helper for
@@ -226,7 +232,7 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 Prior state, now captured as the initial commit.
 
 ### Already delivered (prior to git init)
-- Core package `redteam_mcp` with 62 Python files, 21 modules.
+- Core package `kestrel_mcp` with 62 Python files, 21 modules.
 - 57 MCP tools across 9 modules (nuclei, sliver, caido, shodan, havoc, evilginx,
   ligolo, engagement, report).
 - 95 unit tests, all passing; `scripts/full_verify.py` reports 8/8 checks green.

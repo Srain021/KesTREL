@@ -10,7 +10,7 @@ Consumers (MCP server, FastAPI app, Textual TUI) build one
 request / key press that needs engagement-scoped services.
 
 Design principle: this package contains **no business logic**. Business
-rules live in :mod:`redteam_mcp.domain.services`. This package just wires
+rules live in :mod:`kestrel_mcp.domain.services`. This package just wires
 infrastructure.
 """
 

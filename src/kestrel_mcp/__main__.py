@@ -1,4 +1,4 @@
-"""CLI entry point: ``python -m redteam_mcp`` or ``redteam-mcp``.
+"""CLI entry point: ``python -m kestrel_mcp`` or ``kestrel``.
 
 Subcommands:
     serve         Run the MCP server over stdio (default).
@@ -25,7 +25,7 @@ from .config import USER_CONFIG_DIR, load_settings
 from .logging import configure_logging
 
 app = typer.Typer(
-    name="redteam-mcp",
+    name="kestrel",
     help="MCP server for red-team tooling (Shodan, Nuclei, Sliver, Havoc, Evilginx, Ligolo-ng, Caido).",
     add_completion=False,
     no_args_is_help=False,
@@ -107,7 +107,7 @@ def doctor() -> None:
     console.print("\n[bold]Environment[/bold]")
     env_table = Table(show_header=False)
     env_table.add_row("Python", sys.version.split()[0])
-    env_table.add_row("redteam-mcp", __version__)
+    env_table.add_row("kestrel-mcp", __version__)
     env_table.add_row("User config dir", str(USER_CONFIG_DIR))
     env_table.add_row(
         "Shodan API key",

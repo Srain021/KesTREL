@@ -62,7 +62,7 @@ skill_id: rfc-002-github-ci
 2. `codeql.yml` — 每周一 UTC 00:00 + push to main 触发。
 3. `dependabot.yml` — 每周自动 PR 升级依赖。
 
-Lint 用 **ruff**（一条工具搞定 format + lint），**mypy** 用 `--strict` 但暂时只跑 `src/redteam_mcp/core` 和 `src/redteam_mcp/domain`（避免现有未类型化的 tools 文件拖 red）。
+Lint 用 **ruff**（一条工具搞定 format + lint），**mypy** 用 `--strict` 但暂时只跑 `src/kestrel_mcp/core` 和 `src/kestrel_mcp/domain`（避免现有未类型化的 tools 文件拖 red）。
 
 Tests 跑两轮：
 
@@ -113,7 +113,7 @@ jobs:
         run: uv run ruff format --check src/ tests/
 
       - name: Mypy (core + domain)
-        run: uv run mypy --strict src/redteam_mcp/core src/redteam_mcp/domain
+        run: uv run mypy --strict src/kestrel_mcp/core src/kestrel_mcp/domain
 
   test:
     needs: lint

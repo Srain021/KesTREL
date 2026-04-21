@@ -3,10 +3,10 @@ from __future__ import annotations
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from redteam_mcp.core import ServiceContainer
-from redteam_mcp.tools.base import ToolResult, ToolSpec
-from redteam_mcp.webui import create_app
-from redteam_mcp.webui.job_runner import JobRunner
+from kestrel_mcp.core import ServiceContainer
+from kestrel_mcp.tools.base import ToolResult, ToolSpec
+from kestrel_mcp.webui import create_app
+from kestrel_mcp.webui.job_runner import JobRunner
 
 
 async def _echo(arguments):

@@ -137,7 +137,7 @@ class NucleiModule(ToolModule):
                     "ALWAYS pass severity=['critical','high'] on first scan. "
                     "NEVER call with no filters - you will get drowned in info-level results. "
                     "targets field is ARRAY of strings, not comma string. "
-                    "If Nuclei binary missing, tell user to run 'redteam-mcp doctor'."
+                    "If Nuclei binary missing, tell user to run 'kestrel-mcp doctor'."
                 ),
             ),
             ToolSpec(

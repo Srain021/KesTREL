@@ -14,20 +14,20 @@ budget:
   max_minutes_human: 20
   max_tokens_model: 10000
 files_to_read:
-  - src/redteam_mcp/tools/base.py
-  - src/redteam_mcp/server.py
-  - src/redteam_mcp/core/context.py
+  - src/kestrel_mcp/tools/base.py
+  - src/kestrel_mcp/server.py
+  - src/kestrel_mcp/core/context.py
 files_will_touch:
-  - src/redteam_mcp/core/rate_limit.py          # new
-  - src/redteam_mcp/tools/base.py                # modified (ToolSpec gets rate_limit field)
-  - src/redteam_mcp/server.py                    # modified (dispatcher consults limiter)
+  - src/kestrel_mcp/core/rate_limit.py          # new
+  - src/kestrel_mcp/tools/base.py                # modified (ToolSpec gets rate_limit field)
+  - src/kestrel_mcp/server.py                    # modified (dispatcher consults limiter)
   - tests/unit/core/test_rate_limit.py           # new
   - CHANGELOG.md                                 # modified
 verify_cmd: |
   .venv\Scripts\python.exe -m pytest tests/unit/core/test_rate_limit.py -v
 rollback_cmd: |
   git checkout -- .
-  if exist src\redteam_mcp\core\rate_limit.py del src\redteam_mcp\core\rate_limit.py
+  if exist src\kestrel_mcp\core\rate_limit.py del src\kestrel_mcp\core\rate_limit.py
   if exist tests\unit\core\test_rate_limit.py del tests\unit\core\test_rate_limit.py
 skill_id: rfc-004-rate-limit
 ---
@@ -89,7 +89,7 @@ skill_id: rfc-004-rate-limit
 ### Step 1 — 新建 rate_limit 模块
 
 ```
-WRITE src/redteam_mcp/core/rate_limit.py
+WRITE src/kestrel_mcp/core/rate_limit.py
 ```
 ```python
 """In-process token-bucket rate limiter.
@@ -211,7 +211,7 @@ class RateLimiter:
 ### Step 2 — ToolSpec 加 rate_limit 字段
 
 ```
-REPLACE src/redteam_mcp/tools/base.py
+REPLACE src/kestrel_mcp/tools/base.py
 <<<<<<< SEARCH
     # ---- Extended guidance (optional but STRONGLY recommended) ----
     when_to_use: list[str] = field(default_factory=list)
@@ -227,7 +227,7 @@ REPLACE src/redteam_mcp/tools/base.py
 在 base.py 顶部加延迟 import：
 
 ```
-REPLACE src/redteam_mcp/tools/base.py
+REPLACE src/kestrel_mcp/tools/base.py
 <<<<<<< SEARCH
 from ..config import Settings
 from ..logging import get_logger
@@ -243,7 +243,7 @@ from ..security import ScopeGuard
 ### Step 3 — Server dispatcher 接入
 
 ```
-REPLACE src/redteam_mcp/server.py
+REPLACE src/kestrel_mcp/server.py
 <<<<<<< SEARCH
 from .core import RequestContext, ServiceContainer
 from .domain.errors import ScopeViolationError
@@ -255,7 +255,7 @@ from .domain.errors import ScopeViolationError
 ```
 
 ```
-REPLACE src/redteam_mcp/server.py
+REPLACE src/kestrel_mcp/server.py
 <<<<<<< SEARCH
         self.settings = settings
         self.log = get_logger("server")
@@ -267,7 +267,7 @@ REPLACE src/redteam_mcp/server.py
 ```
 
 ```
-REPLACE src/redteam_mcp/server.py
+REPLACE src/kestrel_mcp/server.py
 <<<<<<< SEARCH
             async def _dispatch(ctx: RequestContext) -> ToolResult:
                 if spec.requires_scope_field:
@@ -281,7 +281,7 @@ REPLACE src/redteam_mcp/server.py
 ```
 
 ```
-REPLACE src/redteam_mcp/server.py
+REPLACE src/kestrel_mcp/server.py
 <<<<<<< SEARCH
             except (AuthorizationError, ScopeViolationError) as exc:
                 self.log.warning("tool.auth_denied", tool=name, reason=str(exc))
@@ -313,7 +313,7 @@ import asyncio
 
 import pytest
 
-from redteam_mcp.core.rate_limit import (
+from kestrel_mcp.core.rate_limit import (
     RateLimitedError,
     RateLimiter,
     RateLimitSpec,

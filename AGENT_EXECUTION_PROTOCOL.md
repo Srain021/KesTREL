@@ -61,11 +61,11 @@ budget:
   max_minutes_human: 20
   max_tokens_model: 40000
 files_to_read:              # executor MUST NOT read others
-  - src/redteam_mcp/core/services.py
-  - src/redteam_mcp/core/context.py
+  - src/kestrel_mcp/core/services.py
+  - src/kestrel_mcp/core/context.py
 files_will_touch:           # exact list; executor MUST NOT touch others
-  - src/redteam_mcp/webui/__init__.py       # new
-  - src/redteam_mcp/webui/app.py            # new
+  - src/kestrel_mcp/webui/__init__.py       # new
+  - src/kestrel_mcp/webui/app.py            # new
   - pyproject.toml                          # modified
 verify_cmd: |
   .venv\Scripts\python.exe -m pytest tests/unit/webui/test_app_skeleton.py -q
@@ -104,7 +104,7 @@ RFC 的 steps 只能用下面 4 种指令（Aider 式）。弱模型只认这 4 
 创建 / 完全覆盖文件。
 
 ````
-WRITE src/redteam_mcp/webui/app.py
+WRITE src/kestrel_mcp/webui/app.py
 ```python
 from __future__ import annotations
 ...
@@ -116,7 +116,7 @@ from __future__ import annotations
 原子替换。SEARCH 块必须在目标文件里唯一匹配；否则失败，不得「重试更大片段」。
 
 ````
-REPLACE src/redteam_mcp/server.py
+REPLACE src/kestrel_mcp/server.py
 <<<<<<< SEARCH
         self.modules = load_modules(settings, self.scope_guard)
 =======
@@ -130,7 +130,7 @@ REPLACE src/redteam_mcp/server.py
 在文件末尾追加（给 `__init__.py` / `CHANGELOG.md` 用）。
 
 ````
-APPEND src/redteam_mcp/webui/__init__.py
+APPEND src/kestrel_mcp/webui/__init__.py
 from .app import create_app
 
 __all__ = ["create_app"]

@@ -136,7 +136,7 @@ Discouraged for weak models (requires judgment):
 ### Install
 
 ```powershell
-cd "d:\TG PROJECT\redteam-mcp"
+cd "d:\TG PROJECT\kestrel-mcp"
 .\scripts\install_skills.ps1
 ```
 

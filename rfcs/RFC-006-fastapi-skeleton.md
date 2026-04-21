@@ -13,14 +13,14 @@ budget:
   max_minutes_human: 25
   max_tokens_model: 14000
 files_to_read:
-  - src/redteam_mcp/core/services.py
-  - src/redteam_mcp/core/context.py
-  - src/redteam_mcp/__main__.py
+  - src/kestrel_mcp/core/services.py
+  - src/kestrel_mcp/core/context.py
+  - src/kestrel_mcp/__main__.py
 files_will_touch:
-  - src/redteam_mcp/webui/__init__.py       # new
-  - src/redteam_mcp/webui/app.py            # new
-  - src/redteam_mcp/webui/middleware.py     # new
-  - src/redteam_mcp/webui/deps.py           # new
+  - src/kestrel_mcp/webui/__init__.py       # new
+  - src/kestrel_mcp/webui/app.py            # new
+  - src/kestrel_mcp/webui/middleware.py     # new
+  - src/kestrel_mcp/webui/deps.py           # new
   - tests/unit/webui/__init__.py            # new
   - tests/unit/webui/test_app_skeleton.py   # new
   - pyproject.toml                          # modified (+fastapi, uvicorn, httpx for tests)
@@ -28,7 +28,7 @@ verify_cmd: |
   .venv\Scripts\python.exe -m pytest tests/unit/webui/test_app_skeleton.py -v
 rollback_cmd: |
   git checkout -- pyproject.toml
-  rmdir /S /Q src\redteam_mcp\webui 2>nul
+  rmdir /S /Q src\kestrel_mcp\webui 2>nul
   rmdir /S /Q tests\unit\webui 2>nul
 skill_id: rfc-006-fastapi-skeleton
 ---
@@ -86,13 +86,13 @@ RUN .venv\Scripts\python.exe -m uv sync --frozen
 ### Step 2 — webui 包骨架
 
 ```
-WRITE src/redteam_mcp/webui/__init__.py
+WRITE src/kestrel_mcp/webui/__init__.py
 ```
 ```python
 """Web UI sub-package.
 
-Loaded only when the user runs ``redteam-mcp web`` or imports
-``redteam_mcp.webui.create_app`` directly. Does NOT couple the MCP
+Loaded only when the user runs ``kestrel-mcp web`` or imports
+``kestrel_mcp.webui.create_app`` directly. Does NOT couple the MCP
 server to FastAPI — keep imports lazy so the MCP-only install stays
 lightweight.
 """
@@ -107,7 +107,7 @@ __all__ = ["create_app"]
 ### Step 3 — deps.py
 
 ```
-WRITE src/redteam_mcp/webui/deps.py
+WRITE src/kestrel_mcp/webui/deps.py
 ```
 ```python
 """FastAPI dependency functions."""
@@ -131,7 +131,7 @@ def get_ctx(request: Request) -> RequestContext:
 ### Step 4 — middleware.py
 
 ```
-WRITE src/redteam_mcp/webui/middleware.py
+WRITE src/kestrel_mcp/webui/middleware.py
 ```
 ```python
 """ASGI middleware: attach RequestContext to every request.state."""
@@ -166,7 +166,7 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
 ### Step 5 — app.py
 
 ```
-WRITE src/redteam_mcp/webui/app.py
+WRITE src/kestrel_mcp/webui/app.py
 ```
 ```python
 """FastAPI application factory."""
@@ -225,9 +225,9 @@ from __future__ import annotations
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from redteam_mcp.core import ServiceContainer
-from redteam_mcp.domain import entities as ent
-from redteam_mcp.webui import create_app
+from kestrel_mcp.core import ServiceContainer
+from kestrel_mcp.domain import entities as ent
+from kestrel_mcp.webui import create_app
 
 
 @pytest.fixture
@@ -289,7 +289,7 @@ RUN .venv\Scripts\python.exe scripts\full_verify.py
 - [ ] `git diff --stat` 只列 `files_will_touch`
 - [ ] 4 个新 webui 测试绿
 - [ ] full_verify 8/8
-- [ ] `src/redteam_mcp/webui/` 下面没有 template 文件（UI 下一个 RFC 才引入）
+- [ ] `src/kestrel_mcp/webui/` 下面没有 template 文件（UI 下一个 RFC 才引入）
 
 ## Updates to other docs
 

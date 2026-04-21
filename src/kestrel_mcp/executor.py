@@ -83,7 +83,7 @@ def resolve_binary(hint: str | None, default_name: str) -> str:
             return shutil.which(hint)  # type: ignore[return-value]
         raise ToolNotFoundError(
             f"Configured binary '{hint}' does not exist. Update tools.{default_name}.binary "
-            f"or REDTEAM_MCP_TOOL_{default_name.upper()} env variable."
+            f"or KESTREL_MCP_TOOL_{default_name.upper()} env variable."
         )
     found = shutil.which(default_name)
     if not found:

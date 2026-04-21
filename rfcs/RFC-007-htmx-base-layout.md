@@ -13,19 +13,19 @@ budget:
   max_minutes_human: 20
   max_tokens_model: 12000
 files_to_read:
-  - src/redteam_mcp/webui/app.py
+  - src/kestrel_mcp/webui/app.py
   - tests/unit/webui/test_app_skeleton.py
 files_will_touch:
-  - src/redteam_mcp/webui/templates/base.html.j2      # new
-  - src/redteam_mcp/webui/templates/_nav.html.j2      # new
-  - src/redteam_mcp/webui/templates/dashboard.html.j2 # new
-  - src/redteam_mcp/webui/templating.py               # new
-  - src/redteam_mcp/webui/app.py                      # modified (mount templates + "/" serves HTML)
+  - src/kestrel_mcp/webui/templates/base.html.j2      # new
+  - src/kestrel_mcp/webui/templates/_nav.html.j2      # new
+  - src/kestrel_mcp/webui/templates/dashboard.html.j2 # new
+  - src/kestrel_mcp/webui/templating.py               # new
+  - src/kestrel_mcp/webui/app.py                      # modified (mount templates + "/" serves HTML)
   - tests/unit/webui/test_app_skeleton.py             # modified (root now serves HTML)
   - tests/unit/webui/test_html_smoke.py               # new
 verify_cmd: |
   .venv\Scripts\python.exe -m pytest tests/unit/webui/test_html_smoke.py -v
-rollback_cmd: git checkout -- . && rmdir /S /Q src\redteam_mcp\webui\templates 2>nul
+rollback_cmd: git checkout -- . && rmdir /S /Q src\kestrel_mcp\webui\templates 2>nul
 skill_id: rfc-007-htmx-base
 ---
 
@@ -49,7 +49,7 @@ skill_id: rfc-007-htmx-base
 
 ## Design
 
-模板目录 `src/redteam_mcp/webui/templates/`。`templating.py` 暴露 `Jinja2Templates` 实例。
+模板目录 `src/kestrel_mcp/webui/templates/`。`templating.py` 暴露 `Jinja2Templates` 实例。
 
 `base.html.j2` 提供：
 - `<head>` 含 htmx 2.0 / Alpine 3 / Tailwind play CDN
@@ -68,7 +68,7 @@ RUN .venv\Scripts\python.exe -c "import jinja2"
 ### Step 2 — templating.py
 
 ```
-WRITE src/redteam_mcp/webui/templating.py
+WRITE src/kestrel_mcp/webui/templating.py
 ```
 ```python
 from __future__ import annotations
@@ -84,7 +84,7 @@ templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
 ### Step 3 — base.html.j2
 
 ```
-WRITE src/redteam_mcp/webui/templates/base.html.j2
+WRITE src/kestrel_mcp/webui/templates/base.html.j2
 ```
 ```html
 <!doctype html>
@@ -117,7 +117,7 @@ WRITE src/redteam_mcp/webui/templates/base.html.j2
 ### Step 4 — _nav.html.j2
 
 ```
-WRITE src/redteam_mcp/webui/templates/_nav.html.j2
+WRITE src/kestrel_mcp/webui/templates/_nav.html.j2
 ```
 ```html
 <nav class="bg-white border-b border-slate-200 shadow-sm">
@@ -139,7 +139,7 @@ WRITE src/redteam_mcp/webui/templates/_nav.html.j2
 ### Step 5 — dashboard.html.j2
 
 ```
-WRITE src/redteam_mcp/webui/templates/dashboard.html.j2
+WRITE src/kestrel_mcp/webui/templates/dashboard.html.j2
 ```
 ```html
 {% extends "base.html.j2" %}
@@ -168,7 +168,7 @@ WRITE src/redteam_mcp/webui/templates/dashboard.html.j2
 ### Step 6 — 改 app.py 让 `/` 返 HTML
 
 ```
-REPLACE src/redteam_mcp/webui/app.py
+REPLACE src/kestrel_mcp/webui/app.py
 <<<<<<< SEARCH
 from fastapi import Depends, FastAPI
 
@@ -190,7 +190,7 @@ from .templating import templates
 ```
 
 ```
-REPLACE src/redteam_mcp/webui/app.py
+REPLACE src/kestrel_mcp/webui/app.py
 <<<<<<< SEARCH
     @app.get("/", include_in_schema=False)
     async def root() -> dict[str, object]:
@@ -229,8 +229,8 @@ from __future__ import annotations
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from redteam_mcp.core import ServiceContainer
-from redteam_mcp.webui import create_app
+from kestrel_mcp.core import ServiceContainer
+from kestrel_mcp.webui import create_app
 
 
 @pytest.fixture

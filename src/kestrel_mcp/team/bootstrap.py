@@ -12,9 +12,9 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from redteam_mcp.config import Settings
-from redteam_mcp.core.services import ServiceContainer
-from redteam_mcp.domain import entities as ent
+from kestrel_mcp.config import Settings
+from kestrel_mcp.core.services import ServiceContainer
+from kestrel_mcp.domain import entities as ent
 
 
 @dataclass

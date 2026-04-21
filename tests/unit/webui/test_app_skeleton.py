@@ -5,9 +5,9 @@ from __future__ import annotations
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from redteam_mcp.core import ServiceContainer
-from redteam_mcp.domain import entities as ent
-from redteam_mcp.webui import create_app
+from kestrel_mcp.core import ServiceContainer
+from kestrel_mcp.domain import entities as ent
+from kestrel_mcp.webui import create_app
 
 pytestmark = pytest.mark.asyncio
 

@@ -78,14 +78,14 @@ RUN .venv\Scripts\python.exe -m pip install --upgrade "uv>=0.5"
 REPLACE pyproject.toml
 <<<<<<< SEARCH
 [project.urls]
-Homepage = "https://github.com/your-org/redteam-mcp"
-Documentation = "https://github.com/your-org/redteam-mcp#readme"
-Issues = "https://github.com/your-org/redteam-mcp/issues"
+Homepage = "https://github.com/your-org/kestrel-mcp"
+Documentation = "https://github.com/your-org/kestrel-mcp#readme"
+Issues = "https://github.com/your-org/kestrel-mcp/issues"
 =======
 [project.urls]
-Homepage = "https://github.com/your-org/redteam-mcp"
-Documentation = "https://github.com/your-org/redteam-mcp#readme"
-Issues = "https://github.com/your-org/redteam-mcp/issues"
+Homepage = "https://github.com/your-org/kestrel-mcp"
+Documentation = "https://github.com/your-org/kestrel-mcp#readme"
+Issues = "https://github.com/your-org/kestrel-mcp/issues"
 
 [[tool.uv.index]]
 name = "tsinghua"

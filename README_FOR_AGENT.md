@@ -7,9 +7,9 @@
 
 ## 1. 你在哪 / 这是什么
 
-- 项目: **kestrel-mcp**（当前 package 名 `redteam_mcp`，待 RFC-H01 改名）
-- 路径: `d:\TG PROJECT\redteam-mcp\`
-- Python venv: `d:\TG PROJECT\redteam-mcp\.venv\`
+- 项目: **kestrel-mcp**（当前 package 名 `kestrel_mcp`，待 RFC-H01 改名）
+- 路径: `d:\TG PROJECT\kestrel-mcp\`
+- Python venv: `d:\TG PROJECT\kestrel-mcp\.venv\`
 - 用途: MCP 服务器，把 7+ 个进攻性安全工具暴露给 LLM
 
 ## 2. 你要做什么
@@ -75,7 +75,7 @@
 ## 6. 第一次启动？
 
 ```powershell
-cd "d:\TG PROJECT\redteam-mcp"
+cd "d:\TG PROJECT\kestrel-mcp"
 .\.venv\Scripts\Activate.ps1
 
 # 检查环境

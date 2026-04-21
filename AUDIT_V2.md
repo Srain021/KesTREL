@@ -18,7 +18,7 @@ v1 列了 13 个 D-gap（D-1..D-13）+ 10 个 trap。现在状态：
 
 | Gap | 状态 | RFC |
 |-----|------|-----|
-| D-1 包名 redteam_mcp ↔ kestrel-mcp | OPEN | RFC-H01 计划 |
+| D-1 包名 kestrel_mcp ↔ kestrel-mcp | OPEN | RFC-H01 计划 |
 | D-2 Settings env 脆弱 | RESOLVED(partial) | RFC-001 + `env_ignore_empty` |
 | D-3 Scope 双路径没收拢 | RESOLVED | Sprint 2 的 `RequestContext.ensure_scope` + server `_check_scope` |
 | D-4 Plugin 系统口头约定 | OPEN | RFC-Plugin（未分配号） |

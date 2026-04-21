@@ -3,7 +3,7 @@ requires = ["hatchling>=1.24"]
 build-backend = "hatchling.build"
 
 [project]
-name = "redteam-mcp"
+name = "kestrel-mcp"
 version = "0.1.0"
 description = "Model Context Protocol server exposing 40+ offensive security tools to LLMs (Shodan, Nuclei, Sliver, Havoc, Evilginx, Ligolo-ng, Caido)."
 readme = "README.md"
@@ -70,12 +70,12 @@ dev = [
 ]
 
 [project.scripts]
-redteam-mcp = "redteam_mcp.__main__:main"
+kestrel = "kestrel_mcp.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/your-org/redteam-mcp"
-Documentation = "https://github.com/your-org/redteam-mcp#readme"
-Issues = "https://github.com/your-org/redteam-mcp/issues"
+Homepage = "https://github.com/your-org/kestrel-mcp"
+Documentation = "https://github.com/your-org/kestrel-mcp#readme"
+Issues = "https://github.com/your-org/kestrel-mcp/issues"
 
 [[tool.uv.index]]
 name = "tsinghua"
@@ -87,7 +87,7 @@ name = "pypi"
 url = "https://pypi.org/simple"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/redteam_mcp"]
+packages = ["src/kestrel_mcp"]
 
 [tool.ruff]
 line-length = 100

@@ -13,16 +13,16 @@ budget:
   max_minutes_human: 30
   max_tokens_model: 14000
 files_to_read:
-  - src/redteam_mcp/tools/base.py
-  - src/redteam_mcp/tools/__init__.py
-  - src/redteam_mcp/webui/routes/__init__.py
+  - src/kestrel_mcp/tools/base.py
+  - src/kestrel_mcp/tools/__init__.py
+  - src/kestrel_mcp/webui/routes/__init__.py
 files_will_touch:
-  - src/redteam_mcp/webui/job_runner.py           # new
-  - src/redteam_mcp/webui/routes/tools.py         # new
-  - src/redteam_mcp/webui/routes/__init__.py      # modified
+  - src/kestrel_mcp/webui/job_runner.py           # new
+  - src/kestrel_mcp/webui/routes/tools.py         # new
+  - src/kestrel_mcp/webui/routes/__init__.py      # modified
   - tests/unit/webui/test_tools_backend.py        # new
 verify_cmd: .venv\Scripts\python.exe -m pytest tests/unit/webui/test_tools_backend.py -v
-rollback_cmd: git checkout -- src\redteam_mcp\webui\routes\__init__.py && del src\redteam_mcp\webui\job_runner.py 2>nul && del src\redteam_mcp\webui\routes\tools.py 2>nul && del tests\unit\webui\test_tools_backend.py 2>nul
+rollback_cmd: git checkout -- src\kestrel_mcp\webui\routes\__init__.py && del src\kestrel_mcp\webui\job_runner.py 2>nul && del src\kestrel_mcp\webui\routes\tools.py 2>nul && del tests\unit\webui\test_tools_backend.py 2>nul
 skill_id: rfc-010a-tool-launcher-backend
 ---
 
@@ -48,7 +48,7 @@ Add a small in-memory Web UI job runner and JSON tool-launch backend.
 
 ### Step 1
 
-WRITE src/redteam_mcp/webui/job_runner.py
+WRITE src/kestrel_mcp/webui/job_runner.py
 ```python
 from __future__ import annotations
 
@@ -154,7 +154,7 @@ class JobRunner:
 
 ### Step 2
 
-WRITE src/redteam_mcp/webui/routes/tools.py
+WRITE src/kestrel_mcp/webui/routes/tools.py
 ```python
 from __future__ import annotations
 
@@ -262,7 +262,7 @@ async def get_job(request: Request, job_id: str) -> dict[str, object]:
 
 ### Step 3
 
-REPLACE src/redteam_mcp/webui/routes/__init__.py
+REPLACE src/kestrel_mcp/webui/routes/__init__.py
 <<<<<<< SEARCH
 from fastapi import APIRouter
 
@@ -306,10 +306,10 @@ from __future__ import annotations
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from redteam_mcp.core import ServiceContainer
-from redteam_mcp.tools.base import ToolResult, ToolSpec
-from redteam_mcp.webui import create_app
-from redteam_mcp.webui.job_runner import JobRunner
+from kestrel_mcp.core import ServiceContainer
+from kestrel_mcp.tools.base import ToolResult, ToolSpec
+from kestrel_mcp.webui import create_app
+from kestrel_mcp.webui.job_runner import JobRunner
 
 
 async def _echo(arguments):

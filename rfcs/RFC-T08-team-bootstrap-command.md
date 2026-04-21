@@ -14,16 +14,16 @@ budget:
   max_minutes_human: 45
   max_tokens_model: 16000
 files_to_read:
-  - src/redteam_mcp/__main__.py
-  - src/redteam_mcp/core/services.py
-  - src/redteam_mcp/domain/services/engagement_service.py
-  - src/redteam_mcp/domain/services/scope_service.py
-  - src/redteam_mcp/domain/entities.py
+  - src/kestrel_mcp/__main__.py
+  - src/kestrel_mcp/core/services.py
+  - src/kestrel_mcp/domain/services/engagement_service.py
+  - src/kestrel_mcp/domain/services/scope_service.py
+  - src/kestrel_mcp/domain/entities.py
   - README.md
 files_will_touch:
-  - src/redteam_mcp/team/__init__.py              # new
-  - src/redteam_mcp/team/bootstrap.py             # new
-  - src/redteam_mcp/__main__.py                   # modified
+  - src/kestrel_mcp/team/__init__.py              # new
+  - src/kestrel_mcp/team/bootstrap.py             # new
+  - src/kestrel_mcp/__main__.py                   # modified
   - tests/unit/team/__init__.py                   # new
   - tests/unit/team/test_bootstrap.py             # new
   - README.md                                     # modified
@@ -32,8 +32,8 @@ files_will_touch:
 verify_cmd: |
   .venv\Scripts\python.exe -m pytest tests/unit/team/test_bootstrap.py -v
 rollback_cmd: |
-  git checkout -- src/redteam_mcp/__main__.py README.md CHANGELOG.md rfcs/INDEX.md
-  if exist src\redteam_mcp\team rmdir /s /q src\redteam_mcp\team
+  git checkout -- src/kestrel_mcp/__main__.py README.md CHANGELOG.md rfcs/INDEX.md
+  if exist src\kestrel_mcp\team rmdir /s /q src\kestrel_mcp\team
   if exist tests\unit\team rmdir /s /q tests\unit\team
 skill_id: rfc-t08-bootstrap
 ---
@@ -88,7 +88,7 @@ T05/T09 再加更多子命令**，不动本 RFC。
 ### Step 1 — 新建 team/__init__.py 占位
 
 ```
-WRITE src/redteam_mcp/team/__init__.py
+WRITE src/kestrel_mcp/team/__init__.py
 ```
 ```python
 """Team Edition subpackage.
@@ -104,7 +104,7 @@ Decision log: PRODUCT_LINES.md Part 9.
 ### Step 2 — 实现 bootstrap 逻辑
 
 ```
-WRITE src/redteam_mcp/team/bootstrap.py
+WRITE src/kestrel_mcp/team/bootstrap.py
 ```
 ```python
 """Bootstrap a crew-ready Team edition install.
@@ -121,9 +121,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
 
-from redteam_mcp.config import Settings
-from redteam_mcp.core.services import ServiceContainer
-from redteam_mcp.domain import entities as ent
+from kestrel_mcp.config import Settings
+from kestrel_mcp.core.services import ServiceContainer
+from kestrel_mcp.domain import entities as ent
 
 
 @dataclass
@@ -241,7 +241,7 @@ def bootstrap(
 ### Step 3 — 加 `team` 子命令组到 __main__.py
 
 ```
-REPLACE src/redteam_mcp/__main__.py
+REPLACE src/kestrel_mcp/__main__.py
 <<<<<<< SEARCH
 @app.command("show-config")
 def show_config_cmd() -> None:
@@ -323,7 +323,7 @@ from pathlib import Path
 
 import pytest
 
-from redteam_mcp.team.bootstrap import BootstrapReport, bootstrap
+from kestrel_mcp.team.bootstrap import BootstrapReport, bootstrap
 
 
 def test_dry_run_reports_no_mutation(tmp_path, monkeypatch):
@@ -465,7 +465,7 @@ RUN .venv\Scripts\python.exe scripts\full_verify.py
 异；只作为人工校验）：
 
 ```powershell
-.venv\Scripts\python.exe -m redteam_mcp --edition team team bootstrap --dry-run --name smoke-test --scope "test.local"
+.venv\Scripts\python.exe -m kestrel_mcp --edition team team bootstrap --dry-run --name smoke-test --scope "test.local"
 ```
 
 应看到 Bootstrap Report banner 含 `smoke-test` 和 `test.local`。

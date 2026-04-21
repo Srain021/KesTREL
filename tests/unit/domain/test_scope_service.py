@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from redteam_mcp.domain import entities as ent
-from redteam_mcp.domain.errors import ScopeViolationError
-from redteam_mcp.domain.services import EngagementService, ScopeService
+from kestrel_mcp.domain import entities as ent
+from kestrel_mcp.domain.errors import ScopeViolationError
+from kestrel_mcp.domain.services import EngagementService, ScopeService
 
 pytestmark = pytest.mark.asyncio
 

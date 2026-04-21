@@ -13,15 +13,15 @@ budget:
   max_minutes_human: 15
   max_tokens_model: 8000
 files_to_read:
-  - src/redteam_mcp/webui/app.py
-  - src/redteam_mcp/config.py
+  - src/kestrel_mcp/webui/app.py
+  - src/kestrel_mcp/config.py
 files_will_touch:
-  - src/redteam_mcp/webui/auth.py                 # new
-  - src/redteam_mcp/webui/app.py                  # modified
+  - src/kestrel_mcp/webui/auth.py                 # new
+  - src/kestrel_mcp/webui/app.py                  # modified
   - tests/unit/webui/test_auth.py                 # new
-  - src/redteam_mcp/config.py                     # modified (WebUISettings block)
+  - src/kestrel_mcp/config.py                     # modified (WebUISettings block)
 verify_cmd: .venv\Scripts\python.exe -m pytest tests/unit/webui/test_auth.py -v
-rollback_cmd: git checkout -- . && del src\redteam_mcp\webui\auth.py 2>nul
+rollback_cmd: git checkout -- . && del src\kestrel_mcp\webui\auth.py 2>nul
 skill_id: rfc-012-basic-auth
 ---
 
@@ -51,7 +51,7 @@ webui:
 
 中间件：HTTP Basic only（MVP 够用）。启用时 `auth_required=true` + `password_hash` 非空。
 
-Cli 新命令 `redteam-mcp webui-set-password --password xxx` 生成 argon2id hash 并打印，用户粘贴到 mcp.json。（本 RFC 不实现命令 —— docstring 里教怎么用 `passlib` 手动生成。写到 `README.md` 里）
+Cli 新命令 `kestrel-mcp webui-set-password --password xxx` 生成 argon2id hash 并打印，用户粘贴到 mcp.json。（本 RFC 不实现命令 —— docstring 里教怎么用 `passlib` 手动生成。写到 `README.md` 里）
 
 ## Steps（摘要）
 

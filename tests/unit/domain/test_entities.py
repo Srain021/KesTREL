@@ -11,7 +11,7 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from redteam_mcp.domain import entities as ent
+from kestrel_mcp.domain import entities as ent
 
 
 class TestEngagement:

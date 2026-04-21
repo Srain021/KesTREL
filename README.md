@@ -24,8 +24,8 @@
 All tools share one cross-cutting design:
 
 * **Scope enforcement** — every offensive tool consults a central `ScopeGuard` before hitting a target. Empty scope = refuse all offensive actions by default.
-* **Audit log** — every `call_tool` invocation is written to `~/.redteam-mcp/audit.log` as a structured JSON record.
-* **Dry-run mode** — `--dry-run` or `REDTEAM_MCP_DRY_RUN=1` turns every offensive command into a no-op that still returns the argv it *would* have run.
+* **Audit log** — every `call_tool` invocation is written to `~/.kestrel/audit.log` as a structured JSON record.
+* **Dry-run mode** — `--dry-run` or `KESTREL_MCP_DRY_RUN=1` turns every offensive command into a no-op that still returns the argv it *would* have run.
 * **Timeouts + output caps** — no tool can exhaust memory or hang forever.
 * **JSON Schema inputs** — each tool advertises a strict JSON schema so LLMs can validate arguments before calling.
 
@@ -38,16 +38,16 @@ All tools share one cross-cutting design:
 **Windows (PowerShell):**
 
 ```powershell
-git clone https://github.com/your-org/redteam-mcp.git
-cd redteam-mcp
+git clone https://github.com/your-org/kestrel-mcp.git
+cd kestrel-mcp
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
 **macOS / Linux:**
 
 ```bash
-git clone https://github.com/your-org/redteam-mcp.git
-cd redteam-mcp
+git clone https://github.com/your-org/kestrel-mcp.git
+cd kestrel-mcp
 ./scripts/install.sh
 ```
 
@@ -86,19 +86,19 @@ Minimum fields to set:
 #   • wildcard hostnames       *.example.com
 #   • CIDR ranges              10.0.0.0/16
 #   • single IPs               10.0.0.1
-REDTEAM_MCP_AUTHORIZED_SCOPE="*.lab.internal,192.168.56.0/24"
+KESTREL_MCP_AUTHORIZED_SCOPE="*.lab.internal,192.168.56.0/24"
 
 # Required if you want to use Shodan tools
 SHODAN_API_KEY="your-shodan-key"
 
 # Optional tool binary overrides (auto-detected from PATH otherwise)
-REDTEAM_MCP_TOOL_NUCLEI="C:/Users/you/hacking-tools/nuclei.exe"
+KESTREL_MCP_TOOL_NUCLEI="C:/Users/you/hacking-tools/nuclei.exe"
 ```
 
 ### 3. Verify readiness
 
 ```bash
-redteam-mcp doctor
+kestrel-mcp doctor
 ```
 
 This prints a table showing which tools are enabled, whether their binaries are found, and whether the Shodan key + scope are set.
@@ -106,7 +106,7 @@ This prints a table showing which tools are enabled, whether their binaries are 
 ### 4. Run the server
 
 ```bash
-redteam-mcp serve
+kestrel-mcp serve
 ```
 
 (No args = the same thing — this is stdio transport that MCP hosts launch on demand.)
@@ -161,7 +161,7 @@ Switch back to Pro strict defaults by dropping `--edition team` or setting
 └──────────────────────────┬──────────────────────────────┘
                            │ JSON-RPC over stdio
 ┌──────────────────────────▼──────────────────────────────┐
-│  redteam_mcp.server.RedTeamMCPServer                    │
+│  kestrel_mcp.server.RedTeamMCPServer                    │
 │  ┌──────────────────────────────────────────────────┐   │
 │  │  Scope guard • audit log • dry-run • timeout     │   │
 │  └────┬───────┬──────┬──────┬──────┬──────┬──────┬──┘   │
@@ -192,33 +192,33 @@ Adding a new tool is ~30 lines: subclass `ToolModule`, return a `ToolSpec`, regi
 Resolution order (later wins):
 
 1. `config/default.yaml` — shipped defaults.
-2. `~/.redteam-mcp/config.yaml` — per-user overrides.
-3. `./redteam-mcp.yaml` — per-project overrides.
-4. Environment variables prefixed `REDTEAM_MCP_`.
+2. `~/.kestrel/config.yaml` — per-user overrides.
+3. `./kestrel.yaml` — per-project overrides.
+4. Environment variables prefixed `KESTREL_MCP_`.
 5. `--config PATH` CLI override.
 
 Full surface:
 
 ```yaml
 server:
-  name: "redteam-mcp"
+  name: "kestrel-mcp"
   version: "0.1.0"
 
 security:
   authorized_scope: []
   require_ack: true
   dry_run: false
-  audit_log: "~/.redteam-mcp/audit.log"
+  audit_log: "~/.kestrel/audit.log"
 
 execution:
   timeout_sec: 300
   max_output_bytes: 5242880
-  working_dir: "~/.redteam-mcp/runs"
+  working_dir: "~/.kestrel/runs"
 
 logging:
   level: "INFO"
   format: "json"
-  dir: "~/.redteam-mcp/logs"
+  dir: "~/.kestrel/logs"
 
 tools:
   shodan:
@@ -240,12 +240,12 @@ tools:
 ## 🛠️ CLI reference
 
 ```
-redteam-mcp serve           # default, stdio MCP server
-redteam-mcp serve --dry-run # never actually exec offensive tools
-redteam-mcp serve --scope "*.lab.internal,10.0.0.0/8"
-redteam-mcp doctor          # readiness report
-redteam-mcp list-tools      # dump MCP tool schema as JSON
-redteam-mcp version
+kestrel-mcp serve           # default, stdio MCP server
+kestrel-mcp serve --dry-run # never actually exec offensive tools
+kestrel-mcp serve --scope "*.lab.internal,10.0.0.0/8"
+kestrel-mcp doctor          # readiness report
+kestrel-mcp list-tools      # dump MCP tool schema as JSON
+kestrel-mcp version
 ```
 
 ---
@@ -289,7 +289,7 @@ Known limits (documented, not fixed): the scope guard can't verify the *true* ta
 1. **Create the module**:
 
    ```python
-   # src/redteam_mcp/tools/mytool_tool.py
+   # src/kestrel_mcp/tools/mytool_tool.py
    from .base import ToolModule, ToolSpec, ToolResult
 
    class MyToolModule(ToolModule):
@@ -309,7 +309,7 @@ Known limits (documented, not fixed): the scope guard can't verify the *true* ta
            return ToolResult(text="done", structured={"input": args})
    ```
 
-2. **Register it** in `src/redteam_mcp/tools/__init__.py`.
+2. **Register it** in `src/kestrel_mcp/tools/__init__.py`.
 
 3. **Add config block** to `config/default.yaml`:
 
@@ -319,7 +319,7 @@ Known limits (documented, not fixed): the scope guard can't verify the *true* ta
        enabled: true
    ```
 
-4. `redteam-mcp doctor` should now show it.
+4. `kestrel-mcp doctor` should now show it.
 
 ---
 

@@ -14,22 +14,22 @@ budget:
   max_minutes_human: 45
   max_tokens_model: 20000
 files_to_read:
-  - src/redteam_mcp/config.py
-  - src/redteam_mcp/__main__.py
+  - src/kestrel_mcp/config.py
+  - src/kestrel_mcp/__main__.py
 files_will_touch:
-  - src/redteam_mcp/features.py              # new
-  - src/redteam_mcp/editions/__init__.py     # new
-  - src/redteam_mcp/editions/pro.py          # new
-  - src/redteam_mcp/editions/team.py         # new
-  - src/redteam_mcp/config.py                # modified
-  - src/redteam_mcp/__main__.py              # modified
+  - src/kestrel_mcp/features.py              # new
+  - src/kestrel_mcp/editions/__init__.py     # new
+  - src/kestrel_mcp/editions/pro.py          # new
+  - src/kestrel_mcp/editions/team.py         # new
+  - src/kestrel_mcp/config.py                # modified
+  - src/kestrel_mcp/__main__.py              # modified
   - tests/unit/test_editions.py              # new
 verify_cmd: |
   .venv\Scripts\python.exe -m pytest tests/unit/test_editions.py -v
 rollback_cmd: |
-  git checkout -- src/redteam_mcp/config.py src/redteam_mcp/__main__.py
-  if exist src\redteam_mcp\features.py del src\redteam_mcp\features.py
-  if exist src\redteam_mcp\editions rmdir /s /q src\redteam_mcp\editions
+  git checkout -- src/kestrel_mcp/config.py src/kestrel_mcp/__main__.py
+  if exist src\kestrel_mcp\features.py del src\kestrel_mcp\features.py
+  if exist src\kestrel_mcp\editions rmdir /s /q src\kestrel_mcp\editions
   if exist tests\unit\test_editions.py del tests\unit\test_editions.py
 skill_id: rfc-a04-editions
 ---
@@ -46,17 +46,17 @@ skill_id: rfc-a04-editions
 - 是 RFC-T00 / T08 的硬前置；但 **本 RFC 只做基建**，不碰 server.py、不碰
   security.py、不改任何运行时行为 —— 设置加了新字段 `edition` / `features`，默
   认值与旧 Pro 行为等价。
-- 已通过 `validate_rfc.py` 预检。SEARCH 块全部从真实 `src/redteam_mcp/config.py`
-  和 `src/redteam_mcp/__main__.py` 复制（2026-04-21 审计后重写，见
+- 已通过 `validate_rfc.py` 预检。SEARCH 块全部从真实 `src/kestrel_mcp/config.py`
+  和 `src/kestrel_mcp/__main__.py` 复制（2026-04-21 审计后重写，见
   RFC_AUDIT_PREFLIGHT.md）。
 
 ## Non-goals
 
 - 不实现任何 feature flag 的具体行为（那是 RFC-T00 / V- 系列的事）。
 - 不改 server.py、security.py、rate_limit.py —— 本 RFC 完成后 Pro 行为不变。
-- 不加 Pro 专属子包 `src/redteam_mcp/pro/` —— 那是 Pro 第一个 RFC 的事。
+- 不加 Pro 专属子包 `src/kestrel_mcp/pro/` —— 那是 Pro 第一个 RFC 的事。
 - 不实现 `~/.kestrel/config.yaml` 读取（目前只支持 env + CLI，Pro 第一版 config
-  先沿用现有的 `~/.redteam-mcp/config.yaml` 通道）。
+  先沿用现有的 `~/.kestrel/config.yaml` 通道）。
 
 ## Design
 
@@ -81,7 +81,7 @@ CLI 入口：顶层 `--edition` option 作为 `_root` callback 的新参数（**
 ### Step 1 — 新建 features.py
 
 ```
-WRITE src/redteam_mcp/features.py
+WRITE src/kestrel_mcp/features.py
 ```
 ```python
 """Feature flags controlling runtime behavior across editions.
@@ -138,7 +138,7 @@ class FeatureFlags(BaseModel):
 ### Step 2 — 新建 editions 包
 
 ```
-WRITE src/redteam_mcp/editions/__init__.py
+WRITE src/kestrel_mcp/editions/__init__.py
 ```
 ```python
 """Edition presets for feature flags.
@@ -149,8 +149,8 @@ the given edition. Used by ``Settings.build()``.
 
 from __future__ import annotations
 
-from redteam_mcp.editions.pro import PRO_DEFAULTS
-from redteam_mcp.editions.team import TEAM_DEFAULTS
+from kestrel_mcp.editions.pro import PRO_DEFAULTS
+from kestrel_mcp.editions.team import TEAM_DEFAULTS
 
 __all__ = ["PRO_DEFAULTS", "TEAM_DEFAULTS", "get_defaults"]
 
@@ -166,14 +166,14 @@ def get_defaults(edition: str):
 ### Step 3 — Pro defaults
 
 ```
-WRITE src/redteam_mcp/editions/pro.py
+WRITE src/kestrel_mcp/editions/pro.py
 ```
 ```python
 """Pro edition defaults: conservative, compliance-oriented."""
 
 from __future__ import annotations
 
-from redteam_mcp.features import FeatureFlags
+from kestrel_mcp.features import FeatureFlags
 
 PRO_DEFAULTS = FeatureFlags()  # all Pydantic defaults = Pro defaults
 ```
@@ -181,7 +181,7 @@ PRO_DEFAULTS = FeatureFlags()  # all Pydantic defaults = Pro defaults
 ### Step 4 — Team defaults
 
 ```
-WRITE src/redteam_mcp/editions/team.py
+WRITE src/kestrel_mcp/editions/team.py
 ```
 ```python
 """Team edition defaults: unleashed mode for internal crew.
@@ -195,7 +195,7 @@ Decisions (see PRODUCT_LINES.md Part 9):
 
 from __future__ import annotations
 
-from redteam_mcp.features import FeatureFlags
+from kestrel_mcp.features import FeatureFlags
 
 TEAM_DEFAULTS = FeatureFlags(
     scope_enforcement="warn_only",
@@ -212,7 +212,7 @@ TEAM_DEFAULTS = FeatureFlags(
 **5a** — 加 `Literal` 到 typing import.
 
 ```
-REPLACE src/redteam_mcp/config.py
+REPLACE src/kestrel_mcp/config.py
 <<<<<<< SEARCH
 from typing import Any
 =======
@@ -223,7 +223,7 @@ from typing import Any, Literal
 **5b** — 加 FeatureFlags import 在 pydantic-settings 后.
 
 ```
-REPLACE src/redteam_mcp/config.py
+REPLACE src/kestrel_mcp/config.py
 <<<<<<< SEARCH
 from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
@@ -238,7 +238,7 @@ from .features import FeatureFlags
 **5c** — 加两个字段 + `build()` classmethod 到 `Settings` 类.
 
 ```
-REPLACE src/redteam_mcp/config.py
+REPLACE src/kestrel_mcp/config.py
 <<<<<<< SEARCH
     server: ServerMeta = Field(default_factory=ServerMeta)
     security: SecuritySettings = Field(default_factory=SecuritySettings)
@@ -285,7 +285,7 @@ REPLACE src/redteam_mcp/config.py
 **6a** — 合并 `--edition` 参数进现有 `_root` callback.
 
 ```
-REPLACE src/redteam_mcp/__main__.py
+REPLACE src/kestrel_mcp/__main__.py
 <<<<<<< SEARCH
 @app.callback(invoke_without_command=True)
 def _root(ctx: typer.Context) -> None:
@@ -316,7 +316,7 @@ def _root(
 **6b** — 加 `show-config` 命令在 `version` 之前.
 
 ```
-REPLACE src/redteam_mcp/__main__.py
+REPLACE src/kestrel_mcp/__main__.py
 <<<<<<< SEARCH
 @app.command()
 def version() -> None:
@@ -356,9 +356,9 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from redteam_mcp.config import Settings
-from redteam_mcp.editions import PRO_DEFAULTS, TEAM_DEFAULTS, get_defaults
-from redteam_mcp.features import FeatureFlags
+from kestrel_mcp.config import Settings
+from kestrel_mcp.editions import PRO_DEFAULTS, TEAM_DEFAULTS, get_defaults
+from kestrel_mcp.features import FeatureFlags
 
 
 def test_feature_flags_frozen():
@@ -454,11 +454,11 @@ Step 7 含 10 个测试：
 
 - [ ] `git diff --stat` 只列 `files_will_touch` 里的 7 个文件
 - [ ] `pytest tests/unit/test_editions.py` 10 passed
-- [ ] `.venv\Scripts\python.exe -m redteam_mcp show-config` 输出
+- [ ] `.venv\Scripts\python.exe -m kestrel_mcp show-config` 输出
       `{"edition": "pro", "features": {...}}`，`scope_enforcement: "strict"`
-- [ ] `.venv\Scripts\python.exe -m redteam_mcp --edition team show-config`
+- [ ] `.venv\Scripts\python.exe -m kestrel_mcp --edition team show-config`
       输出 `scope_enforcement: "warn_only"`
-- [ ] `$env:KESTREL_EDITION = "team"; .venv\Scripts\python.exe -m redteam_mcp
+- [ ] `$env:KESTREL_EDITION = "team"; .venv\Scripts\python.exe -m kestrel_mcp
       show-config` 同样显示 warn_only（随后 `Remove-Item Env:KESTREL_EDITION`）
 - [ ] 原有 95 passed 测试仍然绿（本 RFC 不改运行时行为）
 
@@ -484,7 +484,7 @@ Step 7 含 10 个测试：
 - **Pydantic frozen**: `FeatureFlags` 用 `model_config = {"frozen": True}`，
   尝试设置字段会抛 `ValidationError`（v2）或 `TypeError`（v1 兼容）。测试用
   `pytest.raises((ValidationError, TypeError))` 兼容两路径。
-- **env 变量名**: 本 RFC 用 `KESTREL_EDITION`（不带 `REDTEAM_MCP_` 前缀），因为
+- **env 变量名**: 本 RFC 用 `KESTREL_EDITION`（不带 `KESTREL_MCP_` 前缀），因为
   它是 CLI-level switch，不通过 pydantic-settings 读；`Settings.build()` 里
   `os.getenv("KESTREL_EDITION")` 直接读。
 - **CLI 验证**: Typer 顶层 callback 的 option 要加在**同一个** `_root` 上，不能另开

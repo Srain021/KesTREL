@@ -73,7 +73,7 @@ Must be:
 Example templates:
 ```
 .venv\Scripts\python.exe -m pytest tests/unit/<module>/ -v
-.venv\Scripts\python.exe -m redteam_mcp.__main__ <new-cli-cmd> --help
+.venv\Scripts\python.exe -m kestrel_mcp.__main__ <new-cli-cmd> --help
 ```
 
 ### Step 6 — Write rollback_cmd

@@ -183,7 +183,7 @@ HTB VPN:    10.10.10.0/24, 10.10.11.0/24, 10.10.14.0/23, 10.10.0.0/16
 内网:       172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16
 ```
 
-**改 scope**：编辑 `C:\Users\bofud\.cursor\mcp.json` 里的 `REDTEAM_MCP_SECURITY__AUTHORIZED_SCOPE`，重启 Cursor。
+**改 scope**：编辑 `C:\Users\bofud\.cursor\mcp.json` 里的 `KESTREL_MCP_SECURITY__AUTHORIZED_SCOPE`，重启 Cursor。
 
 ---
 
@@ -191,13 +191,13 @@ HTB VPN:    10.10.10.0/24, 10.10.11.0/24, 10.10.14.0/23, 10.10.0.0/16
 
 所有 tool 调用都写入：
 ```
-C:\Users\bofud\.redteam-mcp\logs\server.log     (结构化 JSON)
+C:\Users\bofud\.kestrel\logs\server.log     (结构化 JSON)
 ```
 
 比赛结束后：
 ```powershell
 # 查当天的所有 tool 调用
-Get-Content "$env:USERPROFILE\.redteam-mcp\logs\server.log" |
+Get-Content "$env:USERPROFILE\.kestrel\logs\server.log" |
     Where-Object { $_ -match '"audit":\s*true' } |
     ConvertFrom-Json |
     Format-Table timestamp, event, @{N='args';E={$_.argument_keys -join ','}} -AutoSize
@@ -221,7 +221,7 @@ Get-Content "$env:USERPROFILE\.redteam-mcp\logs\server.log" |
 早上开赛前 5 分钟跑一遍：
 
 ```powershell
-cd "d:\TG PROJECT\redteam-mcp"
+cd "d:\TG PROJECT\kestrel-mcp"
 .\.venv\Scripts\python.exe scripts\full_verify.py
 ```
 
@@ -240,6 +240,6 @@ LLM 会用 MCP 报告所有就绪状态。稳了就开干。
 - [QUICKSTART.md](./QUICKSTART.md) — 安装速记
 - [LICENSE](./LICENSE) — 责任免责（含法律条款）
 - `~/.cursor/mcp.json` — 你的实际配置
-- `~/.redteam-mcp/logs/` — 审计日志
+- `~/.kestrel/logs/` — 审计日志
 
 **祝比赛顺利。**

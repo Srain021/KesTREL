@@ -9,7 +9,7 @@ Decisions (see PRODUCT_LINES.md Part 9):
 
 from __future__ import annotations
 
-from redteam_mcp.features import FeatureFlags
+from kestrel_mcp.features import FeatureFlags
 
 TEAM_DEFAULTS = FeatureFlags(
     scope_enforcement="warn_only",

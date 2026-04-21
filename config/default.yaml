@@ -1,23 +1,23 @@
 server:
-  name: "redteam-mcp"
+  name: "kestrel-mcp"
   version: "0.1.0"
 
 security:
   authorized_scope: []
   require_ack: true
   dry_run: false
-  audit_log: "~/.redteam-mcp/audit.log"
+  audit_log: "~/.kestrel/audit.log"
   dangerous_ops_require_scope: true
 
 execution:
   timeout_sec: 300
   max_output_bytes: 5242880
-  working_dir: "~/.redteam-mcp/runs"
+  working_dir: "~/.kestrel/runs"
 
 logging:
   level: "INFO"
   format: "json"
-  dir: "~/.redteam-mcp/logs"
+  dir: "~/.kestrel/logs"
 
 tools:
   nuclei:

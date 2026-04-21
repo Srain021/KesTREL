@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import pytest
 
-from redteam_mcp.config import Settings
-from redteam_mcp.core import ServiceContainer
-from redteam_mcp.security import ScopeGuard
-from redteam_mcp.tools.engagement_tool import EngagementModule
+from kestrel_mcp.config import Settings
+from kestrel_mcp.core import ServiceContainer
+from kestrel_mcp.security import ScopeGuard
+from kestrel_mcp.tools.engagement_tool import EngagementModule
 
 pytestmark = pytest.mark.asyncio
 
@@ -213,7 +213,7 @@ async def test_finding_lifecycle(container, module):
 
     async with container.open_context(engagement_id=e.id):
         # Seed a target + finding via direct service calls
-        from redteam_mcp.domain import entities as ent
+        from kestrel_mcp.domain import entities as ent
 
         t = await container.target.add(
             engagement_id=e.id,

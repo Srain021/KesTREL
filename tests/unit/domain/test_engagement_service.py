@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from redteam_mcp.domain import entities as ent
-from redteam_mcp.domain.errors import (
+from kestrel_mcp.domain import entities as ent
+from kestrel_mcp.domain.errors import (
     EngagementNotFoundError,
     InvalidStateTransitionError,
     UniqueConstraintError,
 )
-from redteam_mcp.domain.services import EngagementService
+from kestrel_mcp.domain.services import EngagementService
 
 pytestmark = pytest.mark.asyncio
 
@@ -120,7 +120,7 @@ async def test_ensure_mutable_rejects_closed(sm):
     )
     await svc.transition(e.id, ent.EngagementStatus.ACTIVE)
     await svc.transition(e.id, ent.EngagementStatus.CLOSED)
-    from redteam_mcp.domain.errors import EngagementStateError
+    from kestrel_mcp.domain.errors import EngagementStateError
 
     with pytest.raises(EngagementStateError):
         await svc.ensure_mutable(e.id)
@@ -131,7 +131,7 @@ async def test_ensure_accepts_dangerous_requires_active(sm):
     e = await svc.create(
         name="x", display_name="x", engagement_type=ent.EngagementType.CTF, client="c"
     )
-    from redteam_mcp.domain.errors import EngagementStateError
+    from kestrel_mcp.domain.errors import EngagementStateError
 
     # Planning — not active
     with pytest.raises(EngagementStateError):

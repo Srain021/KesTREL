@@ -13,16 +13,16 @@ budget:
   max_minutes_human: 30
   max_tokens_model: 14000
 files_to_read:
-  - src/redteam_mcp/webui/job_runner.py
-  - src/redteam_mcp/webui/routes/tools.py
-  - src/redteam_mcp/webui/templating.py
+  - src/kestrel_mcp/webui/job_runner.py
+  - src/kestrel_mcp/webui/routes/tools.py
+  - src/kestrel_mcp/webui/templating.py
 files_will_touch:
-  - src/redteam_mcp/webui/routes/tools.py                    # modified
-  - src/redteam_mcp/webui/templates/tools/launcher.html.j2   # new
-  - src/redteam_mcp/webui/templates/tools/_job_row.html.j2   # new
+  - src/kestrel_mcp/webui/routes/tools.py                    # modified
+  - src/kestrel_mcp/webui/templates/tools/launcher.html.j2   # new
+  - src/kestrel_mcp/webui/templates/tools/_job_row.html.j2   # new
   - tests/unit/webui/test_tools_sse.py                       # new
 verify_cmd: .venv\Scripts\python.exe -m pytest tests/unit/webui/test_tools_sse.py -v
-rollback_cmd: git checkout -- src\redteam_mcp\webui\routes\tools.py && rmdir /S /Q src\redteam_mcp\webui\templates\tools 2>nul && del tests\unit\webui\test_tools_sse.py 2>nul
+rollback_cmd: git checkout -- src\kestrel_mcp\webui\routes\tools.py && rmdir /S /Q src\kestrel_mcp\webui\templates\tools 2>nul && del tests\unit\webui\test_tools_sse.py 2>nul
 skill_id: rfc-010b-tool-launcher-sse-ui
 ---
 
@@ -48,7 +48,7 @@ Add the HTML launcher and SSE stream endpoint on top of RFC-010a jobs.
 
 ### Step 1
 
-WRITE src/redteam_mcp/webui/routes/tools.py
+WRITE src/kestrel_mcp/webui/routes/tools.py
 ```python
 from __future__ import annotations
 
@@ -189,7 +189,7 @@ async def _sse_events(runner: JobRunner, job_id: str) -> AsyncIterator[str]:
 
 ### Step 2
 
-WRITE src/redteam_mcp/webui/templates/tools/launcher.html.j2
+WRITE src/kestrel_mcp/webui/templates/tools/launcher.html.j2
 ```html
 {% extends "base.html.j2" %}
 {% block title %}Tool launcher &middot; kestrel-mcp{% endblock %}
@@ -240,7 +240,7 @@ WRITE src/redteam_mcp/webui/templates/tools/launcher.html.j2
 
 ### Step 3
 
-WRITE src/redteam_mcp/webui/templates/tools/_job_row.html.j2
+WRITE src/kestrel_mcp/webui/templates/tools/_job_row.html.j2
 ```html
 <tr id="job-{{ job.id }}" class="border-t">
   <td class="px-3 py-2 font-mono text-xs">{{ job.id }}</td>
@@ -263,10 +263,10 @@ from __future__ import annotations
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from redteam_mcp.core import ServiceContainer
-from redteam_mcp.tools.base import ToolResult, ToolSpec
-from redteam_mcp.webui import create_app
-from redteam_mcp.webui.job_runner import JobRunner
+from kestrel_mcp.core import ServiceContainer
+from kestrel_mcp.tools.base import ToolResult, ToolSpec
+from kestrel_mcp.webui import create_app
+from kestrel_mcp.webui.job_runner import JobRunner
 
 
 async def _echo(arguments):
