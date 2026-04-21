@@ -315,3 +315,24 @@ See [AUDIT.md](./AUDIT.md) and [AUDIT_V2.md](./AUDIT_V2.md) for the full gap log
 - First phase of the B05 series (tool guidance completeness). Follow-ups:
   B05b (Sliver), B05c (Havoc+Evilginx), B05d (Ligolo+Caido), B05e
   (Engagement+Workflow), B05f (Epic G gaps + cross-module param sweep).
+
+### Tool guidance hardening — Sliver server + run_command (RFC-B05b1)
+- `src/kestrel_mcp/tools/sliver_tool.py`:
+  - `sliver_start_server` (dangerous): full guidance covering 30s first-run
+    cert init, gRPC port 31337 collision, ~/.sliver persistence, per-operator
+    config + listener registration follow-ups, stealth/shutdown pitfalls,
+    example start-then-poll conversation.
+  - `sliver_stop_server`: session-kill-no-grace warning, PID-file semantics,
+    Windows CTRL_BREAK caveat, "only stops MCP-started servers" clarifier.
+  - `sliver_server_status`: cheap-call hint, PID-probe vs gRPC-responsive
+    distinction, first-run polling guidance.
+  - `sliver_run_command` (dangerous, power-user): escape-hatch guidance
+    flagging "prefer dedicated tools" direction, audit-log 200-char truncation
+    warning, parsed-table-vs-raw-stdout difference, armory/update timeout
+    advice, example HTTPS listener registration.
+  - Schema params `command`, `timeout_sec`, `daemon` gain proper descriptions.
+- `tests/unit/tools/test_sliver_tool.py` (new, first Sliver test file):
+  - 4 regression guard tests distinguishing dangerous (full guidance +
+    example_conversation required) vs non-dangerous (core guidance) tools.
+- Follow-up RFC-B05b2 will extend to the remaining 4 Sliver ops tools
+  (list_sessions, list_listeners, generate_implant, execute_in_session).

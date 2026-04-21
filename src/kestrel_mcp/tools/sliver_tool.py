@@ -65,9 +65,8 @@ class SliverModule(ToolModule):
             ToolSpec(
                 name="sliver_start_server",
                 description=(
-                    "Start sliver-server in the background. It will run unattended and "
-                    "persist its state in ~/.sliver/. First-time startup initialises "
-                    "certificates and can take ~30s."
+                    "Start sliver-server in the background. Persistent state lives in "
+                    "~/.sliver/. First-time startup initialises certificates and can take ~30s."
                 ),
                 input_schema={
                     "type": "object",
@@ -75,7 +74,8 @@ class SliverModule(ToolModule):
                         "daemon": {
                             "type": "boolean",
                             "default": True,
-                            "description": "Run as daemon (vs attached TTY).",
+                            "description": "Run detached from the invoking TTY (default). "
+                                           "Set false only for interactive debugging.",
                         },
                     },
                     "additionalProperties": False,
@@ -83,27 +83,131 @@ class SliverModule(ToolModule):
                 handler=self._handle_start_server,
                 dangerous=True,
                 tags=["c2"],
+                when_to_use=[
+                    "Starting a fresh C2 engagement — first Sliver call per deploy.",
+                    "After system reboot — sliver-server does not auto-restart.",
+                    "Want unattended daemon-mode operation (default).",
+                ],
+                when_not_to_use=[
+                    "Server already running — call sliver_server_status first.",
+                    "Ephemeral CI / container without persistent ~/.sliver — state won't survive.",
+                    "Host has no outbound network — listener registration works but implant "
+                    "callbacks won't reach you.",
+                    "Multiple sliver-server instances on one host — they fight for the gRPC "
+                    "port (31337) and fail to start.",
+                ],
+                prerequisites=[
+                    "sliver-server binary installed (see BishopFox/sliver releases).",
+                    "Writable ~/.sliver/ for certs — first run creates ~200 MB of CA + keys.",
+                    "gRPC port 31337 and any intended listener ports free (e.g. 80/443).",
+                ],
+                follow_ups=[
+                    "Wait ~30s on first start for cert init — poll sliver_server_status.",
+                    "Create a per-operator config via sliver_run_command 'new-operator ...' "
+                    "before sharing with teammates.",
+                    "Register listeners (https/mtls/dns) via sliver_run_command before "
+                    "generating implants.",
+                ],
+                pitfalls=[
+                    "First start takes 30+ seconds for cert init; subsequent starts < 5s. "
+                    "Don't retry during init or you'll race on .sliver/.",
+                    "Server persists across sliver-client disconnects — remember to call "
+                    "sliver_stop_server at engagement end or you leak a C2.",
+                    "Windows uses CTRL_BREAK for shutdown (not SIGTERM); launched in a new "
+                    "process group by design.",
+                    "If ~/.sliver is corrupted, server fails silently — inspect the .log file "
+                    "next to the PID file.",
+                ],
+                local_model_hints=(
+                    "Call this ONCE per engagement. If unsure whether server is already up, "
+                    "use sliver_server_status first — don't retry start."
+                ),
+                example_conversation=(
+                    'User: "spin up my C2"\n'
+                    "Agent -> sliver_server_status (first, expect running=false)\n"
+                    '          -> sliver_start_server({"daemon": true})\n'
+                    "Response: 'PID 1234, logs at ~/.kestrel/runs/sliver-server.pid.log'\n"
+                    "Agent waits 30s then sliver_server_status again to confirm init."
+                ),
             ),
             ToolSpec(
                 name="sliver_stop_server",
-                description="Stop the sliver-server process started by this MCP.",
+                description=(
+                    "Stop the sliver-server process whose PID was recorded by "
+                    "sliver_start_server. Won't touch a server launched outside MCP."
+                ),
                 input_schema={"type": "object", "properties": {}, "additionalProperties": False},
                 handler=self._handle_stop_server,
                 tags=["c2"],
+                when_to_use=[
+                    "End of engagement — clean up running C2 cleanly.",
+                    "Before host reboot / maintenance for a graceful shutdown.",
+                    "Server is misbehaving and you want a clean restart.",
+                ],
+                when_not_to_use=[
+                    "Active implants/sessions exist — stopping kills them all with no grace "
+                    "period. Run sliver_list_sessions first.",
+                    "Other operators are mid-engagement on this server.",
+                    "Server was NOT started by this MCP — only the pid-file-tracked one stops.",
+                ],
+                prerequisites=[
+                    "PID file exists at ~/.kestrel/runs/sliver-server.pid (set by start).",
+                    "Current user can signal that PID (same uid, or CTRL_BREAK rights on Windows).",
+                ],
+                follow_ups=[
+                    "Verify shutdown with sliver_server_status (running=false).",
+                    "Archive the .log next to the PID file into engagement artifacts before the "
+                    "next start rotates it.",
+                ],
+                pitfalls=[
+                    "Stop kills ALL implants/sessions/listeners with no grace window.",
+                    "Stale PID file with dead process returns ok without action.",
+                    "Windows: needs CTRL_BREAK_EVENT into the server's process group, which "
+                    "sliver_start_server sets up via CREATE_NEW_PROCESS_GROUP — don't bypass.",
+                    "Second call after success is a no-op (PID file already removed).",
+                ],
+                local_model_hints=(
+                    "This stops ONLY the server YOU started via sliver_start_server. "
+                    "Won't kill an externally-launched sliver-server."
+                ),
             ),
             ToolSpec(
                 name="sliver_server_status",
-                description="Return whether sliver-server is running (PID-file based).",
+                description=(
+                    "Return whether the MCP-started sliver-server is running. "
+                    "PID-file + signal-0 probe; does NOT verify gRPC responsiveness."
+                ),
                 input_schema={"type": "object", "properties": {}, "additionalProperties": False},
                 handler=self._handle_server_status,
                 tags=["c2", "meta"],
+                when_to_use=[
+                    "Before any Sliver operation — verify the server is up.",
+                    "Troubleshooting 'connection refused' errors from sliver_run_command.",
+                    "Waiting for first-run cert init to finish (poll every few seconds).",
+                ],
+                prerequisites=[],
+                follow_ups=[
+                    "running=true -> proceed with your intended Sliver op.",
+                    "running=false -> sliver_start_server, or realise other Sliver calls will fail.",
+                ],
+                pitfalls=[
+                    "Only checks PID-file presence + process alive — a zombied server may "
+                    "report running=true but refuse gRPC calls. If commands fail despite "
+                    "running=true, stop+start the server.",
+                    "Stale PID file from a crashed server is auto-cleaned (reports running=false).",
+                    "Does not see sliver-server processes launched outside this MCP.",
+                ],
+                local_model_hints=(
+                    "Cheap and fast (< 100 ms). ALWAYS call before heavy Sliver ops to avoid "
+                    "wasting a 5-minute command timeout when the server is down."
+                ),
             ),
             ToolSpec(
                 name="sliver_run_command",
                 description=(
-                    "Execute ONE raw sliver-client command and return stdout. "
-                    "Useful for commands not covered by dedicated tools. "
-                    "Example: 'implants', 'sessions', 'jobs', 'canaries'."
+                    "Execute ONE raw sliver-client operator command and return stdout. "
+                    "Escape hatch for commands not covered by dedicated tools "
+                    "(e.g. 'canaries', 'operators', 'armory install ...', 'update')."
                 ),
                 input_schema={
                     "type": "object",
@@ -111,12 +215,21 @@ class SliverModule(ToolModule):
                     "properties": {
                         "command": {
                             "type": "string",
-                            "description": "The sliver operator command line.",
+                            "description": (
+                                "Full sliver operator command line (what you'd type at the "
+                                "sliver> prompt). NOT a shell command. e.g. 'https --domain "
+                                "c2.example.com --lport 443'."
+                            ),
                         },
                         "timeout_sec": {
                             "type": "integer",
                             "minimum": 5,
                             "maximum": 1800,
+                            "description": (
+                                "Maximum wall time in seconds. Default comes from "
+                                "execution.timeout_sec (300). Bump for 'armory install' (> 60s) "
+                                "or 'update' (may pull large artifacts)."
+                            ),
                         },
                     },
                     "additionalProperties": False,
@@ -124,6 +237,54 @@ class SliverModule(ToolModule):
                 handler=self._handle_run_command,
                 dangerous=True,
                 tags=["c2", "power-user"],
+                when_to_use=[
+                    "A dedicated tool doesn't exist for what you need (e.g. armory, canaries, "
+                    "operators, update).",
+                    "Debugging — 'help', 'version', 'sessions -h' etc.",
+                    "One-off admin tasks: creating operator configs, registering listeners.",
+                ],
+                when_not_to_use=[
+                    "Dedicated tool exists — use sliver_list_sessions over "
+                    "sliver_run_command('sessions'); use sliver_list_listeners over 'jobs'.",
+                    "Session-scoped ops ('use <id>; whoami') — use sliver_execute_in_session "
+                    "instead; it validates session id and audits properly.",
+                    "Command string contains cleartext secrets — first 200 chars are logged to "
+                    "audit.log.",
+                    "Need structured output (table parsed to JSON) — this returns raw stdout only.",
+                ],
+                prerequisites=[
+                    "sliver-client binary resolvable (`kestrel doctor` checks).",
+                    "Operator config in ~/.sliver-client/configs/ or tools.sliver.operator_config "
+                    "set in settings.",
+                    "sliver_server_status -> running=true.",
+                ],
+                follow_ups=[
+                    "If the command was stateful (listener registration, implant generation), "
+                    "verify the change via sliver_list_listeners or sliver_list_sessions.",
+                    "For frequently-used commands, ask the author to add a dedicated tool — "
+                    "structured output is always better than raw stdout parsing.",
+                ],
+                pitfalls=[
+                    "No scope enforcement beyond what the operator config permits — this is a "
+                    "raw shell into the server.",
+                    "Output is raw stdout in the structured.stdout field; ASCII tables are NOT "
+                    "parsed (use sliver_list_sessions/_listeners for parsed rows).",
+                    "Long-running commands may hit timeout_sec and leave partial state.",
+                    "gRPC drop mid-call loses stdout; no retry.",
+                ],
+                local_model_hints=(
+                    "Escape hatch. ALWAYS check whether a dedicated tool covers the intent before "
+                    "calling this. Command string is the sliver> prompt input, not a shell "
+                    "command. Audit log captures first 200 chars — don't embed credentials."
+                ),
+                example_conversation=(
+                    'User: "register an HTTPS listener on 443 for c2.example.com"\n'
+                    "Agent -> sliver_run_command({\n"
+                    '    "command": "https --domain c2.example.com --lport 443"\n'
+                    "})\n"
+                    "Response: 'Started HTTPS listener: 1 (0.0.0.0:443)'\n"
+                    "Agent follows up with sliver_list_listeners to confirm id + config."
+                ),
             ),
             ToolSpec(
                 name="sliver_list_sessions",
