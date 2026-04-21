@@ -2,8 +2,8 @@
 id: RFC-006
 title: FastAPI app skeleton (shared with MCP container)
 epic: C-WebUI-Tier1
-status: open
-owner: unassigned
+status: done
+owner: agent
 role: backend-engineer
 blocking_on: [RFC-002]
 budget:
@@ -15,7 +15,7 @@ budget:
 files_to_read:
   - src/redteam_mcp/core/services.py
   - src/redteam_mcp/core/context.py
-  - src/redteam_mcp/cli/__main__.py
+  - src/redteam_mcp/__main__.py
 files_will_touch:
   - src/redteam_mcp/webui/__init__.py       # new
   - src/redteam_mcp/webui/app.py            # new
@@ -66,10 +66,10 @@ skill_id: rfc-006-fastapi-skeleton
 ```
 REPLACE pyproject.toml
 <<<<<<< SEARCH
-    "cryptography>=43",
+    "jinja2>=3.1",
 ]
 =======
-    "cryptography>=43",
+    "jinja2>=3.1",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
 ]

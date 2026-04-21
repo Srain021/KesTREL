@@ -127,6 +127,17 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   token/key/hash/private-key redaction, idempotency, and executor stderr
   integration.
 
+### RFC-006 completed
+- Rewrote the stale RFC-006 spec against the real repo layout, then executed
+  the FastAPI skeleton: `redteam_mcp.webui.create_app(container)` now exposes
+  `/` and `/api/v1/engagements` over a shared `ServiceContainer`.
+- Added request middleware that opens a fresh `RequestContext` per HTTP request
+  and attaches it to `request.state.ctx`, plus a small dependency helper for
+  route injection.
+- Added `fastapi` and `uvicorn[standard]` direct dependencies and refreshed
+  `uv.lock`; 4 WebUI smoke tests cover health, docs, empty engagement lists,
+  and persisted engagement listing.
+
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
 - `AGENT_EXECUTION_PROTOCOL.md` §6 whitelisted git commands are now functional.
