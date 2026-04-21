@@ -2,8 +2,8 @@
 id: RFC-011
 title: Settings page (API keys + tool binary paths)
 epic: C-WebUI-Tier1
-status: open
-owner: unassigned
+status: done
+owner: agent
 role: fullstack-engineer
 blocking_on: [RFC-007]
 budget:

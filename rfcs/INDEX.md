@@ -80,7 +80,7 @@
 | RFC-008 | engagement routes + templates     | done   | RFC-007     | agent |
 | RFC-009 | findings table + transitions      | done   | RFC-008     | agent |
 | RFC-010 | tool launcher + SSE stdout stream | blocked ⚠ | RFC-008  |       |
-| RFC-011 | settings page (keys + paths)      | open   | RFC-007     |       |
+| RFC-011 | settings page (keys + paths)      | done   | RFC-007     | agent |
 | RFC-012 | HTTP Basic auth for shared deploy | open   | RFC-006     |       |
 
 > ⚠ = direct spec defects (phantom paths / bad SEARCH / budget). Rewrite needed.

@@ -177,6 +177,15 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   missing engagement 404.
 - `full_verify.py` remains 8/8 green (164 tests now, was 159).
 
+### RFC-011 completed
+- Executed RFC-011: added a read-only `/settings` page showing runtime
+  environment, authorized scope summary, config directory, and tool readiness.
+- Reused existing doctor readiness helpers for binary/status checks while
+  masking `SHODAN_API_KEY` as present/missing only.
+- Added 3 route tests covering page render, environment labels, and secret
+  masking.
+- `full_verify.py` remains 8/8 green (167 tests now, was 164).
+
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
 - `AGENT_EXECUTION_PROTOCOL.md` §6 whitelisted git commands are now functional.

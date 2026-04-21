@@ -1,0 +1,63 @@
+{% extends "base.html.j2" %}
+{% block title %}Settings &middot; kestrel-mcp{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold">Settings</h1>
+<p class="text-sm text-slate-500 mb-6">
+  Read-only runtime view for kestrel-mcp. To change values, edit your MCP
+  config and restart the server.
+</p>
+
+<div class="grid grid-cols-2 gap-4 mb-6">
+  <div class="bg-white border rounded-xl p-4">
+    <h2 class="text-sm font-medium mb-3">Environment</h2>
+    <dl class="grid grid-cols-2 gap-y-2 text-sm">
+      <dt class="text-slate-500">Python</dt>
+      <dd>{{ python_version }}</dd>
+      <dt class="text-slate-500">kestrel-mcp</dt>
+      <dd>{{ server_version }}</dd>
+      <dt class="text-slate-500">Edition</dt>
+      <dd>{{ edition }}</dd>
+      <dt class="text-slate-500">Shodan API key</dt>
+      <dd>{{ shodan_key_status }}</dd>
+      <dt class="text-slate-500">Authorized scope</dt>
+      <dd>{{ scope_count }}</dd>
+    </dl>
+  </div>
+
+  <div class="bg-white border rounded-xl p-4">
+    <h2 class="text-sm font-medium mb-3">Config source</h2>
+    <p class="text-sm text-slate-600 mb-3">
+      User config directory. This page never writes config or displays secret values.
+    </p>
+    <code class="block text-xs bg-slate-100 rounded p-2 break-all">{{ config_dir }}</code>
+  </div>
+</div>
+
+<div class="bg-white border rounded-xl p-4 mb-6">
+  <h2 class="text-sm font-medium mb-2">Authorized scope</h2>
+  <p class="text-sm text-slate-600">{{ authorized_scope }}</p>
+</div>
+
+<div class="bg-white border rounded-xl overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50">
+      <tr>
+        <th class="px-3 py-2 text-left">Tool</th>
+        <th class="px-3 py-2 text-left">Enabled</th>
+        <th class="px-3 py-2 text-left">Binary</th>
+        <th class="px-3 py-2 text-left">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tool in tools %}
+      <tr class="border-t">
+        <td class="px-3 py-2 font-medium">{{ tool.name }}</td>
+        <td class="px-3 py-2">{{ "yes" if tool.enabled else "no" }}</td>
+        <td class="px-3 py-2 text-xs text-slate-600">{{ tool.binary }}</td>
+        <td class="px-3 py-2">{{ tool.status }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
