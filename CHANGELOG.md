@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-B07e` - Added a Web UI fire-control packet partial for findings,
+  rendering approval state, evidence gaps, commander checklist, and rollback
+  guidance without executing tools or creating jobs.
 - `RFC-B07d` - Added Web UI readiness cards to the findings table, showing
   local readiness score, operator-review state, evidence gaps, and
   fire-control requirement without adding execution buttons.

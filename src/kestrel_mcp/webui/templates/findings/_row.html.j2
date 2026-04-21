@@ -39,6 +39,13 @@
       {% elif readiness.first_step %}
       <div class="mt-1 text-xs text-slate-600">{{ readiness.first_step }}</div>
       {% endif %}
+      <button type="button"
+              hx-get="/engagements/{{ slug }}/findings/{{ f.id }}/fire-control"
+              hx-target="#fire-control-panel"
+              hx-swap="innerHTML"
+              class="mt-2 text-xs font-medium text-slate-800 underline decoration-slate-300 underline-offset-2">
+        Fire-control packet
+      </button>
     </div>
     {% else %}
     <span class="text-xs text-slate-400">not assessed</span>

@@ -59,6 +59,55 @@ def _readiness_card(finding: ent.Finding) -> dict[str, object]:
     }
 
 
+def _risk_for_rating(rating: str) -> str:
+    return {
+        "operator_review": "critical",
+        "ready_to_validate": "high",
+        "investigate": "medium",
+        "parked": "low",
+    }.get(rating, "medium")
+
+
+def _fire_control_packet(
+    *,
+    engagement: ent.Engagement,
+    finding: ent.Finding,
+    target: ent.Target | None,
+) -> dict[str, object]:
+    assessment = assess_exploitability(finding)
+    target_label = target.value if target else str(finding.target_id)
+    evidence_gaps = list(assessment.evidence_gaps)
+    return {
+        "approved": False,
+        "approval_required": True,
+        "next_state": "wait_for_human_approval",
+        "engagement_name": engagement.name,
+        "finding_title": finding.title,
+        "target": target_label,
+        "proposed_action": f"Scoped validation for finding: {finding.title}",
+        "risk_level": _risk_for_rating(assessment.rating.value),
+        "readiness_score": assessment.score,
+        "readiness_rating": assessment.rating.value,
+        "rationale": (
+            "Readiness assessment recommends human review before any active validation "
+            "or offensive tool use."
+        ),
+        "evidence_refs": [f"finding://{engagement.id}/{finding.id}"],
+        "evidence_gaps": evidence_gaps,
+        "checklist": [
+            "Scope and rules of engagement confirmed by a human.",
+            "Target and expected validation impact understood.",
+            "Evidence gaps reviewed and accepted or closed.",
+            "Abort condition and rollback path acknowledged.",
+            "Operator explicitly approves any later tool call outside this packet.",
+        ],
+        "rollback_plan": (
+            "Stop validation immediately, preserve current evidence, and do not retry "
+            "noisy or destructive actions without a new approval packet."
+        ),
+    }
+
+
 @router.get("", response_class=HTMLResponse)
 @router.get("/", response_class=HTMLResponse)
 async def list_findings(
@@ -88,6 +137,31 @@ async def list_findings(
             "statuses": list(ent.FindingStatus),
             "selected_severity": severity,
             "selected_status": status,
+            "slug": slug,
+        },
+    )
+
+
+@router.get("/{finding_id}/fire-control", response_class=HTMLResponse)
+async def fire_control_packet(
+    slug: str,
+    finding_id: UUID,
+    request: Request,
+    ctx: Annotated[RequestContext, Depends(get_ctx)],
+) -> HTMLResponse:
+    engagement = await _get_engagement_or_404(ctx, slug)
+    finding = await ctx.finding.get(finding_id)
+    if finding is None or finding.engagement_id != engagement.id:
+        raise HTTPException(404, f"Finding '{finding_id}' not found")
+    target = await ctx.target.get(finding.target_id)
+    packet = _fire_control_packet(engagement=engagement, finding=finding, target=target)
+    return templates.TemplateResponse(
+        request,
+        "findings/_fire_control.html.j2",
+        {
+            "packet": packet,
+            "f": finding,
+            "engagement": engagement,
             "slug": slug,
         },
     )

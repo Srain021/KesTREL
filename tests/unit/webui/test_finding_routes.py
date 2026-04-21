@@ -63,6 +63,8 @@ async def test_list_findings(setup):
     assert "Readiness" in r.text
     assert "ready to validate" in r.text
     assert "Human fire-control required" in r.text
+    assert "fire-control-panel" in r.text
+    assert "Fire-control packet" in r.text
 
 
 async def test_filter_by_severity(setup):
@@ -85,6 +87,18 @@ async def test_transition_finding(setup):
     updated = await c.finding.get(findings[0].id)
     assert updated is not None
     assert updated.status == ent.FindingStatus.TRIAGED
+
+
+async def test_fire_control_packet(setup):
+    client, _, findings = setup
+    r = await client.get(f"/engagements/finding-test/findings/{findings[0].id}/fire-control")
+    assert r.status_code == 200
+    assert "Fire-control packet" in r.text
+    assert "Explicit human approval required" in r.text
+    assert "Approved" in r.text
+    assert "False" in r.text
+    assert "wait_for_human_approval" in r.text
+    assert "does not execute tools" in r.text
 
 
 async def test_invalid_transition_409(setup):

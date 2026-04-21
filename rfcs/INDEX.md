@@ -79,6 +79,7 @@
 | RFC-B07b | CVE enrichment client            | done   | RFC-B07a    | agent |
 | RFC-B07c | Offensive readiness MCP tools    | done   | RFC-B07b    | agent |
 | RFC-B07d | Readiness cards on findings page | done   | RFC-B07c    | agent |
+| RFC-B07e | Fire-control packet on findings  | done   | RFC-B07d    | agent |
 
 ### Epic C — Web UI Tier 1
 
