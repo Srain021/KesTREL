@@ -27,6 +27,7 @@ def load_modules(settings: Settings, scope_guard: ScopeGuard) -> list[ToolModule
     from .ffuf_tool import FfufModule
     from .havoc_tool import HavocModule
     from .httpx_tool import HttpxModule
+    from .impacket_tool import ImpacketModule
     from .ligolo_tool import LigoloModule
     from .nmap_tool import NmapModule
     from .nuclei_tool import NucleiModule
@@ -45,6 +46,7 @@ def load_modules(settings: Settings, scope_guard: ScopeGuard) -> list[ToolModule
         HttpxModule(settings, scope_guard),
         NmapModule(settings, scope_guard),
         FfufModule(settings, scope_guard),
+        ImpacketModule(settings, scope_guard),
         CaidoModule(settings, scope_guard),
         LigoloModule(settings, scope_guard),
         SliverModule(settings, scope_guard),

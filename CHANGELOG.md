@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-G06` - Added an opt-in Impacket wrapper for `psexec`, `smbexec`,
+  `wmiexec`, `secretsdump`, and `GetUserSPNs`, with `impacket>=0.12` locked,
+  scope enforcement, credential-redacted structured outputs, and mocked tests.
 - `RFC-G04` - Added an opt-in ffuf wrapper with `ffuf_dir_bruteforce`,
   `ffuf_param_fuzz`, and `ffuf_version`, safe wordlist path handling, config
   defaults, registry wiring, and mocked subprocess tests.

@@ -48,6 +48,9 @@ tools:
     binary: null
     wordlists_dir: "."
 
+  impacket:
+    enabled: false
+
   caido:
     enabled: false
     binary: null

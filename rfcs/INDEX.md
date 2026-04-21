@@ -122,7 +122,7 @@
 | RFC-G03 | nmap wrapper                      | done   |             | agent |
 | RFC-G04 | ffuf wrapper                      | done   |             | agent |
 | RFC-G05 | Metasploit RPC client             | open   | RFC-003     |       |
-| RFC-G06 | Impacket scripts (5 key ones)     | open   |             |       |
+| RFC-G06 | Impacket scripts (5 key ones)     | done   |             | agent |
 | RFC-G07 | NetExec wrapper                   | open   | RFC-003     |       |
 | RFC-G08 | BloodHound-CE REST client         | open   |             |       |
 

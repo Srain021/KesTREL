@@ -558,7 +558,7 @@ wordlist, extensions, threads)`, `ffuf_param_fuzz(url, wordlist)`, and
 
 ---
 
-### 34. Impacket ⬜ 待集成
+### 34. Impacket ✅ 已集成
 
 | 字段 | 值 |
 |------|---|
@@ -580,6 +580,11 @@ wordlist, extensions, threads)`, `ffuf_param_fuzz(url, wordlist)`, and
 - `ticketer.py` — Golden/Silver ticket
 
 **计划 MCP tools**: 一个 tool 对应一个脚本。
+
+**Kestrel integration**: RFC-G06 done. Exposes `impacket_psexec`,
+`impacket_smbexec`, `impacket_wmiexec`, `impacket_secretsdump`, and
+`impacket_get_user_spns`; plaintext credential args are temporary until
+RFC-003 rewires these handlers through CredentialService.
 
 ---
 

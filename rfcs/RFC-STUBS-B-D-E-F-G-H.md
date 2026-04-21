@@ -181,12 +181,6 @@
 - **Blocking**: RFC-003 (credentials for MSF session)
 - **Budget**: 8 files, 800 lines — 独立 epic-sized。**展开时必须拆成 G05a/b/c**。
 
-### RFC-G06 — Impacket scripts (top 5)
-
-- **Mission**: 封装 `psexec.py`, `smbexec.py`, `wmiexec.py`, `secretsdump.py`, `GetUserSPNs.py`
-- **Binary**: `python -m impacket.examples.<script>` (pip 依赖)
-- **Budget**: 6 files
-
 ### RFC-G07 — NetExec wrapper
 
 - **Mission**: `netexec_smb(target, creds)` 等
