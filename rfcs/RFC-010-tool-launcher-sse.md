@@ -2,14 +2,14 @@
 id: RFC-010
 title: Tool launcher + SSE live stdout stream
 epic: C-WebUI-Tier1
-status: open
-owner: unassigned
+status: abandoned
+owner: agent
 role: fullstack-engineer
 blocking_on: [RFC-008]
 budget:
   max_files_touched: 6
   max_new_files: 5
-  max_lines_added: 450
+  max_lines_added: 400
   max_minutes_human: 35
   max_tokens_model: 18000
 files_to_read:

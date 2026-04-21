@@ -195,6 +195,11 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
   valid/invalid credentials, and the default anonymous local mode.
 - `full_verify.py` remains 8/8 green (173 tests now, was 167).
 
+### RFC-010 split
+- Superseded oversized RFC-010 with RFC-010a (backend jobs + JSON routes) and
+  RFC-010b (HTML launcher + SSE endpoint) so each executable RFC stays under
+  the hard 400-line budget.
+
 ### Infrastructure
 - Project is now tracked in git on branch `main`.
 - `AGENT_EXECUTION_PROTOCOL.md` §6 whitelisted git commands are now functional.
