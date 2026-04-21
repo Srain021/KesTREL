@@ -185,7 +185,10 @@ class SliverModule(ToolModule):
                     "Troubleshooting 'connection refused' errors from sliver_run_command.",
                     "Waiting for first-run cert init to finish (poll every few seconds).",
                 ],
-                prerequisites=[],
+                prerequisites=[
+                    "No Sliver client connection required; this checks only the MCP PID file.",
+                    "Useful even when operator config is broken because it does not contact gRPC.",
+                ],
                 follow_ups=[
                     "running=true -> proceed with your intended Sliver op.",
                     "running=false -> sliver_start_server, or realise other Sliver calls will fail.",
@@ -292,6 +295,34 @@ class SliverModule(ToolModule):
                 input_schema={"type": "object", "properties": {}, "additionalProperties": False},
                 handler=self._handle_list_sessions,
                 tags=["c2", "recon"],
+                when_to_use=[
+                    "Before any session-scoped operation: choose the exact session id first.",
+                    "After a new implant callback to confirm host, user, transport, and health.",
+                    "Before sliver_stop_server to avoid killing active operator work by surprise.",
+                ],
+                when_not_to_use=[
+                    "Need raw Sliver table output for troubleshooting; use sliver_run_command.",
+                    "Server is down; call sliver_server_status first to avoid timeout noise.",
+                ],
+                prerequisites=[
+                    "sliver_server_status reports running=true.",
+                    "sliver-client binary and operator config are usable.",
+                ],
+                follow_ups=[
+                    "If count=0, verify listeners with sliver_list_listeners and re-check callback routing.",
+                    "If multiple sessions exist, ask the operator to select by session id, host, user, and OS.",
+                    "For the selected session, use sliver_execute_in_session with a benign validation command first.",
+                ],
+                pitfalls=[
+                    "Session ids are short-lived; re-list immediately before executing in a session.",
+                    "A stale or disconnected row may still appear briefly; failed commands should trigger re-list.",
+                    "Parsed rows are best-effort; inspect raw when columns look wrong.",
+                    "Do not infer authorization from session presence; scope and rules of engagement still apply.",
+                ],
+                local_model_hints=(
+                    "Call this before sliver_execute_in_session. Never guess a session_id from memory; "
+                    "use the freshest list and ask when more than one plausible session exists."
+                ),
             ),
             ToolSpec(
                 name="sliver_list_listeners",
@@ -299,6 +330,32 @@ class SliverModule(ToolModule):
                 input_schema={"type": "object", "properties": {}, "additionalProperties": False},
                 handler=self._handle_list_jobs,
                 tags=["c2", "recon"],
+                when_to_use=[
+                    "Before generating an implant: verify the intended protocol listener exists.",
+                    "After sliver_run_command creates/stops a listener to confirm actual state.",
+                    "When callbacks fail: check protocol, bind address, and listener id.",
+                ],
+                when_not_to_use=[
+                    "Need to create a new listener; use sliver_run_command with the explicit listener command.",
+                    "Server is down; call sliver_server_status first.",
+                ],
+                prerequisites=[
+                    "sliver_server_status reports running=true.",
+                    "Operator config can connect to the server.",
+                ],
+                follow_ups=[
+                    "If the listener is missing, create it explicitly and re-run this tool.",
+                    "If protocol/port differs from the planned implant, fix listener or regenerate with matching args.",
+                    "After confirming a listener, sliver_generate_implant can use the matching callback address.",
+                ],
+                pitfalls=[
+                    "A listener bound locally may still be unreachable from the target network.",
+                    "Jobs/listeners can be stopped by other operators; re-check before payload generation.",
+                    "Parsed rows are best-effort across Sliver versions; inspect raw when output format changes.",
+                ],
+                local_model_hints=(
+                    "Use this as the gate before implant generation. No listener, no implant generation."
+                ),
             ),
             ToolSpec(
                 name="sliver_generate_implant",
@@ -314,25 +371,38 @@ class SliverModule(ToolModule):
                         "protocol": {
                             "type": "string",
                             "enum": ["mtls", "https", "http", "dns", "wg"],
+                            "description": (
+                                "Callback transport to embed. Must match an already-running "
+                                "Sliver listener/job."
+                            ),
                         },
                         "callback_addr": {
                             "type": "string",
-                            "description": "e.g. 'example.com:443' or 'c2.domain.tld'.",
+                            "description": (
+                                "In-scope callback host/address, optionally with port, e.g. "
+                                "'c2.lab:443'. This is scope-checked before generation."
+                            ),
                         },
                         "os": {
                             "type": "string",
                             "enum": ["windows", "linux", "darwin"],
                             "default": "windows",
+                            "description": "Target operating system for the implant artifact.",
                         },
                         "arch": {
                             "type": "string",
                             "enum": ["amd64", "386", "arm64"],
                             "default": "amd64",
+                            "description": "Target CPU architecture; amd64 is the common default.",
                         },
                         "format": {
                             "type": "string",
                             "enum": ["exe", "shellcode", "shared", "service"],
                             "default": "exe",
+                            "description": (
+                                "Artifact format. Use exe for ordinary lab execution; shellcode, "
+                                "shared, and service require a clear operator reason."
+                            ),
                         },
                         "beacon": {
                             "type": "boolean",
@@ -343,16 +413,44 @@ class SliverModule(ToolModule):
                             "type": "integer",
                             "minimum": 10,
                             "default": 60,
+                            "description": (
+                                "Beacon check-in interval in seconds when beacon=true. Higher is "
+                                "quieter but slower for interactive work."
+                            ),
                         },
                         "beacon_jitter_pct": {
                             "type": "integer",
                             "minimum": 0,
                             "maximum": 100,
                             "default": 30,
+                            "description": (
+                                "Beacon timing jitter percentage when beacon=true. Keep explicit "
+                                "so operators understand response-time tradeoffs."
+                            ),
                         },
-                        "evasion": {"type": "boolean", "default": False},
-                        "skip_symbols": {"type": "boolean", "default": True},
-                        "save_dir": {"type": "string"},
+                        "evasion": {
+                            "type": "boolean",
+                            "default": False,
+                            "description": (
+                                "Enable Sliver's evasion build option only when rules explicitly "
+                                "allow it. Keep false for ordinary validation."
+                            ),
+                        },
+                        "skip_symbols": {
+                            "type": "boolean",
+                            "default": True,
+                            "description": (
+                                "Strip symbols from the artifact. Default true; set false only "
+                                "when debugging or analysis requires symbols."
+                            ),
+                        },
+                        "save_dir": {
+                            "type": "string",
+                            "description": (
+                                "Directory where Sliver writes the artifact. Prefer a controlled "
+                                "engagement artifact directory."
+                            ),
+                        },
                     },
                     "additionalProperties": False,
                 },
@@ -360,6 +458,52 @@ class SliverModule(ToolModule):
                 dangerous=True,
                 requires_scope_field="callback_addr",
                 tags=["c2", "payload"],
+                when_to_use=[
+                    "Authorized lab/CTF engagement needs a new implant artifact for a known target OS/arch.",
+                    "A matching listener/job is already running and verified with sliver_list_listeners.",
+                    "Callback address is inside the declared engagement scope and reachable from the target network.",
+                ],
+                when_not_to_use=[
+                    "No listener exists for the selected protocol; create and verify it first.",
+                    "Target OS/arch is unknown; gather inventory instead of guessing.",
+                    "Callback host is outside scope, third-party, or not controlled by the engagement.",
+                    "Operator asks for evasion/persistence without explicit rules-of-engagement approval.",
+                    "A suitable implant already exists; avoid generating duplicate uncontrolled artifacts.",
+                ],
+                prerequisites=[
+                    "sliver_server_status reports running=true.",
+                    "sliver_list_listeners shows the intended protocol/port listener is active.",
+                    "callback_addr passes scope validation and routes back to the operator infrastructure.",
+                    "Operator has chosen OS, arch, format, and beacon/session mode intentionally.",
+                ],
+                follow_ups=[
+                    "Record artifact path, protocol, callback, OS/arch, build options, and hash in notes.",
+                    "Store the artifact only in the engagement artifacts directory; do not scatter copies.",
+                    "After authorized delivery/execution, poll sliver_list_sessions for the expected callback.",
+                    "At engagement end, archive or destroy artifacts according to rules of engagement.",
+                ],
+                pitfalls=[
+                    "Generating before listener verification creates dead artifacts and wastes operator time.",
+                    "Protocol/callback mismatch is the most common failure: listener and implant must agree.",
+                    "Evasion is not a magic bypass and may violate competition rules; keep it false by default.",
+                    "Beacon implants are less interactive; choose session vs beacon based on the task.",
+                    "Generated payloads are sensitive artifacts; never paste or upload them casually.",
+                ],
+                local_model_hints=(
+                    "Before calling this: sliver_server_status, then sliver_list_listeners, then confirm "
+                    "callback_addr is in scope. Prefer evasion=false. Do not generate implants for "
+                    "uncontrolled callback infrastructure."
+                ),
+                example_conversation=(
+                    'User: "build a Windows lab implant for our mtls listener on c2.lab:443"\n'
+                    "Agent -> sliver_list_listeners (confirm mtls listener is active)\n"
+                    "Agent -> sliver_generate_implant({\n"
+                    '    "protocol": "mtls", "callback_addr": "c2.lab:443",\n'
+                    '    "os": "windows", "arch": "amd64", "format": "exe",\n'
+                    '    "beacon": false, "evasion": false\n'
+                    "})\n"
+                    "Agent records artifact path and hash, then polls sliver_list_sessions after delivery."
+                ),
             ),
             ToolSpec(
                 name="sliver_execute_in_session",
@@ -370,19 +514,27 @@ class SliverModule(ToolModule):
                     "properties": {
                         "session_id": {
                             "type": "string",
-                            "description": "Session ID as shown by sliver_list_sessions.",
+                            "description": (
+                                "Exact session ID from a fresh sliver_list_sessions result. "
+                                "Do not guess or reuse stale ids."
+                            ),
                         },
                         "command": {
                             "type": "string",
                             "description": (
                                 "Sliver command to run after `use <session>`. "
-                                "e.g. 'execute -o cmd.exe /c whoami', 'shell', 'ps'."
+                                "Use benign validation commands first, e.g. 'whoami', "
+                                "'hostname', or 'ps'."
                             ),
                         },
                         "timeout_sec": {
                             "type": "integer",
                             "minimum": 5,
                             "maximum": 1800,
+                            "description": (
+                                "Maximum wall time in seconds for the session command. "
+                                "Keep short for checks; increase only for known long tasks."
+                            ),
                         },
                     },
                     "additionalProperties": False,
@@ -390,6 +542,52 @@ class SliverModule(ToolModule):
                 handler=self._handle_execute_in_session,
                 dangerous=True,
                 tags=["c2", "post-ex"],
+                when_to_use=[
+                    "Operator selected one active session from a fresh sliver_list_sessions result.",
+                    "Running a scoped, intentional command inside a lab/CTF session.",
+                    "Need structured audit around a session-scoped Sliver command instead of raw run_command.",
+                ],
+                when_not_to_use=[
+                    "No fresh session list exists; call sliver_list_sessions first.",
+                    "Multiple sessions match and the operator has not chosen the exact session id.",
+                    "Command would collect secrets, modify persistence, or disrupt service without explicit approval.",
+                    "A non-session Sliver command is intended; use sliver_run_command instead.",
+                    "The target represented by the session is outside the engagement scope.",
+                ],
+                prerequisites=[
+                    "sliver_server_status reports running=true.",
+                    "sliver_list_sessions was called immediately before this tool.",
+                    "session_id matches the selected active session and operator intent.",
+                    "The command is allowed by the rules of engagement and expected to finish within timeout_sec.",
+                ],
+                follow_ups=[
+                    "Summarize stdout/stderr and note whether the session still appears healthy.",
+                    "If the command fails, re-run sliver_list_sessions before retrying.",
+                    "For host inventory, store stable facts as engagement targets or notes instead of repeating commands.",
+                    "For any sensitive output, avoid pasting raw secrets; summarize and store securely.",
+                ],
+                pitfalls=[
+                    "Command text is audited (first 200 chars); never embed credentials or tokens.",
+                    "Session ids can expire between list and execute; retry only after re-listing.",
+                    "Interactive shells can hang; prefer one-shot commands with bounded timeout_sec.",
+                    "Composite command is built as 'use <session>; <command>'; session id validation is strict.",
+                    "Do not assume command syntax is a local OS shell; it is parsed by sliver-client.",
+                ],
+                local_model_hints=(
+                    "Always call sliver_list_sessions first. If more than one session exists, ask for "
+                    "confirmation by host/user/OS/session_id. Start with benign inventory commands; do "
+                    "not run destructive, persistence, credential, or exfiltration actions unless the "
+                    "operator explicitly requested them within scope."
+                ),
+                example_conversation=(
+                    'User: "check who we are on session abc123"\n'
+                    "Agent -> sliver_list_sessions (confirm abc123 is active and scoped)\n"
+                    "Agent -> sliver_execute_in_session({\n"
+                    '    "session_id": "abc123", "command": "whoami", "timeout_sec": 30\n'
+                    "})\n"
+                    "Agent summarizes the returned username and recommends re-listing sessions before "
+                    "the next action."
+                ),
             ),
         ]
 

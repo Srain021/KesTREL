@@ -69,6 +69,7 @@
 | RFC-B01 | Propagate core_errors everywhere  | open   | RFC-002     |       |
 | RFC-B05a | Tool guidance — Impacket         | done   | RFC-002     | coordinator |
 | RFC-B05b1 | Tool guidance — Sliver server   | done   | RFC-002     | coordinator |
+| RFC-B05b2 | Tool guidance - Sliver ops      | done   | RFC-B05b1   | agent |
 | RFC-B02 | Dumb-model guidance for caido/ligolo/sliver/havoc/evilginx | open | |
 | RFC-B03 | THREAT_MODEL status tracking      | open   |             |       |
 | RFC-B04 | log schema versioning             | open   | RFC-B01     |       |

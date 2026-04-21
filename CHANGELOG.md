@@ -336,3 +336,22 @@ See [AUDIT.md](./AUDIT.md) and [AUDIT_V2.md](./AUDIT_V2.md) for the full gap log
     example_conversation required) vs non-dangerous (core guidance) tools.
 - Follow-up RFC-B05b2 will extend to the remaining 4 Sliver ops tools
   (list_sessions, list_listeners, generate_implant, execute_in_session).
+
+### Tool guidance hardening - Sliver ops (RFC-B05b2)
+- `src/kestrel_mcp/tools/sliver_tool.py`:
+  - `sliver_list_sessions`: now framed as the mandatory gate before any
+    session-scoped action, with stale-session, multi-session, and raw-table
+    parsing cautions.
+  - `sliver_list_listeners`: now framed as the mandatory gate before implant
+    generation, with listener/protocol/callback mismatch warnings.
+  - `sliver_generate_implant` (dangerous): full guidance covering listener
+    verification, callback scope, OS/arch/format selection, artifact tracking,
+    beacon tradeoffs, and explicit no-default-evasion posture.
+  - `sliver_execute_in_session` (dangerous): full guidance requiring a fresh
+    session list, exact session selection, bounded benign validation commands,
+    audit-log sensitivity, and retry-after-relist behavior.
+  - Every schema property on the 4 ops tools now carries a `description`.
+- `tests/unit/tools/test_sliver_tool.py`:
+  - Regression guard now covers all 8 Sliver tools, not only the B05b1 subset.
+  - Dangerous Sliver tools require all guidance fields plus examples; inventory
+    tools require core routing guidance; all schema params require descriptions.
