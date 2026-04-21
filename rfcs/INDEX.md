@@ -131,7 +131,7 @@
 | id      | title                             | status | blocking_on | owner |
 |---------|-----------------------------------|--------|-------------|-------|
 | RFC-H01 | Rename to kestrel-mcp             | done   | RFC-002     | agent |
-| RFC-H02 | PyPI + Docker release pipeline    | open   | RFC-H01,RFC-002 |   |
+| RFC-H02 | PyPI + Docker release pipeline    | done   | RFC-H01,RFC-002 | agent |
 | RFC-H03 | MkDocs Material site              | open   | RFC-H01     |       |
 | RFC-H04 | v1.0 release gate + announcement  | open   | all above   |       |
 

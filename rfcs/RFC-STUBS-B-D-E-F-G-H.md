@@ -204,16 +204,6 @@
 - **Notes**: 必须一次 PR 完成，否则 import 断。
 - **Closes**: AUDIT D-1
 
-### RFC-H02 — PyPI + Docker release pipeline
-
-- **Mission**: `release.yml` GitHub Action：tag → PyPI + GHCR + GitHub Release changelog
-- **Blocking**: RFC-H01, RFC-002
-- **Budget**: 4 files
-- **Steps**:
-  1. `.github/workflows/release.yml`
-  2. `Dockerfile`（distroless-like 或 python:slim）
-  3. `docs/releasing.md`
-
 ### RFC-H03 — MkDocs Material site
 
 - **Mission**: 搭 docs 站点；host 到 GitHub Pages。

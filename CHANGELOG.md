@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-H02` - Added tag-driven release infrastructure: PyPI trusted
+  publishing, GHCR Docker image publishing, GitHub Release creation, a
+  production Dockerfile, `.dockerignore`, and `docs/releasing.md`.
 - `RFC-G08` - Added an opt-in BloodHound-CE REST client with
   `bloodhound_query`, `bloodhound_list_datasets`, and `bloodhound_version`,
   config defaults, bearer-token support, registry wiring, and mocked HTTP tests.
