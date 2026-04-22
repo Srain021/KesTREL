@@ -1,8 +1,7 @@
 """Feature flags controlling runtime behavior across editions.
 
-Every flag has a default compatible with Pro (strict) edition. Team edition's
-``TEAM_DEFAULTS`` (see ``editions/team.py``) overrides the unsafe-for-prod
-defaults.
+Every flag has a default compatible with Pro (strict) edition. Team and
+internal edition presets override the unsafe-for-prod defaults.
 
 See PRODUCT_LINES.md Part 9 for the decisions baked in here.
 """

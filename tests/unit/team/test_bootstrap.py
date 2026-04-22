@@ -36,6 +36,19 @@ def test_report_render_contains_expected_sections():
     assert "a.com" in text
 
 
+def test_report_render_reflects_internal_firepower_edition():
+    r = BootstrapReport(
+        name="op-internal",
+        edition="internal",
+        data_dir=Path("/tmp/internal"),
+        dry_run=True,
+        scope_added=["lab.local"],
+    )
+    text = r.render()
+    assert "Kestrel Internal Firepower Edition" in text
+    assert "kestrel --edition internal" in text
+
+
 def test_report_render_handles_empty_scope_and_warnings():
     r = BootstrapReport(
         name="op-y",

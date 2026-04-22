@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- Added a dedicated `internal` firepower edition for private crew operations:
+  all bundled tool modules enabled by default, Team-style relaxed runtime
+  gates, CLI/config wiring, Cursor env example, and docs.
 - `RFC-B07e` - Added a Web UI fire-control packet partial for findings,
   rendering approval state, evidence gaps, commander checklist, and rollback
   guidance without executing tools or creating jobs.

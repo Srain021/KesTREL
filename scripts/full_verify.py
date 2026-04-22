@@ -13,10 +13,9 @@ import json
 import os
 import pathlib
 import subprocess
-import sys
+import tempfile
 import time
-from typing import Callable
-
+from collections.abc import Callable
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 
@@ -98,14 +97,28 @@ def check_imports() -> tuple[bool, str]:
 
 
 def check_tests() -> tuple[bool, str]:
-    res = subprocess.run(
-        [str(VENV_PYTHON), "-m", "pytest", "tests/", "-q", "--no-header"],
-        cwd=str(REPO),
-        capture_output=True,
-        text=True,
-    )
-    last = res.stdout.strip().splitlines()
-    summary = last[-1] if last else "(no output)"
+    output_path = pathlib.Path(tempfile.mktemp())
+    if os.name == "nt":
+        command = [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            (
+                "& .\\.venv\\Scripts\\python.exe -m pytest tests/ -q --no-header "
+                f"*> {str(output_path)!r}; exit $LASTEXITCODE"
+            ),
+        ]
+        encoding = "utf-16"
+    else:
+        command = [str(VENV_PYTHON), "-m", "pytest", "tests/", "-q", "--no-header"]
+        encoding = "utf-8"
+
+    res = subprocess.run(command, cwd=str(REPO), stdin=subprocess.DEVNULL)
+    try:
+        lines = output_path.read_text(encoding=encoding, errors="replace").strip().splitlines()
+    finally:
+        output_path.unlink(missing_ok=True)
+    summary = lines[-1] if lines else f"pytest exit={res.returncode}"
     return (res.returncode == 0, summary)
 
 
@@ -227,12 +240,12 @@ def main() -> int:
     checks: list[Check] = [
         time_it("1. Python syntax (all source)", check_syntax),
         time_it("2. All 21 modules importable", check_imports),
-        time_it("3. Full test suite passes", check_tests),
-        time_it("4. CLI: version", check_cli_version),
-        time_it("5. CLI: doctor renders table", check_cli_doctor),
-        time_it("6. CLI: list-tools returns 41+", check_cli_list_tools),
-        time_it("7. In-process MCP handler roundtrip", check_mcp_roundtrip),
-        time_it("8. ScopeGuard enforcement", check_scope_guard),
+        time_it("3. CLI: version", check_cli_version),
+        time_it("4. CLI: doctor renders table", check_cli_doctor),
+        time_it("5. CLI: list-tools returns 41+", check_cli_list_tools),
+        time_it("6. In-process MCP handler roundtrip", check_mcp_roundtrip),
+        time_it("7. ScopeGuard enforcement", check_scope_guard),
+        time_it("8. Full test suite passes", check_tests),
     ]
 
     print()

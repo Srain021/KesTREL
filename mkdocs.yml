@@ -9,6 +9,7 @@ theme:
     - content.code.copy
 nav:
   - Home: index.md
+  - Internal Firepower: internal-firepower.md
   - Releasing: releasing.md
   - RFCs: rfcs/index.md
   - Reference:

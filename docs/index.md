@@ -8,6 +8,8 @@ audited interface.
 
 - Read the project overview in the top-level [README](../README.md).
 - Review the [security policy](../SECURITY.md) before operating tools.
+- Use [Internal Firepower](internal-firepower.md) for the private crew preset
+  that enables every bundled tool module.
 - Use the [tools matrix](../TOOLS_MATRIX.md) to understand supported binaries.
 - Follow [releasing](releasing.md) for tag-driven PyPI, GHCR, and GitHub
   Release publishing.

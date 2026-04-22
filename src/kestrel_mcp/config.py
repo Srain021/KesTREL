@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import yaml
 from pydantic import BaseModel, Field, field_validator
@@ -28,6 +28,44 @@ DEFAULT_CONFIG_FILENAME = "default.yaml"
 USER_CONFIG_DIR = Path.home() / ".kestrel"
 USER_CONFIG_FILE = USER_CONFIG_DIR / "config.yaml"
 PROJECT_CONFIG_FILE = Path.cwd() / "kestrel.yaml"
+EditionName = Literal["pro", "team", "internal"]
+_INTERNAL_TOOL_IDS = (
+    "nuclei",
+    "shodan",
+    "subfinder",
+    "httpx",
+    "nmap",
+    "ffuf",
+    "impacket",
+    "bloodhound",
+    "caido",
+    "evilginx",
+    "sliver",
+    "havoc",
+    "ligolo",
+)
+
+
+def _normalise_edition(value: object) -> EditionName:
+    text = str(value or "pro").strip().lower()
+    if text in {"pro", "team", "internal"}:
+        return cast("EditionName", text)
+    raise ValueError(f"Unknown edition: {value!r}. Expected 'pro', 'team', or 'internal'.")
+
+
+def _pick_edition(explicit: str | None, configured: object | None = None) -> EditionName:
+    raw = (
+        os.getenv("KESTREL_MCP_EDITION")
+        or os.getenv("KESTREL_EDITION")
+        or explicit
+        or configured
+        or "pro"
+    )
+    return _normalise_edition(raw)
+
+
+def _internal_firepower_overlay() -> dict[str, Any]:
+    return {"tools": {tool_id: {"enabled": True} for tool_id in _INTERNAL_TOOL_IDS}}
 
 
 class SecuritySettings(BaseModel):
@@ -125,6 +163,9 @@ class ToolsSettings(BaseModel):
     subfinder: ToolBlock = Field(default_factory=ToolBlock)
     httpx: ToolBlock = Field(default_factory=ToolBlock)
     nmap: ToolBlock = Field(default_factory=ToolBlock)
+    ffuf: ToolBlock = Field(default_factory=ToolBlock)
+    impacket: ToolBlock = Field(default_factory=ToolBlock)
+    bloodhound: ToolBlock = Field(default_factory=ToolBlock)
     caido: ToolBlock = Field(default_factory=ToolBlock)
     evilginx: ToolBlock = Field(default_factory=ToolBlock)
     sliver: ToolBlock = Field(default_factory=ToolBlock)
@@ -155,11 +196,17 @@ class Settings(BaseSettings):
 
     server: ServerMeta = Field(default_factory=ServerMeta)
     security: SecuritySettings = Field(default_factory=SecuritySettings)
-    execution: ExecutionSettings = Field(default_factory=ExecutionSettings)
+    execution: ExecutionSettings = Field(
+        default_factory=lambda: ExecutionSettings(
+            timeout_sec=300,
+            max_output_bytes=5 * 1024 * 1024,
+            working_dir="~/.kestrel/runs",
+        )
+    )
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
     webui: WebUISettings = Field(default_factory=WebUISettings)
     tools: ToolsSettings = Field(default_factory=ToolsSettings)
-    edition: Literal["pro", "team"] = Field(default="pro")
+    edition: EditionName = Field(default="pro")
     features: FeatureFlags = Field(default_factory=FeatureFlags)
 
     @classmethod
@@ -172,12 +219,24 @@ class Settings(BaseSettings):
 
         from .editions import get_defaults
 
-        ed = edition or os.getenv("KESTREL_EDITION") or overrides.pop("edition", None) or "pro"
+        configured_edition = overrides.pop("edition", None)
+        ed = _pick_edition(edition, configured_edition)
         base_features = get_defaults(ed).model_dump()
         user_features = overrides.pop("features", {})
         if isinstance(user_features, FeatureFlags):
             user_features = user_features.model_dump(exclude_unset=True)
         merged = {**base_features, **user_features}
+
+        if ed == "internal":
+            user_tools = overrides.pop("tools", {})
+            if isinstance(user_tools, ToolsSettings):
+                user_tools = user_tools.model_dump(exclude_unset=True)
+            user_tools_dict = cast("dict[str, Any]", user_tools)
+            overrides["tools"] = _deep_merge(
+                user_tools_dict,
+                _internal_firepower_overlay()["tools"],
+            )
+
         return cls(edition=ed, features=FeatureFlags(**merged), **overrides)
 
     @classmethod
@@ -222,7 +281,11 @@ def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any
     return result
 
 
-def load_settings(config_path: str | os.PathLike[str] | None = None) -> Settings:
+def load_settings(
+    config_path: str | os.PathLike[str] | None = None,
+    *,
+    edition: str | None = None,
+) -> Settings:
     """Resolve a merged :class:`Settings` instance.
 
     ``config_path`` (optional) pins a specific YAML file, bypassing the
@@ -231,7 +294,8 @@ def load_settings(config_path: str | os.PathLike[str] | None = None) -> Settings
         1. Built-in ``config/default.yaml``
         2. ``~/.kestrel/config.yaml`` (or ``config_path`` if given)
         3. ``./kestrel.yaml``
-        4. Environment variables prefixed ``KESTREL_MCP_``
+        4. Edition overlay (``internal`` enables every bundled tool module)
+        5. Environment variables prefixed ``KESTREL_MCP_``
 
     The YAML values are fed to ``Settings(**merged)`` as init kwargs;
     pydantic-settings then overlays ``EnvSettingsSource`` on top
@@ -240,16 +304,28 @@ def load_settings(config_path: str | os.PathLike[str] | None = None) -> Settings
 
     pkg_default = Path(__file__).resolve().parent.parent.parent / "config" / DEFAULT_CONFIG_FILENAME
 
-    merged: dict[str, Any] = {}
-    merged = _deep_merge(merged, _read_yaml(pkg_default))
+    layers: list[dict[str, Any]] = [_read_yaml(pkg_default)]
 
     if config_path is not None:
-        merged = _deep_merge(merged, _read_yaml(Path(config_path)))
+        layers.append(_read_yaml(Path(config_path)))
     else:
-        merged = _deep_merge(merged, _read_yaml(USER_CONFIG_FILE))
-        merged = _deep_merge(merged, _read_yaml(PROJECT_CONFIG_FILE))
+        layers.append(_read_yaml(USER_CONFIG_FILE))
+        layers.append(_read_yaml(PROJECT_CONFIG_FILE))
 
-    # IMPORTANT: Use Settings(**merged) — NOT Settings.model_validate(merged) —
-    # because the latter bypasses pydantic-settings' EnvSettingsSource, which
-    # means KESTREL_MCP_* env vars would never be picked up.
-    return Settings(**merged)
+    probe: dict[str, Any] = {}
+    for layer in layers:
+        probe = _deep_merge(probe, layer)
+    selected_edition = _pick_edition(edition, probe.get("edition"))
+
+    merged: dict[str, Any] = {}
+    if layers:
+        merged = _deep_merge(merged, layers[0])
+    for layer in layers[1:]:
+        merged = _deep_merge(merged, layer)
+    if selected_edition == "internal":
+        merged = _deep_merge(merged, _internal_firepower_overlay())
+
+    # IMPORTANT: Settings.build(...) applies edition presets while
+    # pydantic-settings overlays KESTREL_MCP_* env vars during construction.
+    merged.pop("edition", None)
+    return Settings.build(edition=selected_edition, **merged)

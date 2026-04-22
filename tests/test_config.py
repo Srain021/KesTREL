@@ -64,3 +64,40 @@ tools:
         settings = load_settings(cfg)
         assert settings.security.authorized_scope == ["*.lab.test"]
         assert settings.tools.nuclei.enabled is False
+
+    def test_internal_edition_overlay_enables_all_tools(self, tmp_path: Path) -> None:
+        cfg = tmp_path / "empty.yaml"
+        cfg.write_text("", encoding="utf-8")
+
+        settings = load_settings(cfg, edition="internal")
+
+        assert settings.edition == "internal"
+        assert settings.features.scope_enforcement == "warn_only"
+        assert settings.features.rate_limit_enabled is False
+        assert settings.tools.ffuf.enabled is True
+        assert settings.tools.impacket.enabled is True
+        assert settings.tools.bloodhound.enabled is True
+        assert settings.tools.sliver.enabled is True
+
+    def test_internal_edition_forces_firepower_but_preserves_tool_config(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        cfg = tmp_path / "cfg.yaml"
+        cfg.write_text(
+            """
+edition: internal
+tools:
+  ffuf:
+    enabled: false
+    wordlists_dir: "wordlists"
+""",
+            encoding="utf-8",
+        )
+
+        settings = load_settings(cfg)
+
+        assert settings.edition == "internal"
+        assert settings.tools.nmap.enabled is True
+        assert settings.tools.ffuf.enabled is True
+        assert settings.tools.ffuf.wordlists_dir == "wordlists"

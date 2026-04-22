@@ -17,6 +17,14 @@ from kestrel_mcp.core.services import ServiceContainer
 from kestrel_mcp.domain import entities as ent
 
 
+def _edition_title(edition: str) -> str:
+    if edition == "internal":
+        return "Kestrel Internal Firepower Edition"
+    if edition == "pro":
+        return "Kestrel Pro Edition"
+    return "Kestrel Team Edition"
+
+
 @dataclass
 class BootstrapReport:
     name: str
@@ -30,7 +38,7 @@ class BootstrapReport:
     def render(self) -> str:
         lines = [
             "=" * 62,
-            "  Kestrel Team Edition - Bootstrap Report",
+            f"  {_edition_title(self.edition)} - Bootstrap Report",
             "=" * 62,
             f"  Engagement:    {self.name}  ({'dry-run' if self.dry_run else 'created'})",
             f"  Edition:       {self.edition}",
@@ -47,7 +55,7 @@ class BootstrapReport:
         lines += [
             "",
             "  Next steps:",
-            "    1. Start server:  kestrel --edition team serve",
+            f"    1. Start server:  kestrel --edition {self.edition} serve",
             "    2. Point your LLM client at the stdio transport",
             f"    3. Active engagement via env:  $env:KESTREL_ENGAGEMENT = '{self.name}'",
             "",
@@ -56,9 +64,12 @@ class BootstrapReport:
         return "\n".join(lines)
 
 
-def _doctor_warnings() -> list[str]:
+def _doctor_warnings(edition: str = "team") -> list[str]:
     warnings: list[str] = []
-    for tool in ("nuclei", "sliver-server", "caido"):
+    tools = ["nuclei", "sliver-server", "caido"]
+    if edition == "internal":
+        tools.extend(["subfinder", "httpx", "nmap", "ffuf", "sliver-client", "evilginx", "havoc"])
+    for tool in tools:
         if shutil.which(tool) is None:
             warnings.append(f"{tool} not on PATH (feature degraded)")
     if not os.getenv("SHODAN_API_KEY"):
@@ -80,7 +91,7 @@ async def _do_bootstrap(
         edition=settings.edition,
         data_dir=data_dir,
         dry_run=dry_run,
-        doctor_warnings=_doctor_warnings(),
+        doctor_warnings=_doctor_warnings(settings.edition),
         scope_added=list(scope_entries) if dry_run else [],
     )
 

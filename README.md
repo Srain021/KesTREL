@@ -154,6 +154,27 @@ Switch back to Pro strict defaults by dropping `--edition team` or setting
 
 ---
 
+## Internal Firepower Edition
+
+For private crew operations where the operator wants the full bundled tool
+surface enabled at startup, use the dedicated `internal` edition:
+
+```powershell
+kestrel --edition internal show-config
+kestrel --edition internal team bootstrap --name op-firepower --scope "target.lab,*.internal"
+kestrel --edition internal serve
+```
+
+`internal` keeps the Team-style operational defaults (`scope_enforcement =
+warn_only`, rate limits off, long-running tools allowed) and additionally
+enables all bundled tool modules by default: Shodan, Nuclei, Subfinder, httpx,
+Nmap, ffuf, Impacket, BloodHound, Caido, Evilginx, Sliver, Havoc, and Ligolo.
+
+Use this only for authorized internal/lab work. The readiness and fire-control
+tools remain the human approval layer for high-risk actions.
+
+---
+
 ## 🏗️ Architecture
 
 ```

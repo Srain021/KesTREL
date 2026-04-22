@@ -44,7 +44,7 @@ def _root(
         str | None,
         typer.Option(
             "--edition",
-            help="Edition preset to load: 'pro' (default) or 'team'.",
+            help="Edition preset to load: 'pro' (default), 'team', or 'internal'.",
             envvar="KESTREL_EDITION",
         ),
     ] = None,
@@ -71,7 +71,7 @@ def serve(
 ) -> None:
     """Run the MCP server on stdio. Keep this process attached to the MCP host."""
 
-    settings = load_settings(config)
+    settings = load_settings(config, edition=_edition_state["value"])
     if scope:
         settings.security.authorized_scope = [s.strip() for s in scope.split(",") if s.strip()]
     if dry_run:
@@ -92,7 +92,7 @@ def serve(
 def doctor() -> None:
     """Inspect installed tools + config and render a readiness table."""
 
-    settings = load_settings()
+    settings = load_settings(edition=_edition_state["value"])
     configure_logging(level="WARNING", json_mode=False)
 
     table = Table(title="Red-Team MCP — Tool Readiness", show_lines=True)
@@ -133,7 +133,7 @@ def doctor() -> None:
 def list_tools_cmd() -> None:
     """Dump the MCP tool schema as JSON (for debugging / integration)."""
 
-    settings = load_settings()
+    settings = load_settings(edition=_edition_state["value"])
     configure_logging(level="WARNING", json_mode=False)
 
     from .security import ScopeGuard
@@ -186,10 +186,15 @@ def list_tools_cmd() -> None:
 def show_config_cmd() -> None:
     """Print resolved Settings (edition + features) as JSON."""
 
-    from .config import Settings
-
-    s = Settings.build(edition=_edition_state["value"])
-    payload = {"edition": s.edition, "features": s.features.model_dump()}
+    s = load_settings(edition=_edition_state["value"])
+    enabled_tools = sorted(
+        name for name, block in s.tools.model_dump().items() if block.get("enabled")
+    )
+    payload = {
+        "edition": s.edition,
+        "features": s.features.model_dump(),
+        "enabled_tools": enabled_tools,
+    }
     typer.echo(json.dumps(payload, indent=2))
 
 

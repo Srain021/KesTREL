@@ -2,17 +2,22 @@
   "mcpServers": {
     "kestrel-mcp": {
       "command": "python",
-      "args": ["-m", "kestrel_mcp", "serve"],
+      "args": ["-m", "kestrel_mcp", "--edition", "internal", "serve"],
       "env": {
-        "KESTREL_MCP_AUTHORIZED_SCOPE": "*.lab.internal,192.168.56.0/24,127.0.0.1",
+        "KESTREL_EDITION": "internal",
+        "KESTREL_MCP_SECURITY__AUTHORIZED_SCOPE": "*.lab.internal,192.168.56.0/24,127.0.0.1",
         "SHODAN_API_KEY": "REPLACE_WITH_YOUR_KEY",
-        "KESTREL_MCP_TOOL_NUCLEI": "C:/Users/YOU/hacking-tools/nuclei_extracted/nuclei.exe",
-        "KESTREL_MCP_TOOL_SLIVER_SERVER": "C:/Users/YOU/hacking-tools/sliver-server.exe",
-        "KESTREL_MCP_TOOL_SLIVER_CLIENT": "C:/Users/YOU/hacking-tools/sliver-client.exe",
-        "KESTREL_MCP_TOOL_LIGOLO_PROXY": "C:/Users/YOU/hacking-tools/ligolo-ng-proxy/proxy.exe",
-        "KESTREL_MCP_TOOL_CAIDO_CLI": "C:/Users/YOU/hacking-tools/caido-cli.exe",
-        "KESTREL_MCP_TOOL_EVILGINX": "C:/Users/YOU/hacking-tools/evilginx_extracted/evilginx.exe",
-        "KESTREL_MCP_TOOL_HAVOC": "C:/Users/YOU/hacking-tools/Havoc/havoc.exe",
+        "KESTREL_MCP_TOOLS__NUCLEI__BINARY": "C:/Users/YOU/hacking-tools/nuclei.exe",
+        "KESTREL_MCP_TOOLS__SUBFINDER__BINARY": "C:/Users/YOU/hacking-tools/subfinder.exe",
+        "KESTREL_MCP_TOOLS__HTTPX__BINARY": "C:/Users/YOU/hacking-tools/httpx.exe",
+        "KESTREL_MCP_TOOLS__NMAP__BINARY": "C:/Program Files (x86)/Nmap/nmap.exe",
+        "KESTREL_MCP_TOOLS__FFUF__BINARY": "C:/Users/YOU/hacking-tools/ffuf.exe",
+        "KESTREL_MCP_TOOLS__SLIVER__SERVER_BINARY": "C:/Users/YOU/hacking-tools/sliver-server.exe",
+        "KESTREL_MCP_TOOLS__SLIVER__CLIENT_BINARY": "C:/Users/YOU/hacking-tools/sliver-client.exe",
+        "KESTREL_MCP_TOOLS__LIGOLO__PROXY_BINARY": "C:/Users/YOU/hacking-tools/ligolo-ng-proxy/proxy.exe",
+        "KESTREL_MCP_TOOLS__CAIDO__BINARY": "C:/Users/YOU/hacking-tools/caido-cli.exe",
+        "KESTREL_MCP_TOOLS__EVILGINX__BINARY": "C:/Users/YOU/hacking-tools/evilginx.exe",
+        "KESTREL_MCP_TOOLS__HAVOC__BINARY": "C:/Users/YOU/hacking-tools/Havoc/havoc.exe",
         "PYTHONUNBUFFERED": "1"
       }
     }
