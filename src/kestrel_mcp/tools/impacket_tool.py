@@ -296,7 +296,7 @@ class ImpacketModule(ToolModule):
         spn_mode: bool = False,
     ) -> ToolResult:
         target = str(arguments["target"]).strip()
-        self.scope_guard.ensure(target, tool_name=f"impacket_{script.lower()}")
+        await self.ensure_scope(target, tool_name=f"impacket_{script.lower()}")
         identity = _identity(arguments, include_target=not spn_mode)
         argv = [sys.executable, "-m", f"impacket.examples.{script}", identity]
         if spn_mode:

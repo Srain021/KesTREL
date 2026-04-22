@@ -20,8 +20,9 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from ..config import Settings
+from ..domain.errors import ScopeViolationError
 from ..logging import get_logger
-from ..security import ScopeGuard
+from ..security import AuthorizationError, ScopeGuard
 
 if TYPE_CHECKING:
     from ..core.rate_limit import RateLimitSpec
@@ -174,6 +175,79 @@ class ToolModule(ABC):
     def enabled(self) -> bool:
         block = getattr(self.settings.tools, self.id, None)
         return bool(block and getattr(block, "enabled", False))
+
+    async def ensure_scope(self, target: str, *, tool_name: str) -> None:
+        """Validate ``target`` using the active request scope when available.
+
+        The server already performs a central pre-dispatch check, but many
+        handlers still keep a local guard for direct unit use and workflow
+        reuse. This helper keeps that local guard aligned with the dynamic
+        engagement DB scope instead of the startup-only config snapshot.
+        """
+
+        await ensure_target_scope(
+            self.scope_guard,
+            self.settings,
+            self.log,
+            target,
+            tool_name=tool_name,
+        )
+
+
+async def ensure_target_scope(
+    scope_guard: ScopeGuard,
+    settings: Settings,
+    log: Any,
+    target: str,
+    *,
+    tool_name: str,
+) -> None:
+    """Shared scope helper for tools and workflows.
+
+    Precedence mirrors :meth:`kestrel_mcp.server.RedTeamMCPServer._check_scope`:
+    an active ``RequestContext`` uses the persistent engagement scope; otherwise
+    legacy callers fall back to the in-memory ``ScopeGuard``.
+    """
+
+    enforcement = settings.features.scope_enforcement
+    if enforcement == "off":
+        return
+
+    try:
+        from ..core.context import current_context_or_none
+
+        ctx = current_context_or_none()
+        if ctx is not None and ctx.has_engagement():
+            await ctx.ensure_scope(target, tool_name=tool_name)
+            return
+        scope_guard.ensure(target, tool_name=tool_name)
+    except (AuthorizationError, ScopeViolationError) as exc:
+        if enforcement == "warn_only":
+            log.warning(
+                "scope.warn_only",
+                tool=tool_name,
+                target=target,
+                reason=str(exc),
+            )
+            return
+        raise
+
+
+async def target_in_scope(
+    scope_guard: ScopeGuard,
+    settings: Settings,
+    log: Any,
+    target: str,
+    *,
+    tool_name: str,
+) -> bool:
+    """Return whether ``target`` passes dynamic scope validation."""
+
+    try:
+        await ensure_target_scope(scope_guard, settings, log, target, tool_name=tool_name)
+    except (AuthorizationError, ScopeViolationError):
+        return False
+    return True
 
 
 def with_scope_check(

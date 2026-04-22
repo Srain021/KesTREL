@@ -154,7 +154,7 @@ class EvilginxModule(ToolModule):
 
     async def _handle_start(self, arguments: dict[str, Any]) -> ToolResult:
         host = arguments["phish_hostname"]
-        self.scope_guard.ensure(host, tool_name="evilginx_start")
+        await self.ensure_scope(host, tool_name="evilginx_start")
 
         if self._pid_file.exists():
             try:

@@ -520,7 +520,7 @@ class ShodanModule(ToolModule):
 
     async def _handle_scan_submit(self, arguments: dict[str, Any]) -> ToolResult:
         target = arguments["target"]
-        self.scope_guard.ensure(target, tool_name="shodan_scan_submit")
+        await self.ensure_scope(target, tool_name="shodan_scan_submit")
         if self.settings.security.dry_run:
             return ToolResult(
                 text=f"[dry-run] would submit Shodan scan on {target}",
@@ -568,8 +568,9 @@ class ShodanModule(ToolModule):
         if ctx is None or not ctx.has_engagement():
             return 0
 
-        eid = ctx.engagement_id  # type: ignore[assignment]
-        scope_snapshot = await ctx.scope.snapshot(eid)  # type: ignore[arg-type]
+        eid = ctx.engagement_id
+        assert eid is not None
+        scope_snapshot = await ctx.scope.snapshot(eid)
         if not scope_snapshot:
             return 0
 
@@ -583,12 +584,12 @@ class ShodanModule(ToolModule):
                     scope_snapshot,
                     str(ip),
                     tool_name="shodan_search.ingest",
-                    engagement_id=eid,  # type: ignore[arg-type]
+                    engagement_id=eid,
                 )
             except Exception:  # noqa: BLE001
                 continue  # out of scope → skip silently
             await ctx.target.add(
-                engagement_id=eid,  # type: ignore[arg-type]
+                engagement_id=eid,
                 kind=ent.TargetKind.IPV4 if "." in ip and ":" not in ip else ent.TargetKind.IPV6,
                 value=ip,
                 discovered_by_tool="shodan_search",
@@ -606,10 +607,11 @@ class ShodanModule(ToolModule):
         ctx = current_context_or_none()
         if ctx is None or not ctx.has_engagement():
             return False
-        eid = ctx.engagement_id  # type: ignore[assignment]
+        eid = ctx.engagement_id
+        assert eid is not None
 
         # Find existing target
-        existing = await ctx.target.list_for_engagement(eid, kind=ent.TargetKind.IPV4)  # type: ignore[arg-type]
+        existing = await ctx.target.list_for_engagement(eid, kind=ent.TargetKind.IPV4)
         match = next((t for t in existing if t.value == ip), None)
         if match is None:
             return False

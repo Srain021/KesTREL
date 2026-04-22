@@ -20,7 +20,13 @@ from typing import Any
 from ..config import Settings
 from ..logging import audit_event, get_logger
 from ..security import ScopeGuard
-from ..tools.base import ToolResult, ToolSpec
+from ..tools.base import (
+    ToolHandler,
+    ToolResult,
+    ToolSpec,
+    ensure_target_scope,
+    target_in_scope,
+)
 
 
 class ReconWorkflow:
@@ -31,10 +37,22 @@ class ReconWorkflow:
         self.scope_guard = scope_guard
         self.log = get_logger("workflow.recon")
 
-    def spec(self, *, shodan_search, shodan_host, nuclei_scan) -> ToolSpec:  # type: ignore[no-untyped-def]
+    def spec(
+        self,
+        *,
+        shodan_search: ToolHandler,
+        shodan_host: ToolHandler,
+        nuclei_scan: ToolHandler,
+    ) -> ToolSpec:
         async def handler(arguments: dict[str, Any]) -> ToolResult:
             target = arguments["target"]
-            self.scope_guard.ensure(target, tool_name="recon_target")
+            await ensure_target_scope(
+                self.scope_guard,
+                self.settings,
+                self.log,
+                target,
+                tool_name="recon_target",
+            )
             do_vuln = bool(arguments.get("run_vuln_baseline", False))
             ip_limit = int(arguments.get("ip_limit", 20))
 
@@ -66,7 +84,16 @@ class ReconWorkflow:
                             web_targets.append(f"https://{ip}:{port}")
                 web_targets = list(dict.fromkeys(web_targets))
 
-                in_scope = [t for t in web_targets if self.scope_guard.matches(t)]
+                in_scope: list[str] = []
+                for web_target in web_targets:
+                    if await target_in_scope(
+                        self.scope_guard,
+                        self.settings,
+                        self.log,
+                        web_target,
+                        tool_name="recon_target.nuclei_filter",
+                    ):
+                        in_scope.append(web_target)
                 if in_scope:
                     nuclei_result = await nuclei_scan(
                         {

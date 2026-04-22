@@ -266,7 +266,7 @@ class NucleiModule(ToolModule):
     async def _handle_scan(self, arguments: dict[str, Any]) -> ToolResult:
         targets: list[str] = arguments["targets"]
         for t in targets:
-            self.scope_guard.ensure(t, tool_name="nuclei_scan")
+            await self.ensure_scope(t, tool_name="nuclei_scan")
 
         binary = self._binary()
         argv: list[str] = [binary, "-jsonl", "-silent", "-disable-update-check"]
@@ -465,19 +465,20 @@ class NucleiModule(ToolModule):
         ctx = current_context_or_none()
         if ctx is None or not ctx.has_engagement():
             return 0
-        eid = ctx.engagement_id  # type: ignore[assignment]
+        eid = ctx.engagement_id
+        assert eid is not None
 
         # Build one Target per distinct target URL so findings can link to it.
         # De-dup via TargetService.add() which is idempotent.
         target_entities: dict[str, ent.Target] = {}
         for t_val in targets:
-            tgt = await ctx.target.add(
-                engagement_id=eid,  # type: ignore[arg-type]
+            target_entity = await ctx.target.add(
+                engagement_id=eid,
                 kind=ent.TargetKind.URL,
                 value=t_val,
                 discovered_by_tool="nuclei_scan",
             )
-            target_entities[t_val] = tgt
+            target_entities[t_val] = target_entity
 
         # Translate Nuclei JSONL entries to domain Findings.
         finding_entities: list[ent.Finding] = []
@@ -491,7 +492,7 @@ class NucleiModule(ToolModule):
             classification = info.get("classification") or {}
 
             f = ent.Finding(
-                engagement_id=eid,  # type: ignore[arg-type]
+                engagement_id=eid,
                 target_id=tgt.id,
                 title=info.get("name") or raw.get("template-id") or "Nuclei finding",
                 severity=severity,

@@ -86,7 +86,7 @@ class FfufModule(ToolModule):
 
     async def _handle_dir(self, arguments: dict[str, Any]) -> ToolResult:
         url = str(arguments["url"]).strip()
-        self.scope_guard.ensure(url, tool_name="ffuf_dir_bruteforce")
+        await self.ensure_scope(url, tool_name="ffuf_dir_bruteforce")
         fuzz_url = url.rstrip("/") + "/FUZZ"
         argv_or_error = self._base_argv(fuzz_url, str(arguments["wordlist"]))
         if isinstance(argv_or_error, ToolResult):
@@ -99,7 +99,7 @@ class FfufModule(ToolModule):
 
     async def _handle_param(self, arguments: dict[str, Any]) -> ToolResult:
         url = str(arguments["url"]).strip()
-        self.scope_guard.ensure(url, tool_name="ffuf_param_fuzz")
+        await self.ensure_scope(url, tool_name="ffuf_param_fuzz")
         fuzz_url = url if "FUZZ" in url else url + ("&FUZZ=1" if "?" in url else "?FUZZ=1")
         argv_or_error = self._base_argv(fuzz_url, str(arguments["wordlist"]))
         if isinstance(argv_or_error, ToolResult):

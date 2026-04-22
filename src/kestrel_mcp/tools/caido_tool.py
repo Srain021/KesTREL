@@ -237,7 +237,7 @@ class CaidoModule(ToolModule):
         follow = bool(arguments.get("follow_redirects", False))
         max_body = int(arguments.get("max_body_bytes", 200_000))
 
-        self.scope_guard.ensure(url, tool_name="caido_replay_request")
+        await self.ensure_scope(url, tool_name="caido_replay_request")
 
         if self.settings.security.dry_run:
             return ToolResult(
@@ -245,10 +245,9 @@ class CaidoModule(ToolModule):
                 structured={"dry_run": True, "url": url, "method": method, "proxy": proxy},
             )
 
-        proxies = {"all://": proxy} if proxy else None
         try:
             async with httpx.AsyncClient(
-                proxies=proxies,
+                proxy=proxy,
                 verify=verify,
                 timeout=timeout,
                 follow_redirects=follow,

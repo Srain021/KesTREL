@@ -107,7 +107,7 @@ class SubfinderModule(ToolModule):
 
     async def _handle_enum(self, arguments: dict[str, Any]) -> ToolResult:
         domain = str(arguments["domain"]).strip()
-        self.scope_guard.ensure(domain, tool_name="subfinder_enum")
+        await self.ensure_scope(domain, tool_name="subfinder_enum")
 
         try:
             binary = self._binary()

@@ -102,7 +102,7 @@ class HttpxModule(ToolModule):
     async def _handle_probe(self, arguments: dict[str, Any]) -> ToolResult:
         targets = [str(t).strip() for t in arguments["targets"] if str(t).strip()]
         for target in targets:
-            self.scope_guard.ensure(target, tool_name="httpx_probe")
+            await self.ensure_scope(target, tool_name="httpx_probe")
 
         try:
             binary = self._binary()

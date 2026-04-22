@@ -99,7 +99,7 @@ class NmapModule(ToolModule):
     async def _handle_scan(self, arguments: dict[str, Any]) -> ToolResult:
         targets = [str(t).strip() for t in arguments["targets"] if str(t).strip()]
         for target in targets:
-            self.scope_guard.ensure(target, tool_name="nmap_scan")
+            await self.ensure_scope(target, tool_name="nmap_scan")
         try:
             binary = self._binary()
         except ToolNotFoundError as exc:
@@ -116,7 +116,7 @@ class NmapModule(ToolModule):
 
     async def _handle_os_detect(self, arguments: dict[str, Any]) -> ToolResult:
         target = str(arguments["target"]).strip()
-        self.scope_guard.ensure(target, tool_name="nmap_os_detect")
+        await self.ensure_scope(target, tool_name="nmap_os_detect")
         try:
             binary = self._binary()
         except ToolNotFoundError as exc:

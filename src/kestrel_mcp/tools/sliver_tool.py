@@ -752,7 +752,7 @@ class SliverModule(ToolModule):
     async def _handle_generate(self, arguments: dict[str, Any]) -> ToolResult:
         callback = arguments["callback_addr"]
         protocol = arguments["protocol"]
-        self.scope_guard.ensure(callback, tool_name="sliver_generate_implant")
+        await self.ensure_scope(callback, tool_name="sliver_generate_implant")
 
         os_name = arguments.get("os", "windows")
         arch = arguments.get("arch", "amd64")

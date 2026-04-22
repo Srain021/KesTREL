@@ -97,29 +97,12 @@ def check_imports() -> tuple[bool, str]:
 
 
 def check_tests() -> tuple[bool, str]:
-    output_path = pathlib.Path(tempfile.mktemp())
-    if os.name == "nt":
-        command = [
-            "powershell",
-            "-NoProfile",
-            "-Command",
-            (
-                "& .\\.venv\\Scripts\\python.exe -m pytest tests/ -q --no-header "
-                f"*> {str(output_path)!r}; exit $LASTEXITCODE"
-            ),
-        ]
-        encoding = "utf-16"
-    else:
-        command = [str(VENV_PYTHON), "-m", "pytest", "tests/", "-q", "--no-header"]
-        encoding = "utf-8"
-
-    res = subprocess.run(command, cwd=str(REPO), stdin=subprocess.DEVNULL)
+    command = [str(VENV_PYTHON), "-m", "pytest", "tests/", "-q", "--no-header"]
     try:
-        lines = output_path.read_text(encoding=encoding, errors="replace").strip().splitlines()
-    finally:
-        output_path.unlink(missing_ok=True)
-    summary = lines[-1] if lines else f"pytest exit={res.returncode}"
-    return (res.returncode == 0, summary)
+        res = subprocess.run(command, cwd=str(REPO), stdin=subprocess.DEVNULL, timeout=180)
+    except subprocess.TimeoutExpired:
+        return False, "pytest timed out after 180s"
+    return (res.returncode == 0, f"pytest exit={res.returncode}")
 
 
 def _run_cli(args: list[str], extra_env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:

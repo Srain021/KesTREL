@@ -335,7 +335,7 @@ class LigoloModule(ToolModule):
 
     async def _handle_add_route(self, arguments: dict[str, Any]) -> ToolResult:
         cidr = arguments["cidr"]
-        self.scope_guard.ensure(cidr, tool_name="ligolo_add_route")
+        await self.ensure_scope(cidr, tool_name="ligolo_add_route")
         tun = arguments.get("tun_name", "ligolo")
 
         if self.settings.security.dry_run:

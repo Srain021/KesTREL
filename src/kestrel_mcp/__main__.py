@@ -15,7 +15,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 from rich.console import Console
@@ -86,6 +86,97 @@ def serve(
     from .server import run_sync
 
     run_sync(settings)
+
+
+@app.command("serve-http")
+def serve_http(
+    config: Annotated[
+        Path | None,
+        typer.Option("--config", "-c", help="Path to an alternative YAML config file."),
+    ] = None,
+    host: Annotated[
+        str,
+        typer.Option("--host", help="Bind address. Keep 127.0.0.1 behind a reverse proxy."),
+    ] = "127.0.0.1",
+    port: Annotated[int, typer.Option("--port", help="Bind port.")] = 8765,
+    endpoint: Annotated[
+        str,
+        typer.Option("--endpoint", help="Streamable HTTP MCP endpoint path."),
+    ] = "/mcp",
+    token_env: Annotated[
+        str,
+        typer.Option("--token-env", help="Environment variable holding the Bearer token."),
+    ] = "KESTREL_MCP_HTTP_TOKEN",
+    allow_no_auth: Annotated[
+        bool,
+        typer.Option("--allow-no-auth", help="Allow unauthenticated HTTP MCP traffic."),
+    ] = False,
+    json_response: Annotated[
+        bool,
+        typer.Option("--json-response", help="Prefer JSON responses instead of SSE streams."),
+    ] = False,
+    stateless: Annotated[
+        bool,
+        typer.Option("--stateless", help="Create a fresh MCP transport for every request."),
+    ] = False,
+    allowed_host: Annotated[
+        list[str] | None,
+        typer.Option("--allowed-host", help="Allowed Host header when DNS rebinding protection is on."),
+    ] = None,
+    allowed_origin: Annotated[
+        list[str] | None,
+        typer.Option("--allowed-origin", help="Allowed Origin header when DNS rebinding protection is on."),
+    ] = None,
+    dns_rebinding_protection: Annotated[
+        bool,
+        typer.Option(
+            "--dns-rebinding-protection",
+            help="Enable MCP SDK DNS rebinding checks; set allowed hosts for proxy domains.",
+        ),
+    ] = False,
+    scope: Annotated[
+        str | None,
+        typer.Option("--scope", help="Comma-separated authorized scope override."),
+    ] = None,
+    dry_run: Annotated[
+        bool,
+        typer.Option("--dry-run", help="Do not actually run any offensive action."),
+    ] = False,
+) -> None:
+    """Run MCP over Streamable HTTP for reverse-proxied team access.
+
+    Local stdio access is unchanged; this is a second transport intended for
+    Caddy/Nginx/Tailscale/Cloudflare Tunnel in front of localhost.
+    """
+
+    settings = load_settings(config, edition=_edition_state["value"])
+    if scope:
+        settings.security.authorized_scope = [s.strip() for s in scope.split(",") if s.strip()]
+    if dry_run:
+        settings.security.dry_run = True
+
+    token = os.environ.get(token_env)
+    if not token and not allow_no_auth:
+        console.print(
+            f"[red]Missing {token_env}.[/red] Set a Bearer token env var or pass --allow-no-auth "
+            "for a strictly local lab."
+        )
+        raise typer.Exit(2)
+
+    from .http_server import run_http_sync
+
+    run_http_sync(
+        settings,
+        host=host,
+        port=port,
+        endpoint=endpoint,
+        token=token,
+        json_response=json_response,
+        stateless=stateless,
+        allowed_hosts=allowed_host or [],
+        allowed_origins=allowed_origin or [],
+        enable_dns_rebinding_protection=dns_rebinding_protection,
+    )
 
 
 @app.command()
@@ -245,7 +336,7 @@ def _resolve_path(hint: str | None, tool_name: str) -> str | None:
     return shutil.which(tool_name)
 
 
-def _status_for(name: str, block: dict, resolved: str | None) -> str:
+def _status_for(name: str, block: dict[str, Any], resolved: str | None) -> str:
     if not block.get("enabled"):
         return "[dim]disabled[/dim]"
     if name == "shodan":
