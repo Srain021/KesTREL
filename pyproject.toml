@@ -78,9 +78,9 @@ dev = [
 kestrel = "kestrel_mcp.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/your-org/kestrel-mcp"
-Documentation = "https://github.com/your-org/kestrel-mcp#readme"
-Issues = "https://github.com/your-org/kestrel-mcp/issues"
+Homepage = "https://github.com/Srain021/KesTREL"
+Documentation = "https://github.com/Srain021/KesTREL#readme"
+Issues = "https://github.com/Srain021/KesTREL/issues"
 
 [[tool.uv.index]]
 name = "tsinghua"

@@ -1,19 +1,18 @@
-# Kestrel MCP
+# Reference
 
-Kestrel MCP is a scope-gated MCP server for authorized security work. This site
-covers setup, edition presets, release steps, and operator-facing reference
-pages.
+Useful entry points in the repo and docs site.
 
-## Start Here
+## Docs Site
 
+- [Home](index.md)
 - [Quickstart](quickstart.md)
 - [Chinese Manual](user-manual.zh-CN.md)
 - [Internal Firepower](internal-firepower.md)
 - [Releasing](releasing.md)
 - [Release Checklist](RELEASE_CHECKLIST.md)
-- [Reference](reference.md)
+- [RFCs](rfcs/index.md)
 
-## Repository Docs
+## Repository Pages
 
 - [README](https://github.com/Srain021/KesTREL/blob/main/README.md)
 - [QUICKSTART](https://github.com/Srain021/KesTREL/blob/main/QUICKSTART.md)
@@ -22,9 +21,9 @@ pages.
 - [TOOLS_MATRIX](https://github.com/Srain021/KesTREL/blob/main/TOOLS_MATRIX.md)
 - [CHANGELOG](https://github.com/Srain021/KesTREL/blob/main/CHANGELOG.md)
 
-## Local Preview
+## RFC And Execution Docs
 
-```powershell
-uv sync --frozen --all-extras
-uv run --no-sync mkdocs serve
-```
+- [rfcs/INDEX.md](https://github.com/Srain021/KesTREL/blob/main/rfcs/INDEX.md)
+- [AGENT_EXECUTION_PROTOCOL.md](https://github.com/Srain021/KesTREL/blob/main/AGENT_EXECUTION_PROTOCOL.md)
+- [SPEC_AUTHORING_CHECKLIST.md](https://github.com/Srain021/KesTREL/blob/main/SPEC_AUTHORING_CHECKLIST.md)
+- [RFC_AUDIT_PREFLIGHT.md](https://github.com/Srain021/KesTREL/blob/main/RFC_AUDIT_PREFLIGHT.md)
