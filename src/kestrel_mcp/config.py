@@ -33,10 +33,15 @@ _INTERNAL_TOOL_IDS = (
     "nuclei",
     "shodan",
     "subfinder",
+    "amass",
     "httpx",
+    "katana",
     "nmap",
     "ffuf",
+    "sqlmap",
     "impacket",
+    "netexec",
+    "hashcat",
     "bloodhound",
     "caido",
     "evilginx",
@@ -146,6 +151,12 @@ class WebUISettings(BaseModel):
     session_cookie_name: str = "kestrel_session"
 
 
+class LLMSettings(BaseModel):
+    tool_description_mode: Literal["full", "compact"] = "full"
+    tool_exposure: Literal["all", "harness_first"] = "all"
+    model_tier: Literal["local", "standard", "strong"] = "standard"
+
+
 class ToolBlock(BaseModel):
     """Common shape for every per-tool config block."""
 
@@ -161,10 +172,15 @@ class ToolsSettings(BaseModel):
     nuclei: ToolBlock = Field(default_factory=lambda: ToolBlock(enabled=True))
     shodan: ToolBlock = Field(default_factory=lambda: ToolBlock(enabled=True))
     subfinder: ToolBlock = Field(default_factory=ToolBlock)
+    amass: ToolBlock = Field(default_factory=ToolBlock)
     httpx: ToolBlock = Field(default_factory=ToolBlock)
+    katana: ToolBlock = Field(default_factory=ToolBlock)
     nmap: ToolBlock = Field(default_factory=ToolBlock)
     ffuf: ToolBlock = Field(default_factory=ToolBlock)
+    sqlmap: ToolBlock = Field(default_factory=ToolBlock)
     impacket: ToolBlock = Field(default_factory=ToolBlock)
+    netexec: ToolBlock = Field(default_factory=ToolBlock)
+    hashcat: ToolBlock = Field(default_factory=ToolBlock)
     bloodhound: ToolBlock = Field(default_factory=ToolBlock)
     caido: ToolBlock = Field(default_factory=ToolBlock)
     evilginx: ToolBlock = Field(default_factory=ToolBlock)
@@ -205,6 +221,7 @@ class Settings(BaseSettings):
     )
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
     webui: WebUISettings = Field(default_factory=WebUISettings)
+    llm: LLMSettings = Field(default_factory=LLMSettings)
     tools: ToolsSettings = Field(default_factory=ToolsSettings)
     edition: EditionName = Field(default="pro")
     features: FeatureFlags = Field(default_factory=FeatureFlags)

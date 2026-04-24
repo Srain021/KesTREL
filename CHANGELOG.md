@@ -11,6 +11,10 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- `RFC-V13` - Added the HARNESS local-model MVP: compact tool catalog mode,
+  `harness_start` / `harness_next` / `harness_run` / `harness_state`, persisted
+  SQLite sessions and steps, `tool://...` and `harness://...` resources, and
+  local-model smoke coverage.
 - **Phase 5 / Release readiness** — v1.0.0 feature-complete baseline.
 - `ToolInvocationService` with tamper-evident SHA-256 hash-chain audit logging,
   per-engagement asyncio locking, and recursive argument redaction for sensitive

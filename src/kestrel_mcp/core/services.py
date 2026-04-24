@@ -42,6 +42,7 @@ from ..domain.services import (
     CredentialService,
     EngagementService,
     FindingService,
+    HarnessService,
     ScopeService,
     TargetService,
     ToolInvocationService,
@@ -76,6 +77,7 @@ class ServiceContainer:
         self.scope = ScopeService(sessionmaker)
         self.target = TargetService(sessionmaker)
         self.finding = FindingService(sessionmaker)
+        self.harness = HarnessService(sessionmaker)
         self.credential = CredentialService(
             sessionmaker,
             encryption_required=credential_encryption_required,

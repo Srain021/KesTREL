@@ -17,7 +17,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from ..config import Settings
 from ..domain.errors import ScopeViolationError
@@ -28,6 +28,19 @@ if TYPE_CHECKING:
     from ..core.rate_limit import RateLimitSpec
 
 ToolHandler = Callable[[dict[str, Any]], Awaitable["ToolResult"]]
+ToolPhase = Literal[
+    "admin",
+    "recon",
+    "scan",
+    "web",
+    "ad",
+    "c2",
+    "post_exploit",
+    "report",
+    "workflow",
+]
+ModelTier = Literal["local", "standard", "strong"]
+OutputTrust = Literal["safe", "untrusted", "sensitive"]
 
 
 @dataclass
@@ -102,6 +115,11 @@ class ToolSpec:
     requires_scope_field: str | None = None
     tags: list[str] = field(default_factory=list)
     rate_limit: RateLimitSpec | None = None
+    phase: ToolPhase = "admin"
+    complexity_tier: int = 1
+    preferred_model_tier: ModelTier = "standard"
+    soft_timeout_sec: int | None = None
+    output_trust: OutputTrust = "safe"
 
     # ---- Extended guidance (optional but STRONGLY recommended) ----
     when_to_use: list[str] = field(default_factory=list)
@@ -111,6 +129,26 @@ class ToolSpec:
     pitfalls: list[str] = field(default_factory=list)
     example_conversation: str | None = None
     local_model_hints: str | None = None
+
+    def render_compact_description(self) -> str:
+        """Return the small-model catalog form.
+
+        Detailed guidance stays available through ``tool://<name>/guide``.
+        This keeps ``list_tools`` light for local models while preserving the
+        full guidance as a single source of truth.
+        """
+
+        flags: list[str] = [f"phase={self.phase}", f"tier={self.complexity_tier}"]
+        if self.dangerous:
+            flags.append("dangerous")
+        if self.tags:
+            flags.append("tags=" + ",".join(self.tags[:4]))
+        return f"{self.description.strip()} [{' ; '.join(flags)}]"
+
+    def render_description(self, mode: str = "full") -> str:
+        if mode == "compact":
+            return self.render_compact_description()
+        return self.render_full_description()
 
     def render_full_description(self) -> str:
         """Serialise the spec into a single description string for MCP.
@@ -155,6 +193,22 @@ class ToolSpec:
             lines.append(self.local_model_hints.strip())
 
         return "\n".join(lines).strip()
+
+    def catalog_metadata(self) -> dict[str, Any]:
+        """Stable metadata exposed via catalog resources and tests."""
+
+        return {
+            "name": self.name,
+            "description": self.description,
+            "dangerous": self.dangerous,
+            "requires_scope_field": self.requires_scope_field,
+            "tags": self.tags,
+            "phase": self.phase,
+            "complexity_tier": self.complexity_tier,
+            "preferred_model_tier": self.preferred_model_tier,
+            "soft_timeout_sec": self.soft_timeout_sec,
+            "output_trust": self.output_trust,
+        }
 
 
 class ToolModule(ABC):

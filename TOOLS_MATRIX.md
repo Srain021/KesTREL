@@ -938,3 +938,17 @@ Rubeus, Certipy, Kerbrute, Metasploit-RPC
 1. 这 15 个 Phase 1 工具选得对吗？（如觉得某个不要，或漏了必须的，告诉我）
 2. Metasploit RPC 因为体积 1GB + 复杂度 🔴，要放 Phase 2 还是 Phase 1？
 3. 要不要下载一个 **vulnerable target（如 DVWA / Juice Shop）Docker** 作为 e2e 测试靶？
+
+---
+
+## Kestrel integration update - RFC-G07/G09/G10/G11/G12
+
+The high-recognition tool batch is now integrated as external-binary wrappers:
+
+- `amass`: `amass_enum`, `amass_version`; parses JSON output into domain, subdomain, IPv4, and IPv6 targets.
+- `katana`: `katana_crawl`, `katana_version`; parses JSONL URLs and creates INFO findings for interesting endpoints.
+- `sqlmap`: `sqlmap_scan`, `sqlmap_dump_table`, `sqlmap_version`; detection creates injection findings, dumps require explicit acknowledgement.
+- `NetExec`: `netexec_smb_auth`, `netexec_smb_enum`, `netexec_smb_exec`, `netexec_ldap_kerberoast`, `netexec_version`; auth source is exactly one of `credential_ref`, `password`, or `ntlm_hash`.
+- `hashcat`: `hashcat_crack`, `hashcat_modes`, `hashcat_version`; cracked plaintexts are returned in detailed structured output and sealed into CredentialService.
+
+These tools remain disabled by default in `pro` and are enabled automatically by the `internal` edition.

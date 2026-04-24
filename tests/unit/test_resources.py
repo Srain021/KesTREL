@@ -10,6 +10,7 @@ from kestrel_mcp.config import Settings
 from kestrel_mcp.core import ServiceContainer
 from kestrel_mcp.domain import entities as ent
 from kestrel_mcp.server import RedTeamMCPServer
+from kestrel_mcp.tools.base import ToolResult, ToolSpec
 
 pytestmark = pytest.mark.asyncio
 
@@ -40,12 +41,12 @@ async def test_list_all_resources_for_active_engagement(container) -> None:
         items = await resources.list_all_resources()
 
     uris = {item["uri"] for item in items}
-    assert uris == {
+    assert {
         f"engagement://{engagement.id}/summary",
         f"engagement://{engagement.id}/scope",
         f"engagement://{engagement.id}/targets",
         f"engagement://{engagement.id}/findings",
-    }
+    } <= uris
 
 
 async def test_read_engagement_resources_returns_scope_targets_and_findings(container) -> None:
@@ -99,6 +100,35 @@ async def test_server_resource_handlers_list_and_read(container, monkeypatch) ->
         ReadResourceRequest(params={"uri": f"engagement://{engagement.id}/scope"})
     )
 
-    assert len(listed.root.resources) == 4
-    assert str(listed.root.resources[0].uri).startswith("engagement://")
+    uris = {str(item.uri) for item in listed.root.resources}
+    assert f"engagement://{engagement.id}/scope" in uris
+    assert "tool://catalog" in uris
     assert "*.lab.test" in payload.root.contents[0].text
+
+
+async def test_tool_catalog_resources_render_from_tool_spec() -> None:
+    async def handler(_args):
+        return ToolResult(text="ok")
+
+    spec = ToolSpec(
+        name="demo_scan",
+        description="Run a demo scan.",
+        input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+        handler=handler,
+        tags=["scan"],
+        when_to_use=["When a demo target needs checking."],
+        pitfalls=["Do not invent arguments."],
+    )
+    settings = Settings.build()
+    resources.configure_tool_catalog({"demo_scan": spec}, settings)
+    try:
+        catalog = await resources.read_resource("tool://catalog")
+        guide = await resources.read_resource("tool://demo_scan/guide")
+    finally:
+        resources.configure_tool_catalog({}, settings)
+
+    assert catalog is not None
+    assert json.loads(catalog["text"])["tools"][0]["name"] == "demo_scan"
+    assert guide is not None
+    assert guide["text"] == spec.render_full_description()
+    assert "=== WHEN TO USE ===" in guide["text"]

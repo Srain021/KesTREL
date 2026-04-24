@@ -27,15 +27,25 @@ from __future__ import annotations
 
 import json
 import os
+from contextlib import suppress
 from typing import Any
 
 import anyio
 
 try:
     from mcp.server import Server  # type: ignore[import-not-found]
-    from mcp.server.lowlevel.helper_types import ReadResourceContents  # type: ignore[import-not-found]
+    from mcp.server.lowlevel.helper_types import (
+        ReadResourceContents,  # type: ignore[import-not-found]
+    )
     from mcp.server.stdio import stdio_server  # type: ignore[import-not-found]
-    from mcp.types import GetPromptResult, Prompt, PromptMessage, Resource, TextContent, Tool  # type: ignore[import-not-found]
+    from mcp.types import (  # type: ignore[import-not-found]
+        GetPromptResult,
+        Prompt,
+        PromptMessage,
+        Resource,
+        TextContent,
+        Tool,
+    )
 
     _MCP_AVAILABLE = True
 except ImportError:  # pragma: no cover
@@ -55,8 +65,10 @@ from .config import Settings, load_settings
 from .core import RequestContext, ServiceContainer
 from .core.rate_limit import RateLimitedError, RateLimiter
 from .domain.errors import ScopeViolationError
+from .harness import HarnessModule
 from .logging import audit_event, configure_logging, get_logger
 from .security import AuthorizationError, ScopeGuard
+from .tool_catalog import advertised_specs, render_description
 from .tools import load_modules
 from .tools.base import ToolResult, ToolSpec
 from .workflows import load_workflow_specs
@@ -108,6 +120,19 @@ class RedTeamMCPServer:
                 raise ValueError(f"Workflow collides with tool name {wf_spec.name!r}")
             self._specs[wf_spec.name] = wf_spec
 
+        harness_module = HarnessModule(
+            settings,
+            self.scope_guard,
+            specs_provider=lambda: self._specs,
+            runner=self._run_harness_tool,
+        )
+        for spec in harness_module.specs():
+            if spec.name in self._specs:
+                raise ValueError(f"HARNESS collides with tool name {spec.name!r}")
+            self._specs[spec.name] = spec
+
+        _resources_module.configure_tool_catalog(self._specs, settings)
+
         self.log.info(
             "server.init",
             tool_count=len(self._specs),
@@ -119,7 +144,7 @@ class RedTeamMCPServer:
 
     # ------------------------------------------------------------------
 
-    def build(self) -> Any:
+    def build(self) -> Any:  # noqa: C901
         """Construct and return the underlying ``mcp.server.Server``."""
 
         mcp = Server(self.settings.server.name, version=self.settings.server.version)
@@ -129,10 +154,10 @@ class RedTeamMCPServer:
             return [
                 Tool(
                     name=spec.name,
-                    description=spec.render_full_description(),
+                    description=render_description(spec, self.settings),
                     inputSchema=spec.input_schema,
                 )
-                for spec in self._specs.values()
+                for spec in advertised_specs(self._specs.values(), self.settings)
             ]
 
         @mcp.call_tool()  # type: ignore[misc]
@@ -148,81 +173,8 @@ class RedTeamMCPServer:
             call_engagement = args.pop("_engagement", None)
 
             async def _dispatch(ctx: RequestContext) -> ToolResult:
-                from datetime import datetime, timezone
-
-                started_at = datetime.now(timezone.utc)
-
-                async def _record(result: ToolResult | None, error: Exception | None) -> None:
-                    if not ctx.has_engagement():
-                        return
-                    completed_at = datetime.now(timezone.utc)
-                    structured = result.structured if result is not None else {}
-                    try:
-                        from uuid import UUID
-
-                        def _to_uuids(key: str) -> list[UUID]:
-                            vals = structured.get(key) if isinstance(structured, dict) else None
-                            if not isinstance(vals, list):
-                                return []
-                            out: list[UUID] = []
-                            for v in vals:
-                                try:
-                                    out.append(UUID(str(v)))
-                                except Exception:
-                                    pass
-                            return out
-
-                        await ctx.tool_invocation.record(
-                            engagement_id=ctx.require_engagement(),
-                            actor_id=ctx.actor.id if ctx.actor else None,
-                            tool_name=name,
-                            arguments=args,
-                            started_at=started_at,
-                            completed_at=completed_at,
-                            exit_code=0 if (result is not None and not result.is_error) else 1,
-                            error_code=type(error).__name__ if error else None,
-                            error_message=str(error) if error else None,
-                            targets_created=_to_uuids("targets_created"),
-                            findings_created=_to_uuids("findings_created"),
-                            credentials_created=_to_uuids("credentials_created"),
-                            artifacts_created=_to_uuids("artifacts_created"),
-                        )
-                    except Exception as record_exc:  # noqa: BLE001
-                        self.log.warning(
-                            "tool_invocation.record_failed",
-                            tool=name,
-                            error=str(record_exc),
-                        )
-
-                try:
-                    await self._apply_rate_limit(ctx, name, spec)
-                    if spec.requires_scope_field:
-                        target = args.get(spec.requires_scope_field)
-                        if isinstance(target, list):
-                            for t in target:
-                                await self._check_scope(ctx, str(t), name)
-                        elif target is not None:
-                            await self._check_scope(ctx, str(target), name)
-                        elif spec.dangerous:
-                            raise AuthorizationError(
-                                f"Tool {name!r} requires a '{spec.requires_scope_field}' argument "
-                                "for scope validation."
-                            )
-
-                    audit_event(
-                        self.log,
-                        f"tool.call.{name}",
-                        name=name,
-                        argument_keys=sorted(args.keys()),
-                        dangerous=spec.dangerous,
-                        engagement_id=str(ctx.engagement_id) if ctx.engagement_id else None,
-                    )
-                    result = await spec.handler(args)
-                    await _record(result, None)
-                    return result
-                except Exception as exc:
-                    await _record(None, exc)
-                    raise
+                result, _invocation_id = await self._execute_tool(ctx, name, spec, args)
+                return result
 
             try:
                 result = await self._run_under_context(
@@ -306,6 +258,117 @@ class RedTeamMCPServer:
 
     # ------------------------------------------------------------------
 
+    async def _run_harness_tool(
+        self,
+        tool_name: str,
+        arguments: dict[str, Any],
+    ) -> tuple[ToolResult, str | None]:
+        if tool_name.startswith("harness_"):
+            return ToolResult.error("HARNESS cannot recursively call HARNESS tools."), None
+        from .core.context import current_context
+
+        spec = self._specs.get(tool_name)
+        if spec is None:
+            return ToolResult.error(f"Unknown HARNESS tool step: {tool_name}"), None
+        try:
+            return await self._execute_tool(current_context(), tool_name, spec, arguments)
+        except Exception as exc:  # noqa: BLE001
+            return ToolResult.error(str(exc)), None
+
+    async def _execute_tool(
+        self,
+        ctx: RequestContext,
+        name: str,
+        spec: ToolSpec,
+        args: dict[str, Any],
+    ) -> tuple[ToolResult, str | None]:
+        from datetime import datetime, timezone
+
+        started_at = datetime.now(timezone.utc)
+        invocation_id: str | None = None
+
+        try:
+            await self._apply_rate_limit(ctx, name, spec)
+            if spec.requires_scope_field:
+                target = args.get(spec.requires_scope_field)
+                if isinstance(target, list):
+                    for t in target:
+                        await self._check_scope(ctx, str(t), name)
+                elif target is not None:
+                    await self._check_scope(ctx, str(target), name)
+                elif spec.dangerous:
+                    raise AuthorizationError(
+                        f"Tool {name!r} requires a '{spec.requires_scope_field}' argument "
+                        "for scope validation."
+                    )
+
+            audit_event(
+                self.log,
+                f"tool.call.{name}",
+                name=name,
+                argument_keys=sorted(args.keys()),
+                dangerous=spec.dangerous,
+                engagement_id=str(ctx.engagement_id) if ctx.engagement_id else None,
+            )
+            result = await spec.handler(args)
+            invocation_id = await self._record_tool_invocation(ctx, name, args, started_at, result, None)
+            return result, invocation_id
+        except Exception as exc:
+            await self._record_tool_invocation(ctx, name, args, started_at, None, exc)
+            raise
+
+    async def _record_tool_invocation(
+        self,
+        ctx: RequestContext,
+        name: str,
+        args: dict[str, Any],
+        started_at,
+        result: ToolResult | None,
+        error: Exception | None,
+    ) -> str | None:
+        if not ctx.has_engagement():
+            return None
+        from datetime import datetime, timezone
+        from uuid import UUID
+
+        completed_at = datetime.now(timezone.utc)
+        structured = result.structured if result is not None else {}
+
+        def _to_uuids(key: str) -> list[UUID]:
+            vals = structured.get(key) if isinstance(structured, dict) else None
+            if not isinstance(vals, list):
+                return []
+            out: list[UUID] = []
+            for v in vals:
+                with suppress(Exception):
+                    out.append(UUID(str(v)))
+            return out
+
+        try:
+            invocation = await ctx.tool_invocation.record(
+                engagement_id=ctx.require_engagement(),
+                actor_id=ctx.actor.id if ctx.actor else None,
+                tool_name=name,
+                arguments=args,
+                started_at=started_at,
+                completed_at=completed_at,
+                exit_code=0 if (result is not None and not result.is_error) else 1,
+                error_code=type(error).__name__ if error else None,
+                error_message=str(error) if error else None,
+                targets_created=_to_uuids("targets_created"),
+                findings_created=_to_uuids("findings_created"),
+                credentials_created=_to_uuids("credentials_created"),
+                artifacts_created=_to_uuids("artifacts_created"),
+            )
+            return str(invocation.id)
+        except Exception as record_exc:  # noqa: BLE001
+            self.log.warning(
+                "tool_invocation.record_failed",
+                tool=name,
+                error=str(record_exc),
+            )
+            return None
+
     async def _run_under_context(
         self,
         *,
@@ -340,7 +403,7 @@ class RedTeamMCPServer:
 
         engagement_id = await self._resolve_engagement(None)
 
-        async with self.container.open_context(engagement_id=engagement_id) as ctx:
+        async with self.container.open_context(engagement_id=engagement_id):
             return await runner()
 
     async def _resolve_engagement(self, override: str | None):

@@ -218,6 +218,15 @@ tools:
     enabled: true
 ```
 
+如果你主要接本地小模型，建议再打开 HARNESS-first 配置，让模型只看到少量管理、报告、workflow 和 HARNESS 工具；低层扫描工具仍可由 HARNESS 通过统一执行器调用，不会绕过 scope、rate limit 或审计。
+
+```yaml
+llm:
+  tool_description_mode: compact
+  tool_exposure: harness_first
+  model_tier: local
+```
+
 如果你只做最小启动，也可以先只留：
 
 - `edition`
@@ -600,6 +609,15 @@ python scripts/register_cursor.py
 - `exploit_chain`
 - `generate_pentest_report`
 
+### 10.13a HARNESS
+
+HARNESS 是给本地/混合模型使用的轻量运行层。它不直接调用外部模型，而是持久化一个 session，每次只返回一个下一步，并给出 `recommended_model_tier` 和原因。
+
+- `harness_start`
+- `harness_next`
+- `harness_run`
+- `harness_state`
+
 ### 10.14 MCP Resources 与 Prompts
 
 这些不是普通 `call_tool` 工具，而是 MCP Host 可以直接调用的上下文接口：
@@ -615,6 +633,9 @@ python scripts/register_cursor.py
 - `engagement://{id}/scope`
 - `engagement://{id}/targets`
 - `engagement://{id}/findings`
+- `tool://catalog`
+- `tool://{tool_name}/guide`
+- `harness://{session_id}/state`
 
 当前内置提示词：
 
@@ -750,3 +771,15 @@ kestrel show-config
 - 固定 `KESTREL_MCP_HTTP_TOKEN`
 - 使用 `internal` 只在私有实验室或内部受控环境启用
 - 把 `audit.log` 与结构化日志外送到日志平台
+
+---
+
+## Kestrel integration update - sqlmap / katana / amass / hashcat / NetExec
+
+New external-binary wrappers are available and remain disabled by default in `pro`; `internal` enables them automatically.
+
+- Recon / web: `amass_enum`, `amass_version`, `katana_crawl`, `katana_version`, `sqlmap_scan`, `sqlmap_dump_table`, `sqlmap_version`.
+- AD / cracking: `netexec_smb_auth`, `netexec_smb_enum`, `netexec_smb_exec`, `netexec_ldap_kerberoast`, `netexec_version`, `hashcat_crack`, `hashcat_modes`, `hashcat_version`.
+- Workflow: `web_app_deep_scan` runs `httpx_probe -> katana_crawl -> nuclei_scan -> sqlmap_scan`; `recon_target` supports `use_amass=true` when Amass is enabled.
+- NetExec authentication accepts exactly one of `credential_ref`, `password`, or `ntlm_hash`.
+- hashcat cracked plaintexts and NetExec Kerberoast hashes are returned in detailed structured output and also sealed into CredentialService when an active engagement context exists.

@@ -22,20 +22,25 @@ def load_modules(settings: Settings, scope_guard: ScopeGuard) -> list[ToolModule
     where dangerous modules are opt-in.
     """
 
+    from .amass_tool import AmassModule
     from .bloodhound_tool import BloodHoundModule
     from .caido_tool import CaidoModule
     from .engagement_tool import EngagementModule
     from .evilginx_tool import EvilginxModule
     from .ffuf_tool import FfufModule
+    from .hashcat_tool import HashcatModule
     from .havoc_tool import HavocModule
     from .httpx_tool import HttpxModule
     from .impacket_tool import ImpacketModule
+    from .katana_tool import KatanaModule
     from .ligolo_tool import LigoloModule
+    from .netexec_tool import NetExecModule
     from .nmap_tool import NmapModule
     from .nuclei_tool import NucleiModule
     from .readiness_tool import ReadinessModule
     from .shodan_tool import ShodanModule
     from .sliver_tool import SliverModule
+    from .sqlmap_tool import SqlmapModule
     from .subfinder_tool import SubfinderModule
 
     candidates: list[ToolModule] = [
@@ -47,10 +52,15 @@ def load_modules(settings: Settings, scope_guard: ScopeGuard) -> list[ToolModule
         ShodanModule(settings, scope_guard),
         NucleiModule(settings, scope_guard),
         SubfinderModule(settings, scope_guard),
+        AmassModule(settings, scope_guard),
         HttpxModule(settings, scope_guard),
+        KatanaModule(settings, scope_guard),
         NmapModule(settings, scope_guard),
         FfufModule(settings, scope_guard),
+        SqlmapModule(settings, scope_guard),
         ImpacketModule(settings, scope_guard),
+        NetExecModule(settings, scope_guard),
+        HashcatModule(settings, scope_guard),
         BloodHoundModule(settings, scope_guard),
         CaidoModule(settings, scope_guard),
         LigoloModule(settings, scope_guard),

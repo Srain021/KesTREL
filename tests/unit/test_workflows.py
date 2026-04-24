@@ -116,3 +116,110 @@ async def test_exploit_chain_parses_deprecated_listener_url_alias() -> None:
             "format": "exe",
         }
     ]
+
+
+async def test_web_app_deep_scan_registers_only_when_all_handlers_available() -> None:
+    settings = Settings.build()
+    guard = ScopeGuard(["*.example.com"])
+
+    async def ok(arguments: dict[str, object]) -> ToolResult:
+        return ToolResult(text="ok", structured={})
+
+    incomplete = StubModule(settings, guard, specs=[_spec("httpx_probe", ok)])
+    with patch("kestrel_mcp.workflows.load_modules", return_value=[incomplete]):
+        specs = load_workflow_specs(settings, guard)
+    assert "web_app_deep_scan" not in {spec.name for spec in specs}
+
+    complete = StubModule(
+        settings,
+        guard,
+        specs=[
+            _spec("httpx_probe", ok),
+            _spec("katana_crawl", ok),
+            _spec("nuclei_scan", ok),
+            _spec("sqlmap_scan", ok),
+        ],
+    )
+    with patch("kestrel_mcp.workflows.load_modules", return_value=[complete]):
+        specs = load_workflow_specs(settings, guard)
+    assert "web_app_deep_scan" in {spec.name for spec in specs}
+
+
+async def test_web_app_deep_scan_runs_httpx_katana_nuclei_sqlmap_order() -> None:
+    settings = Settings.build()
+    guard = ScopeGuard(["*.example.com"])
+    calls: list[str] = []
+
+    async def httpx(arguments: dict[str, object]) -> ToolResult:
+        calls.append("httpx")
+        return ToolResult(text="httpx", structured={"probes": [{"url": "https://app.example.com"}]})
+
+    async def katana(arguments: dict[str, object]) -> ToolResult:
+        calls.append("katana")
+        return ToolResult(
+            text="katana",
+            structured={"urls": [{"url": "https://app.example.com/item?id=1"}]},
+        )
+
+    async def nuclei(arguments: dict[str, object]) -> ToolResult:
+        calls.append("nuclei")
+        return ToolResult(text="nuclei", structured={"findings": [{"id": "n1"}]})
+
+    async def sqlmap(arguments: dict[str, object]) -> ToolResult:
+        calls.append("sqlmap")
+        return ToolResult(text="sqlmap", structured={"injectable": True, "parameter": "id"})
+
+    module = StubModule(
+        settings,
+        guard,
+        specs=[
+            _spec("httpx_probe", httpx),
+            _spec("katana_crawl", katana),
+            _spec("nuclei_scan", nuclei),
+            _spec("sqlmap_scan", sqlmap),
+        ],
+    )
+    with patch("kestrel_mcp.workflows.load_modules", return_value=[module]):
+        specs = load_workflow_specs(settings, guard)
+
+    workflow = next(spec for spec in specs if spec.name == "web_app_deep_scan")
+    result = await workflow.handler({"targets": ["https://app.example.com"]})
+
+    assert calls == ["httpx", "katana", "nuclei", "sqlmap"]
+    assert result.structured["sqlmap"][0]["result"]["injectable"] is True
+
+
+async def test_recon_target_can_call_amass_when_requested() -> None:
+    settings = Settings.build()
+    guard = ScopeGuard(["example.com", "*.example.com", "10.0.0.0/8"])
+    calls: list[str] = []
+
+    async def shodan_search(arguments: dict[str, object]) -> ToolResult:
+        calls.append("shodan_search")
+        return ToolResult(text="search", structured={"hits": []})
+
+    async def shodan_host(arguments: dict[str, object]) -> ToolResult:
+        calls.append("shodan_host")
+        return ToolResult(text="host", structured={})
+
+    async def amass(arguments: dict[str, object]) -> ToolResult:
+        calls.append("amass")
+        return ToolResult(text="amass", structured={"ips": ["10.0.0.5"], "subdomains": ["a.example.com"]})
+
+    module = StubModule(
+        settings,
+        guard,
+        specs=[
+            _spec("shodan_search", shodan_search),
+            _spec("shodan_host", shodan_host),
+            _spec("amass_enum", amass),
+        ],
+    )
+    with patch("kestrel_mcp.workflows.load_modules", return_value=[module]):
+        specs = load_workflow_specs(settings, guard)
+
+    workflow = next(spec for spec in specs if spec.name == "recon_target")
+    result = await workflow.handler({"target": "example.com", "use_amass": True})
+
+    assert "amass" in calls
+    assert result.structured["amass"]["subdomains"] == ["a.example.com"]

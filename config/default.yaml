@@ -19,6 +19,11 @@ logging:
   format: "json"
   dir: "~/.kestrel/logs"
 
+llm:
+  tool_description_mode: "full"
+  tool_exposure: "all"
+  model_tier: "standard"
+
 tools:
   nuclei:
     enabled: true
@@ -35,7 +40,16 @@ tools:
     enabled: false
     binary: null
 
+  amass:
+    enabled: false
+    binary: null
+    output_dir: "~/.kestrel/runs/amass"
+
   httpx:
+    enabled: false
+    binary: null
+
+  katana:
     enabled: false
     binary: null
 
@@ -48,8 +62,24 @@ tools:
     binary: null
     wordlists_dir: "."
 
+  sqlmap:
+    enabled: false
+    binary: null
+    output_dir: "~/.kestrel/runs/sqlmap"
+
   impacket:
     enabled: false
+
+  netexec:
+    enabled: false
+    binary: null
+    workspace: "kestrel"
+
+  hashcat:
+    enabled: false
+    binary: null
+    wordlists_dir: "."
+    hashes_dir: "~/.kestrel/runs/hashcat"
 
   bloodhound:
     enabled: false

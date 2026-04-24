@@ -47,6 +47,7 @@ if TYPE_CHECKING:
         CredentialService,
         EngagementService,
         FindingService,
+        HarnessService,
         ScopeService,
         TargetService,
         ToolInvocationService,
@@ -98,6 +99,10 @@ class RequestContext:
     @property
     def finding(self) -> FindingService:
         return self.container.finding
+
+    @property
+    def harness(self) -> HarnessService:
+        return self.container.harness
 
     @property
     def credential(self) -> CredentialService:

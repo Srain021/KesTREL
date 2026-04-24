@@ -186,6 +186,12 @@
 | RFC-V10 | License compat matrix doc          | open   | —           | low      |
 | RFC-V11 | Plugin registry MVP                | open   | RFC-V03     | medium   |
 | RFC-V12 | Playwright browser tools           | open   | RFC-002     | medium   |
+| RFC-V13 | HARNESS local model runtime        | done   | RFC-A04,RFC-002 | high  |
+| RFC-V13a | Compact tool catalog              | done   | RFC-V13     | high     |
+| RFC-V13b | HARNESS SQLite state              | done   | RFC-V13     | high     |
+| RFC-V13c | HARNESS MCP tools                 | done   | RFC-V13b    | high     |
+| RFC-V13d | HARNESS smoke coverage and docs   | done   | RFC-V13c    | high     |
+| RFC-V14a | HARNESS adaptive small-model loop | open   | RFC-V13d    | high     |
 
 ---
 
