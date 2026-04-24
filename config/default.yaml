@@ -1,0 +1,62 @@
+server:
+  name: "redteam-mcp"
+  version: "0.1.0"
+
+security:
+  authorized_scope: []
+  require_ack: true
+  dry_run: false
+  audit_log: "~/.redteam-mcp/audit.log"
+  dangerous_ops_require_scope: true
+
+execution:
+  timeout_sec: 300
+  max_output_bytes: 5242880
+  working_dir: "~/.redteam-mcp/runs"
+
+logging:
+  level: "INFO"
+  format: "json"
+  dir: "~/.redteam-mcp/logs"
+
+tools:
+  nuclei:
+    enabled: true
+    binary: null
+    templates_dir: null
+    default_rate_limit: 150
+
+  shodan:
+    enabled: true
+    api_key_env: "SHODAN_API_KEY"
+    default_limit: 100
+
+  caido:
+    enabled: false
+    binary: null
+
+  evilginx:
+    enabled: false
+    binary: null
+    phishlets_dir: null
+    config_dir: "~/.evilginx"
+    require_scope: true
+
+  sliver:
+    enabled: false
+    server_binary: null
+    client_binary: null
+    operator_config: null
+    require_scope: true
+
+  havoc:
+    enabled: false
+    binary: null
+    source_dir: null
+    profile: null
+    require_scope: true
+
+  ligolo:
+    enabled: false
+    binary: null
+    proxy_binary: null

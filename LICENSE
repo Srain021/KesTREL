@@ -1,0 +1,51 @@
+MIT License
+
+Copyright (c) 2026 Red-Team MCP Authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+================================================================================
+RESPONSIBLE USE DISCLAIMER
+================================================================================
+
+This Software is a CONTROL INTERFACE for offensive security tools. It does NOT
+itself exploit vulnerabilities, phish users, or establish command-and-control
+channels — the underlying tools do. Nevertheless, wrapping those tools behind
+an LLM-callable interface dramatically lowers the barrier to misuse.
+
+You agree, as a condition of using the Software, that you will ONLY use it:
+
+  1. Against systems you OWN, or
+  2. Against systems for which you possess PRIOR WRITTEN AUTHORIZATION
+     from the lawful owner (e.g. a signed pentest scope, a published bug-bounty
+     program in-scope target, a sanctioned red-team engagement, or a CTF range),
+     AND
+  3. In compliance with ALL applicable laws, including but not limited to:
+       * US: Computer Fraud and Abuse Act (18 U.S.C. §1030)
+       * EU: Directive 2013/40/EU, GDPR
+       * China: 中华人民共和国网络安全法, 刑法第 285/286 条
+       * UK: Computer Misuse Act 1990
+       * and any jurisdiction where you or the target reside.
+
+Unauthorized scanning, exploitation, credential harvesting, session hijacking,
+or command-and-control is a CRIMINAL OFFENSE in most jurisdictions and may
+result in imprisonment and/or substantial fines.
+
+The authors of this Software accept NO liability for actions taken by users.
+Use constitutes acceptance of these terms.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

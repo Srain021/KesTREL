@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "redteam-mcp": {
+      "command": "python",
+      "args": ["-m", "redteam_mcp", "serve"],
+      "env": {
+        "REDTEAM_MCP_AUTHORIZED_SCOPE": "*.lab.internal,192.168.56.0/24,127.0.0.1",
+        "SHODAN_API_KEY": "REPLACE_WITH_YOUR_KEY",
+        "REDTEAM_MCP_TOOL_NUCLEI": "C:/Users/YOU/hacking-tools/nuclei_extracted/nuclei.exe",
+        "REDTEAM_MCP_TOOL_SLIVER_SERVER": "C:/Users/YOU/hacking-tools/sliver-server.exe",
+        "REDTEAM_MCP_TOOL_SLIVER_CLIENT": "C:/Users/YOU/hacking-tools/sliver-client.exe",
+        "REDTEAM_MCP_TOOL_LIGOLO_PROXY": "C:/Users/YOU/hacking-tools/ligolo-ng-proxy/proxy.exe",
+        "REDTEAM_MCP_TOOL_CAIDO_CLI": "C:/Users/YOU/hacking-tools/caido-cli.exe",
+        "REDTEAM_MCP_TOOL_EVILGINX": "C:/Users/YOU/hacking-tools/evilginx_extracted/evilginx.exe",
+        "REDTEAM_MCP_TOOL_HAVOC": "C:/Users/YOU/hacking-tools/Havoc/havoc.exe",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}

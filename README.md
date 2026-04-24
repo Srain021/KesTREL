@@ -1,1 +1,304 @@
-# KesTREL
+# Red-Team MCP Server
+
+**Expose 40+ offensive-security tools to any MCP-speaking LLM (Cursor, Claude Desktop, Cline, Continue, Zed) behind a single, audit-logged, scope-gated interface.**
+
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/) [![MCP 1.2+](https://img.shields.io/badge/MCP-1.2%2B-purple)](https://modelcontextprotocol.io/) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+> ⚠️ **Authorized use only.** See [LICENSE](LICENSE) for the full responsible-use clause. Running this against systems you do not own or have written permission to test is a crime in most jurisdictions.
+
+---
+
+## ✨ What you get
+
+| Tool | Wraps | LLM-callable actions |
+|------|-------|----------------------|
+| **Shodan** | Python SDK | search, host, count, facets, scan, account-info |
+| **Nuclei** | `nuclei` binary (JSONL output) | scan, update-templates, list-templates, validate-template, version |
+| **Caido** | CLI / REST (phase 2) | start, replay, intercept-config |
+| **Evilginx** | CLI (phase 3) | start, list-phishlets, enable-phishlet, create-lure, list-sessions |
+| **Sliver** | gRPC client (phase 3) | start-server, listeners, sessions, generate-implant, upload/download |
+| **Havoc** | CLI (phase 3) | build, start-teamserver, status, generate-demon, execute |
+| **Ligolo-ng** | CLI (phase 2) | start-proxy, list-agents, tunnel, listener |
+| **Workflows** | native Python (phase 3) | `recon_target`, `full_vuln_scan`, `exploit_chain`, `generate_pentest_report` |
+
+All tools share one cross-cutting design:
+
+* **Scope enforcement** — every offensive tool consults a central `ScopeGuard` before hitting a target. Empty scope = refuse all offensive actions by default.
+* **Audit log** — every `call_tool` invocation is written to `~/.redteam-mcp/audit.log` as a structured JSON record.
+* **Dry-run mode** — `--dry-run` or `REDTEAM_MCP_DRY_RUN=1` turns every offensive command into a no-op that still returns the argv it *would* have run.
+* **Timeouts + output caps** — no tool can exhaust memory or hang forever.
+* **JSON Schema inputs** — each tool advertises a strict JSON schema so LLMs can validate arguments before calling.
+
+---
+
+## 🚀 Quickstart
+
+### 1. Install
+
+**Windows (PowerShell):**
+
+```powershell
+git clone https://github.com/your-org/redteam-mcp.git
+cd redteam-mcp
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
+```
+
+**macOS / Linux:**
+
+```bash
+git clone https://github.com/your-org/redteam-mcp.git
+cd redteam-mcp
+./scripts/install.sh
+```
+
+Or manually with any Python 3.10+:
+
+```bash
+pip install -e ".[dev]"
+```
+
+### 2. Configure
+
+Copy and edit the environment template:
+
+```bash
+cp .env.example .env
+```
+
+Minimum fields to set:
+
+```bash
+# Engagement authorization — COMMA-SEPARATED list of:
+#   • exact hostnames          host.example.com
+#   • wildcard hostnames       *.example.com
+#   • CIDR ranges              10.0.0.0/16
+#   • single IPs               10.0.0.1
+REDTEAM_MCP_AUTHORIZED_SCOPE="*.lab.internal,192.168.56.0/24"
+
+# Required if you want to use Shodan tools
+SHODAN_API_KEY="your-shodan-key"
+
+# Optional tool binary overrides (auto-detected from PATH otherwise)
+REDTEAM_MCP_TOOL_NUCLEI="C:/Users/you/hacking-tools/nuclei.exe"
+```
+
+### 3. Verify readiness
+
+```bash
+redteam-mcp doctor
+```
+
+This prints a table showing which tools are enabled, whether their binaries are found, and whether the Shodan key + scope are set.
+
+### 4. Run the server
+
+```bash
+redteam-mcp serve
+```
+
+(No args = the same thing — this is stdio transport that MCP hosts launch on demand.)
+
+### 5. Register with Cursor
+
+```bash
+python scripts/register_cursor.py --scope "*.lab.internal,192.168.56.0/24"
+```
+
+That writes `~/.cursor/mcp.json`. Restart Cursor, open a chat, and type:
+
+> "Run a Shodan search for `product:nginx country:US` and show me the top 5 hits."
+
+Cursor will auto-invoke `shodan_search`.
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  LLM Client (Cursor / Claude Desktop / Cline / Zed)     │
+└──────────────────────────┬──────────────────────────────┘
+                           │ JSON-RPC over stdio
+┌──────────────────────────▼──────────────────────────────┐
+│  redteam_mcp.server.RedTeamMCPServer                    │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │  Scope guard • audit log • dry-run • timeout     │   │
+│  └────┬───────┬──────┬──────┬──────┬──────┬──────┬──┘   │
+│       │       │      │      │      │      │      │      │
+│  ┌────▼──┐ ┌─▼──┐ ┌─▼──┐ ┌─▼──┐ ┌─▼──┐ ┌─▼──┐ ┌─▼──┐   │
+│  │Shodan │ │Nucl│ │Cai-│ │Evil│ │Sli-│ │Hav-│ │Lig-│   │
+│  │ API   │ │ei  │ │do  │ │ginx│ │ver │ │oc  │ │olo │   │
+│  └───────┘ └────┘ └────┘ └────┘ └────┘ └────┘ └────┘   │
+└─────────────────────────────────────────────────────────┘
+```
+
+Every tool module subclasses `ToolModule` and returns a list of `ToolSpec`. The server:
+
+1. Calls `load_modules()` to discover enabled modules.
+2. Registers each `ToolSpec` under its unique `name`.
+3. On every `call_tool`:
+   - validates scope (if `requires_scope_field` is set),
+   - writes an audit record,
+   - hands the arguments to the async handler,
+   - renders the `ToolResult` as text + JSON blocks.
+
+Adding a new tool is ~30 lines: subclass `ToolModule`, return a `ToolSpec`, register in `tools/__init__.py`.
+
+---
+
+## 📖 Configuration Layers
+
+Resolution order (later wins):
+
+1. `config/default.yaml` — shipped defaults.
+2. `~/.redteam-mcp/config.yaml` — per-user overrides.
+3. `./redteam-mcp.yaml` — per-project overrides.
+4. Environment variables prefixed `REDTEAM_MCP_`.
+5. `--config PATH` CLI override.
+
+Full surface:
+
+```yaml
+server:
+  name: "redteam-mcp"
+  version: "0.1.0"
+
+security:
+  authorized_scope: []
+  require_ack: true
+  dry_run: false
+  audit_log: "~/.redteam-mcp/audit.log"
+
+execution:
+  timeout_sec: 300
+  max_output_bytes: 5242880
+  working_dir: "~/.redteam-mcp/runs"
+
+logging:
+  level: "INFO"
+  format: "json"
+  dir: "~/.redteam-mcp/logs"
+
+tools:
+  shodan:
+    enabled: true
+    api_key_env: "SHODAN_API_KEY"
+  nuclei:
+    enabled: true
+    binary: null
+    default_rate_limit: 150
+  caido: { enabled: false }
+  evilginx: { enabled: false }
+  sliver: { enabled: false }
+  havoc: { enabled: false }
+  ligolo: { enabled: false }
+```
+
+---
+
+## 🛠️ CLI reference
+
+```
+redteam-mcp serve           # default, stdio MCP server
+redteam-mcp serve --dry-run # never actually exec offensive tools
+redteam-mcp serve --scope "*.lab.internal,10.0.0.0/8"
+redteam-mcp doctor          # readiness report
+redteam-mcp list-tools      # dump MCP tool schema as JSON
+redteam-mcp version
+```
+
+---
+
+## 🧪 Example LLM prompts
+
+Once Cursor is wired up, you can say:
+
+> **"Run `shodan_count` for `product:redis -requirepass country:CN`."**
+> → Returns an integer. 0 credits consumed.
+>
+> **"Do a light Nuclei scan on `https://app.lab.internal` with only `critical,high` severity."**
+> → Runs `nuclei_scan` with your scope enforced; returns structured findings.
+>
+> **"Update the Nuclei template library."**
+> → Calls `nuclei_update_templates`.
+>
+> **"What's my Shodan account status?"**
+> → Calls `shodan_account_info`.
+
+The LLM handles tool choice, argument filling, and result summarization.
+
+---
+
+## 🔐 Security model
+
+This project takes a paranoid stance on scope enforcement:
+
+* **Empty scope = refuse all offensive tools.** The very first tool call with `authorized_scope=[]` raises `AuthorizationError`. You cannot forget to set scope.
+* **CIDR + wildcard aware.** `192.168.0.0/16` and `*.example.com` are both first-class.
+* **Audit-first.** Every call writes an `audit=True` JSON log line with tool name, argument keys, duration, exit code, and result size.
+* **No eval, no shell.** All subprocesses use `argv` arrays — no shell interpolation, no injection surface via tool arguments.
+* **Subprocess output cap.** Default 5 MiB; beyond that the result is truncated and flagged.
+
+Known limits (documented, not fixed): the scope guard can't verify the *true* target of every deep URL (Nuclei can follow redirects off-scope); the audit log is not tamper-proof. For high-assurance engagements, ship the audit log to a central SIEM.
+
+---
+
+## 🧱 Adding a new tool
+
+1. **Create the module**:
+
+   ```python
+   # src/redteam_mcp/tools/mytool_tool.py
+   from .base import ToolModule, ToolSpec, ToolResult
+
+   class MyToolModule(ToolModule):
+       id = "mytool"
+
+       def specs(self):
+           return [
+               ToolSpec(
+                   name="mytool_do_thing",
+                   description="Do the thing.",
+                   input_schema={"type": "object", "properties": {"arg": {"type": "string"}}},
+                   handler=self._handle_do,
+               )
+           ]
+
+       async def _handle_do(self, args):
+           return ToolResult(text="done", structured={"input": args})
+   ```
+
+2. **Register it** in `src/redteam_mcp/tools/__init__.py`.
+
+3. **Add config block** to `config/default.yaml`:
+
+   ```yaml
+   tools:
+     mytool:
+       enabled: true
+   ```
+
+4. `redteam-mcp doctor` should now show it.
+
+---
+
+## 🗺️ Roadmap
+
+* [x] Phase 1 — core server, Shodan, Nuclei, CLI, install scripts
+* [ ] Phase 2 — Ligolo-ng, Caido
+* [ ] Phase 3 — Sliver, Havoc, Evilginx
+* [ ] Phase 4 — workflow tools (`recon_target`, `exploit_chain`, `generate_pentest_report`)
+* [ ] Phase 5 — MCP Resources (template browser, phishlet catalog) + Prompts library
+* [ ] Phase 6 — PyPI release + Docker image
+
+---
+
+## 📜 License
+
+MIT + responsible-use clause. See [LICENSE](LICENSE).
+
+Using this software is acknowledgement that:
+
+* You will only use it against systems you own or have written authorization to test.
+* You understand that unauthorized access is a crime (CFAA / 中国刑法 285-286 / CMA 1990 / GDPR Art.32).
+* The authors accept no liability for your actions.
