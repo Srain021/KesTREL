@@ -5,6 +5,10 @@
       "args": ["-m", "kestrel_mcp", "--edition", "internal", "serve"],
       "env": {
         "KESTREL_EDITION": "internal",
+        "KESTREL_MCP_EDITION": "internal",
+        "KESTREL_MCP_LLM__TOOL_DESCRIPTION_MODE": "compact",
+        "KESTREL_MCP_LLM__TOOL_EXPOSURE": "harness_first",
+        "KESTREL_MCP_LLM__MODEL_TIER": "local",
         "KESTREL_MCP_SECURITY__AUTHORIZED_SCOPE": "*.lab.internal,192.168.56.0/24,127.0.0.1",
         "SHODAN_API_KEY": "REPLACE_WITH_YOUR_KEY",
         "KESTREL_MCP_TOOLS__NUCLEI__BINARY": "C:/Users/YOU/hacking-tools/nuclei.exe",

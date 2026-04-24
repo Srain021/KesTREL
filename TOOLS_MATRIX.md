@@ -810,6 +810,15 @@ user-managed BloodHound-CE API configured with `tools.bloodhound.api_url`.
 
 ## AI 安全（差异化） (4 工具)
 
+### V3 HARNESS / tool governance status
+
+V3 alpha shifts the matrix from raw tool count to governed execution:
+
+- HARNESS exposes a stable four-tool surface: `harness_start`, `harness_next`, `harness_run`, `harness_state`.
+- `output_trust=untrusted|sensitive` tools are wrapped at MCP render time so target output is treated as data.
+- Tool namespace collisions now fail startup with the conflicting sources named.
+- Plugin entry-points remain the MVP extension path; future registry work should build on `kestrel_mcp.plugins`.
+
 这是项目最独特的价值主张 — 市面几乎无 MCP wrapper。
 
 ### 57. garak ⬜ 待集成

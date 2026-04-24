@@ -148,3 +148,84 @@ async def test_high_risk_harness_step_requires_confirmation(container) -> None:
     assert "confirm=true" in denied.text
     assert not accepted.is_error
     assert calls == [("sliver_sessions", {})]
+
+
+async def test_harness_run_refuses_recursive_harness_tool(container) -> None:
+    module = HarnessModule(
+        Settings.build(),
+        ScopeGuard([]),
+        specs_provider=lambda: {},
+        runner=lambda _tool, _args: None,  # type: ignore[arg-type]
+    )
+
+    async with container.open_context():
+        session = await container.harness.create_session(
+            goal="Recursive",
+            target="example.com",
+            engagement_id=None,
+            mode="recon",
+            model_tier="local",
+        )
+        step = await container.harness.add_step(
+            session_id=session.id,
+            tool_name="harness_state",
+            arguments={"session_id": str(session.id)},
+            status=ent.HarnessStepStatus.PENDING,
+            risk_level="low",
+            recommended_model_tier="local",
+            reason="recursive test",
+        )
+
+        result = await _spec(module, "harness_run").handler(
+            {"session_id": str(session.id), "step_id": str(step.id)}
+        )
+
+    assert result.is_error
+    assert "recursively run" in result.text
+
+
+async def test_harness_summary_counts_common_structured_lists(container) -> None:
+    calls: list[tuple[str, dict[str, object]]] = []
+
+    async def runner(tool_name: str, arguments: dict[str, object]):
+        calls.append((tool_name, arguments))
+        return ToolResult(
+            text="httpx identified 2 live HTTP service(s).",
+            structured={"probes": [{"url": "https://a.test"}, {"url": "https://b.test"}]},
+        ), None
+
+    module = HarnessModule(
+        Settings.build(),
+        ScopeGuard([]),
+        specs_provider=lambda: {},
+        runner=runner,
+    )
+
+    async with container.open_context():
+        session = await container.harness.create_session(
+            goal="Probe",
+            target="example.com",
+            engagement_id=None,
+            mode="recon",
+            model_tier="local",
+        )
+        step = await container.harness.add_step(
+            session_id=session.id,
+            tool_name="httpx_probe",
+            arguments={"targets": ["example.com"]},
+            status=ent.HarnessStepStatus.PENDING,
+            risk_level="medium",
+            recommended_model_tier="local",
+            reason="test",
+        )
+
+        result = await _spec(module, "harness_run").handler(
+            {"session_id": str(session.id), "step_id": str(step.id)}
+        )
+        updated = await container.harness.get_step(step.id)
+
+    assert not result.is_error
+    assert calls == [("httpx_probe", {"targets": ["example.com"]})]
+    assert updated is not None
+    assert updated.result_summary is not None
+    assert updated.result_summary.endswith("probes=2")

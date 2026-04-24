@@ -2,8 +2,8 @@
 id: RFC-V14a
 title: Add HARNESS adaptive small-model loop
 epic: V-CrossEdition
-status: open
-owner: unassigned
+status: done
+owner: agent
 role: backend-engineer
 edition: both
 blocking_on:
@@ -563,3 +563,4 @@ Run `rollback_cmd` from the front matter.
 ## Changelog
 
 - 2026-04-24 initial draft by Codex.
+- 2026-04-24 implemented adaptive routing, result-count summaries, and focused tests.

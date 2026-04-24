@@ -45,6 +45,112 @@
 
 ## 📋 Status Table
 
+<!-- BEGIN_RFC_TABLE -->
+### Epic A — Engineering foundations
+
+| id      | title | status | blocking_on | owner |
+|---------|-------|--------|-------------|-------|
+| RFC-001 | Lock dependencies with uv | done |  | unassigned |
+| RFC-002 | GitHub Actions CI matrix | done | RFC-001 | unassigned |
+| RFC-003 | Credential store (domain + seal/unseal) | done | RFC-002 | agent |
+| RFC-003a | Credential service seal/unseal | done | RFC-002 | agent |
+| RFC-003b | Credential service integration and release docs | done | RFC-003a | agent |
+| RFC-004 | Per-tool rate limiting | done | RFC-002 | agent |
+| RFC-005 | Safe path helper + subprocess stderr redaction | done | RFC-002 | agent |
+| RFC-A04 | Edition selector and feature flags infrastructure | done |  | unassigned |
+
+### Epic B — Core hardening
+
+| id      | title | status | blocking_on | owner |
+|---------|-------|--------|-------------|-------|
+| RFC-B05a | Tool guidance completeness — Impacket module (highest-risk AD tools) | done | RFC-002 | coordinator |
+| RFC-B05b1 | Tool guidance completeness — Sliver server lifecycle + raw command (4 of 8) | done | RFC-002 | coordinator |
+| RFC-B05b2 | Tool guidance completeness - Sliver ops tools (4 of 8) | done | RFC-B05b1 | agent |
+| RFC-B07a | Offensive readiness scoring engine | done | RFC-003b | agent |
+| RFC-B07b | CVE enrichment client for readiness | done | RFC-B07a | agent |
+| RFC-B07c | Offensive readiness MCP tools | done | RFC-B07b | agent |
+| RFC-B07d | Readiness cards on findings page | done | RFC-B07c | agent |
+| RFC-B07e | Fire-control packet on findings page | done | RFC-B07d | agent |
+
+### Epic C — Web UI Tier 1
+
+| id      | title | status | blocking_on | owner |
+|---------|-------|--------|-------------|-------|
+| RFC-006 | FastAPI app skeleton (shared with MCP container) | done | RFC-002 | agent |
+| RFC-007 | htmx + Tailwind base layout + nav | done | RFC-006 | agent |
+| RFC-008 | Engagement routes + templates (list / create / show) | done | RFC-007 | agent |
+| RFC-009 | Findings table + transitions | done | RFC-008 | agent |
+| RFC-010 | Tool launcher + SSE live stdout stream | abandoned | RFC-008 | agent |
+| RFC-010a | Tool launcher backend jobs | done | RFC-008 | agent |
+| RFC-010b | Tool launcher SSE UI | done | RFC-010a | agent |
+| RFC-011 | Settings page (API keys + tool binary paths) | done | RFC-007 | agent |
+| RFC-012 | HTTP Basic auth for shared deployment | done | RFC-006 | agent |
+
+### Epic G — Tool expansion
+
+| id      | title | status | blocking_on | owner |
+|---------|-------|--------|-------------|-------|
+| RFC-G01 | subfinder tool | done |  | agent |
+| RFC-G02 | httpx probe tool | done | RFC-G01 | agent |
+| RFC-G03 | nmap wrapper | done |  | agent |
+| RFC-G04 | ffuf wrapper | done |  | agent |
+| RFC-G06 | Impacket scripts top 5 | done |  | agent |
+| RFC-G08 | BloodHound-CE REST client | done |  | agent |
+
+### Epic H — Release & community
+
+| id      | title | status | blocking_on | owner |
+|---------|-------|--------|-------------|-------|
+| RFC-H01 | Rename package to kestrel-mcp | done | RFC-002 | agent |
+| RFC-H02 | PyPI and Docker release pipeline | done | RFC-H01, RFC-002 | agent |
+| RFC-H03 | MkDocs Material site | done | RFC-H01 | agent |
+| RFC-H04 | v1.0 release gate + announcement | done | RFC-H01, RFC-H02, RFC-H03, RFC-G01, RFC-G02, RFC-G03, RFC-G04, RFC-G06, RFC-G08 | agent |
+
+### Epic T — Team Edition
+
+| id      | title | status | blocking_on | owner |
+|---------|-------|--------|-------------|-------|
+| RFC-T00 | Team unleashed mode — scope_enforcement three-state switch at server dispatch | done | RFC-A04 | unassigned |
+| RFC-T00b | Team runtime feature gates | done | RFC-T00, RFC-003b, RFC-004 | agent |
+| RFC-T08 | Team bootstrap command — kestrel team bootstrap --name <slug> | done | RFC-A04, RFC-T00 | unassigned |
+
+### Epic V — Cross-edition enhancements
+
+| id      | title | status | blocking_on | owner |
+|---------|-------|--------|-------------|-------|
+| RFC-V13 | Add HARNESS local model runtime | done | RFC-A04, RFC-002 | agent |
+| RFC-V13a | Add compact tool catalog | done | RFC-V13 | agent |
+| RFC-V13b | Add HARNESS SQLite state | done | RFC-V13 | agent |
+| RFC-V13c | Add HARNESS MCP tools | done | RFC-V13b | agent |
+| RFC-V13d | Add HARNESS smoke coverage and docs | done | RFC-V13c | agent |
+| RFC-V14a | Add HARNESS adaptive small-model loop | done | RFC-V13d | agent |
+
+
+Total RFCs: **44**
+
+| status | count |
+|--------|-------|
+| done | 43 |
+| abandoned | 1 |
+<!-- END_RFC_TABLE -->
+---
+
+## V3 Roadmap
+
+V3 is the HARNESS intelligence, safety governance, and tool ecosystem release.
+
+| phase | focus | primary RFCs |
+|-------|-------|--------------|
+| V3-Prep | sync RFC truth and release baseline | sync index + roadmap |
+| V3-Core | adaptive HARNESS next-step routing | RFC-V14a |
+| V3-Safety | untrusted output, redaction, missing binary handling, cost ledger | RFC-V08, RFC-B05, RFC-B06, RFC-V07 |
+| V3-Ecosystem | namespace checks, plugin registry, browser tools, Metasploit RPC | RFC-V03, RFC-V11, RFC-V12, RFC-G05 |
+| V3-Release | docs, Cursor config, release gate | v3.0.0-alpha.1 |
+
+---
+
+## Manual Roadmap Notes
+
 ### Epic A — Engineering foundations
 
 | id      | title                             | status | blocking_on | owner |
@@ -249,6 +355,4 @@ RFC-A04 (FeatureFlags) ─► RFC-T00 (Unleashed) ─► RFC-T08 (Bootstrap)
 
 该脚本扫描 `rfcs/RFC-*.md` 的 YAML front-matter 并输出聚合状态表。
 
-**当前行为**：INDEX.md 尚未加 `<!-- BEGIN_RFC_TABLE -->` / `<!-- END_RFC_TABLE -->`
-占位标记，所以脚本目前只打印建议结果不改文件。后续 RFC 会在合适的小节位置插入
-标记以启用自动替换（避免覆盖本文件已有的 DAG 图和 MVP 关键路径说明）。
+**当前行为**Current behavior**: `INDEX.md` now has standalone `<!-- BEGIN_RFC_TABLE -->` / `<!-- END_RFC_TABLE -->` markers. The sync script only replaces that controlled block and leaves the DAG, Team MVP path, and manual roadmap notes intact.

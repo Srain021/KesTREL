@@ -155,6 +155,8 @@ class HarnessModule(ToolModule):
         step = await ctx.harness.get_step(step_id)
         if step is None or step.session_id != session_id:
             return ToolResult.error(f"HARNESS step {step_id} not found for session {session_id}.")
+        if step.tool_name.startswith("harness_"):
+            return ToolResult.error("HARNESS will not recursively run harness_* tools.")
 
         confirm = bool(args.get("confirm", False))
         if step.status == ent.HarnessStepStatus.NEEDS_CONFIRMATION and not confirm:
@@ -255,9 +257,13 @@ def _step_payload(step: ent.HarnessStep) -> dict[str, Any]:
 
 
 def _summarize_result(result: ToolResult) -> str:
-    if result.structured and "count" in result.structured:
-        return f"{result.text} count={result.structured['count']}"
-    if result.structured and "findings_count" in result.structured:
-        return f"{result.text} findings_count={result.structured['findings_count']}"
+    if result.structured:
+        for key in ("findings_count", "count"):
+            if key in result.structured:
+                return f"{result.text} {key}={result.structured[key]}"[:4096]
+        for key in ("hosts", "probes", "results", "subdomains"):
+            value = result.structured.get(key)
+            if isinstance(value, list):
+                return f"{result.text} {key}={len(value)}"[:4096]
     return result.text[:4096]
 
