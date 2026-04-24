@@ -8,15 +8,27 @@ from __future__ import annotations
 
 import json
 from typing import Any
+from uuid import UUID
 
 from ..core.context import current_context_or_none
+from ..tool_catalog import catalog_payload
+from ..tools.base import ToolSpec
 
-_RESOURCE_REGISTRY: dict[str, "ResourceProvider"] = {}
+_RESOURCE_REGISTRY: dict[str, ResourceProvider] = {}
+_TOOL_SPECS: dict[str, ToolSpec] = {}
+_TOOL_SETTINGS: Any | None = None
+
+
+def configure_tool_catalog(specs: dict[str, ToolSpec], settings: Any) -> None:
+    _TOOL_SPECS.clear()
+    _TOOL_SPECS.update(specs)
+    global _TOOL_SETTINGS
+    _TOOL_SETTINGS = settings
 
 
 def register(
-    provider: type["ResourceProvider"] | "ResourceProvider",
-) -> type["ResourceProvider"] | "ResourceProvider":
+    provider: type[ResourceProvider] | ResourceProvider,
+) -> type[ResourceProvider] | ResourceProvider:
     """Register a resource provider by URI scheme."""
 
     instance = provider() if isinstance(provider, type) else provider
@@ -144,6 +156,84 @@ class EngagementResourceProvider(ResourceProvider):
             }
 
         return None
+
+
+@register
+class ToolResourceProvider(ResourceProvider):
+    scheme = "tool"
+
+    async def list_resources(self) -> list[dict[str, Any]]:
+        if not _TOOL_SPECS:
+            return []
+        return [
+            {
+                "uri": "tool://catalog",
+                "name": "Tool Catalog",
+                "mimeType": "application/json",
+                "description": "Compact metadata for advertised tools.",
+            },
+            *[
+                {
+                    "uri": f"tool://{name}/guide",
+                    "name": f"{name} Guide",
+                    "mimeType": "text/markdown",
+                    "description": "Full ToolSpec guidance for one tool.",
+                }
+                for name in sorted(_TOOL_SPECS)
+            ],
+        ]
+
+    async def read_resource(self, uri: str) -> dict[str, Any] | None:
+        if uri == "tool://catalog":
+            if _TOOL_SETTINGS is None:
+                return None
+            return {
+                "uri": uri,
+                "mimeType": "application/json",
+                "text": json.dumps(
+                    catalog_payload(_TOOL_SPECS.values(), _TOOL_SETTINGS),
+                    indent=2,
+                ),
+            }
+        if not uri.startswith("tool://") or not uri.endswith("/guide"):
+            return None
+        name = uri[len("tool://") : -len("/guide")]
+        spec = _TOOL_SPECS.get(name)
+        if spec is None:
+            return None
+        return {
+            "uri": uri,
+            "mimeType": "text/markdown",
+            "text": spec.render_full_description(),
+        }
+
+
+@register
+class HarnessResourceProvider(ResourceProvider):
+    scheme = "harness"
+
+    async def list_resources(self) -> list[dict[str, Any]]:
+        return []
+
+    async def read_resource(self, uri: str) -> dict[str, Any] | None:
+        if not uri.startswith("harness://") or not uri.endswith("/state"):
+            return None
+        ctx = current_context_or_none()
+        if ctx is None:
+            return None
+        raw = uri[len("harness://") : -len("/state")]
+        try:
+            session_id = UUID(raw)
+        except ValueError:
+            return None
+        payload = await ctx.harness.get_state_payload(session_id)
+        if payload is None:
+            return None
+        return {
+            "uri": uri,
+            "mimeType": "application/json",
+            "text": json.dumps(payload, indent=2, default=str),
+        }
 
 
 async def list_all_resources() -> list[dict[str, Any]]:

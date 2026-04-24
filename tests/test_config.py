@@ -35,6 +35,9 @@ class TestSettings:
         assert settings.server.name == "kestrel-mcp"
         assert settings.execution.timeout_sec == 300
         assert settings.security.authorized_scope == []
+        assert settings.llm.tool_description_mode == "full"
+        assert settings.llm.tool_exposure == "all"
+        assert settings.llm.model_tier == "standard"
         assert settings.tools.shodan.enabled is True
 
     def test_env_override_security(self, monkeypatch: pytest.MonkeyPatch) -> None:

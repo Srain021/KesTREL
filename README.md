@@ -27,11 +27,11 @@ resources, prompts, and reporting.
 | Core server | stdio MCP, Streamable HTTP MCP, scope guard, dry-run, readiness checks, structured logging |
 | Audit trail | DB-backed `tool_invocation` records with chained hashes and argument redaction |
 | Engagement state | engagements, scope entries, targets, findings, active engagement switching |
-| Recon and validation | Shodan, Nuclei, Subfinder, httpx, Nmap, ffuf |
-| Identity and AD | Impacket, BloodHound |
+| Recon and validation | Shodan, Nuclei, Subfinder, Amass, httpx, Katana, Nmap, ffuf, sqlmap |
+| Identity, AD, cracking | Impacket, NetExec, hashcat, BloodHound |
 | Web and access | Caido, Evilginx, Ligolo-ng |
 | C2 | Sliver, Havoc |
-| Workflows | `recon_target`, `full_vuln_scan`, `exploit_chain`, `generate_pentest_report` |
+| Workflows | `recon_target`, `full_vuln_scan`, `web_app_deep_scan`, `exploit_chain`, `generate_pentest_report` |
 | MCP extras | `resources/list`, `resources/read`, `prompts/list`, `prompts/get` |
 | Extensibility | plugin entry points via `kestrel_mcp.plugins` |
 
@@ -68,8 +68,18 @@ tools:
     binary: "C:/Users/YOU/hacking-tools/nuclei.exe"
   subfinder:
     binary: "C:/Users/YOU/hacking-tools/subfinder.exe"
+  amass:
+    binary: "C:/Users/YOU/hacking-tools/amass.exe"
   httpx:
     binary: "C:/Users/YOU/hacking-tools/httpx.exe"
+  katana:
+    binary: "C:/Users/YOU/hacking-tools/katana.exe"
+  sqlmap:
+    binary: "C:/Users/YOU/hacking-tools/sqlmap.exe"
+  netexec:
+    binary: "C:/Users/YOU/hacking-tools/nxc.exe"
+  hashcat:
+    binary: "C:/Users/YOU/hacking-tools/hashcat.exe"
 ```
 
 Or use environment variables with the current nested layout:
@@ -78,6 +88,8 @@ Or use environment variables with the current nested layout:
 $env:KESTREL_MCP_SECURITY__AUTHORIZED_SCOPE="*.lab.internal,192.168.56.0/24"
 $env:SHODAN_API_KEY="REPLACE_WITH_YOUR_KEY"
 $env:KESTREL_MCP_TOOLS__NUCLEI__BINARY="C:/Users/YOU/hacking-tools/nuclei.exe"
+$env:KESTREL_MCP_TOOLS__KATANA__BINARY="C:/Users/YOU/hacking-tools/katana.exe"
+$env:KESTREL_MCP_TOOLS__SQLMAP__BINARY="C:/Users/YOU/hacking-tools/sqlmap.exe"
 ```
 
 ### 3. Verify

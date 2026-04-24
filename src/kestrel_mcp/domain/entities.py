@@ -494,6 +494,56 @@ class ToolInvocation(_BaseEntity):
     this_hash: str = Field(..., min_length=64, max_length=64)
 
 
+# ---------------------------------------------------------------------------
+# HARNESS - local/mixed-model execution state
+# ---------------------------------------------------------------------------
+
+
+class HarnessSessionStatus(str, Enum):
+    ACTIVE = "active"
+    BLOCKED = "blocked"
+    DONE = "done"
+    CANCELLED = "cancelled"
+
+
+class HarnessStepStatus(str, Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    DONE = "done"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+    NEEDS_CONFIRMATION = "needs_confirmation"
+
+
+class HarnessSession(_BaseEntity):
+    id: UUID = Field(default_factory=uuid4)
+    engagement_id: UUID | None = None
+    goal: str = Field(..., min_length=1, max_length=2048)
+    target: str | None = Field(None, max_length=512)
+    status: HarnessSessionStatus = HarnessSessionStatus.ACTIVE
+    mode: str = Field("recon", max_length=64)
+    model_tier: str = Field("standard", max_length=32)
+    state_summary: str = Field("", max_length=4096)
+    created_at: datetime = Field(default_factory=_now_utc)
+    updated_at: datetime = Field(default_factory=_now_utc)
+
+
+class HarnessStep(_BaseEntity):
+    id: UUID = Field(default_factory=uuid4)
+    session_id: UUID
+    ordinal: int = Field(..., ge=1)
+    tool_name: str = Field(..., min_length=1, max_length=128)
+    arguments: dict[str, Any] = Field(default_factory=dict)
+    status: HarnessStepStatus = HarnessStepStatus.PENDING
+    risk_level: str = Field("low", max_length=16)
+    recommended_model_tier: str = Field("local", max_length=32)
+    reason: str = Field("", max_length=1024)
+    result_summary: str | None = Field(None, max_length=4096)
+    tool_invocation_id: UUID | None = None
+    created_at: datetime = Field(default_factory=_now_utc)
+    updated_at: datetime = Field(default_factory=_now_utc)
+
+
 __all__ = [
     "Actor",
     "ActorKind",
@@ -511,6 +561,10 @@ __all__ = [
     "FindingEvidence",
     "FindingSeverity",
     "FindingStatus",
+    "HarnessSession",
+    "HarnessSessionStatus",
+    "HarnessStep",
+    "HarnessStepStatus",
     "Scope",
     "ScopeEntry",
     "ScopeEntryKind",

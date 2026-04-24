@@ -26,6 +26,7 @@ from .exploit import ExploitChainWorkflow
 from .recon import ReconWorkflow
 from .report import ReportWorkflow
 from .vuln_scan import FullVulnScanWorkflow
+from .web_app_deep_scan import WebAppDeepScanWorkflow
 
 
 def load_workflow_specs(settings: Settings, scope_guard: ScopeGuard) -> list[ToolSpec]:
@@ -43,6 +44,7 @@ def load_workflow_specs(settings: Settings, scope_guard: ScopeGuard) -> list[Too
                 shodan_search=handlers["shodan_search"],
                 shodan_host=handlers["shodan_host"],
                 nuclei_scan=handlers.get("nuclei_scan"),
+                amass_enum=handlers.get("amass_enum"),
             )
         )
 
@@ -53,6 +55,17 @@ def load_workflow_specs(settings: Settings, scope_guard: ScopeGuard) -> list[Too
                 nmap_scan=handlers["nmap_scan"],
                 httpx_probe=handlers["httpx_probe"],
                 nuclei_scan=handlers["nuclei_scan"],
+            )
+        )
+
+    if {"httpx_probe", "katana_crawl", "nuclei_scan", "sqlmap_scan"}.issubset(handlers):
+        web_deep = WebAppDeepScanWorkflow(settings, scope_guard)
+        specs.append(
+            web_deep.spec(
+                httpx_probe=handlers["httpx_probe"],
+                katana_crawl=handlers["katana_crawl"],
+                nuclei_scan=handlers["nuclei_scan"],
+                sqlmap_scan=handlers["sqlmap_scan"],
             )
         )
 

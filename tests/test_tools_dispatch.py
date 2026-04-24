@@ -29,10 +29,15 @@ class TestToolRegistry:
                 "shodan",
                 "nuclei",
                 "subfinder",
+                "amass",
                 "httpx",
+                "katana",
                 "nmap",
                 "ffuf",
+                "sqlmap",
                 "impacket",
+                "netexec",
+                "hashcat",
                 "bloodhound",
                 "caido",
                 "ligolo",
@@ -110,4 +115,5 @@ class TestToolRegistry:
         assert "generate_pentest_report" in names
         assert "recon_target" in names
         assert "full_vuln_scan" in names
+        assert "web_app_deep_scan" in names
         assert "exploit_chain" in names

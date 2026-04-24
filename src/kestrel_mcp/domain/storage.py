@@ -148,6 +148,9 @@ class EngagementRow(Base):
     invocations: Mapped[list[ToolInvocationRow]] = relationship(
         back_populates="engagement", cascade="all, delete-orphan"
     )
+    harness_sessions: Mapped[list[HarnessSessionRow]] = relationship(
+        back_populates="engagement", cascade="all, delete-orphan"
+    )
 
 
 class ScopeRow(Base):
@@ -416,6 +419,66 @@ class ToolInvocationRow(Base):
     engagement: Mapped[EngagementRow] = relationship(back_populates="invocations")
 
 
+class HarnessSessionRow(Base):
+    __tablename__ = "harness_sessions"
+
+    id: Mapped[UUID] = mapped_column(UUIDString(), primary_key=True)
+    engagement_id: Mapped[UUID | None] = mapped_column(
+        UUIDString(), ForeignKey("engagements.id", ondelete="CASCADE"), index=True
+    )
+    goal: Mapped[str] = mapped_column(Text, nullable=False)
+    target: Mapped[str | None] = mapped_column(String(512))
+    status: Mapped[ent.HarnessSessionStatus] = mapped_column(
+        SAEnum(ent.HarnessSessionStatus, name="harness_session_status"),
+        nullable=False,
+        default=ent.HarnessSessionStatus.ACTIVE,
+        index=True,
+    )
+    mode: Mapped[str] = mapped_column(String(64), nullable=False, default="recon")
+    model_tier: Mapped[str] = mapped_column(String(32), nullable=False, default="standard")
+    state_summary: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    engagement: Mapped[EngagementRow | None] = relationship(back_populates="harness_sessions")
+    steps: Mapped[list[HarnessStepRow]] = relationship(
+        back_populates="session",
+        cascade="all, delete-orphan",
+        order_by="HarnessStepRow.ordinal",
+    )
+
+
+class HarnessStepRow(Base):
+    __tablename__ = "harness_steps"
+
+    id: Mapped[UUID] = mapped_column(UUIDString(), primary_key=True)
+    session_id: Mapped[UUID] = mapped_column(
+        UUIDString(), ForeignKey("harness_sessions.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    ordinal: Mapped[int] = mapped_column(Integer, nullable=False)
+    tool_name: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    arguments_json: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False, default=dict)
+    status: Mapped[ent.HarnessStepStatus] = mapped_column(
+        SAEnum(ent.HarnessStepStatus, name="harness_step_status"),
+        nullable=False,
+        default=ent.HarnessStepStatus.PENDING,
+        index=True,
+    )
+    risk_level: Mapped[str] = mapped_column(String(16), nullable=False, default="low")
+    recommended_model_tier: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="local"
+    )
+    reason: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    result_summary: Mapped[str | None] = mapped_column(Text)
+    tool_invocation_id: Mapped[UUID | None] = mapped_column(
+        UUIDString(), ForeignKey("tool_invocations.id", ondelete="SET NULL")
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    session: Mapped[HarnessSessionRow] = relationship(back_populates="steps")
+
+
 # ---------------------------------------------------------------------------
 # Engine factory + session helpers
 # ---------------------------------------------------------------------------
@@ -491,6 +554,8 @@ __all__ = [
     "DEFAULT_ENGAGEMENTS_ROOT",
     "EngagementRow",
     "FindingRow",
+    "HarnessSessionRow",
+    "HarnessStepRow",
     "ScopeEntryRow",
     "ScopeRow",
     "SessionRow",

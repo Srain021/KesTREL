@@ -37,12 +37,13 @@ class ReconWorkflow:
         self.scope_guard = scope_guard
         self.log = get_logger("workflow.recon")
 
-    def spec(
+    def spec(  # noqa: C901
         self,
         *,
         shodan_search: ToolHandler,
         shodan_host: ToolHandler,
-        nuclei_scan: ToolHandler,
+        nuclei_scan: ToolHandler | None = None,
+        amass_enum: ToolHandler | None = None,
     ) -> ToolSpec:
         async def handler(arguments: dict[str, Any]) -> ToolResult:
             target = arguments["target"]
@@ -54,6 +55,7 @@ class ReconWorkflow:
                 tool_name="recon_target",
             )
             do_vuln = bool(arguments.get("run_vuln_baseline", False))
+            use_amass = bool(arguments.get("use_amass", False))
             ip_limit = int(arguments.get("ip_limit", 20))
 
             shodan_query = f'ssl.cert.subject.CN:"{target}"'
@@ -66,6 +68,19 @@ class ReconWorkflow:
             hits = (search_result.structured or {}).get("hits", [])
             ips = sorted({h["ip"] for h in hits if h.get("ip")})[:ip_limit]
 
+            amass_result: dict[str, Any] = {}
+            if use_amass and amass_enum is not None:
+                res = await amass_enum(
+                    {
+                        "domain": target,
+                        "mode": arguments.get("amass_mode", "passive"),
+                        "timeout_sec": int(arguments.get("amass_timeout_sec") or 1800),
+                    }
+                )
+                amass_result = res.structured or {"error": res.text}
+                if not res.is_error:
+                    ips = sorted(set(ips + list(amass_result.get("ips", []))))[:ip_limit]
+
             host_details: list[dict[str, Any]] = []
             for ip in ips:
                 res = await shodan_host({"ip": ip})
@@ -73,7 +88,7 @@ class ReconWorkflow:
                     host_details.append(res.structured)
 
             vuln_findings: list[dict[str, Any]] = []
-            if do_vuln and host_details:
+            if do_vuln and host_details and nuclei_scan is not None:
                 web_targets: list[str] = []
                 for h in host_details:
                     ip = h.get("ip")
@@ -109,6 +124,7 @@ class ReconWorkflow:
                 "target": target,
                 "shodan_query": shodan_query,
                 "discovered_ips": ips,
+                "amass": amass_result,
                 "host_count": len(host_details),
                 "hosts": host_details,
                 "vuln_findings_count": len(vuln_findings),
@@ -154,6 +170,22 @@ class ReconWorkflow:
                         "type": "boolean",
                         "default": False,
                         "description": "If true, launch a critical+high Nuclei scan.",
+                    },
+                    "use_amass": {
+                        "type": "boolean",
+                        "default": False,
+                        "description": "If true and Amass is enabled, add Amass enum results.",
+                    },
+                    "amass_mode": {
+                        "type": "string",
+                        "enum": ["passive", "active"],
+                        "default": "passive",
+                    },
+                    "amass_timeout_sec": {
+                        "type": "integer",
+                        "minimum": 30,
+                        "maximum": 7200,
+                        "default": 1800,
                     },
                 },
                 "additionalProperties": False,

@@ -227,7 +227,9 @@ def list_tools_cmd() -> None:
     settings = load_settings(edition=_edition_state["value"])
     configure_logging(level="WARNING", json_mode=False)
 
+    from .harness import HarnessModule
     from .security import ScopeGuard
+    from .tool_catalog import advertised_specs, render_description
     from .tools import load_modules
     from .workflows import load_workflow_specs
 
@@ -235,37 +237,45 @@ def list_tools_cmd() -> None:
     modules = load_modules(settings, scope_guard)
 
     payload: list[dict[str, object]] = []
-    for module in modules:
-        for spec in module.specs():
-            payload.append(
-                {
-                    "module": module.id,
-                    "name": spec.name,
-                    "description_short": spec.description,
-                    "description_full": spec.render_full_description(),
-                    "dangerous": spec.dangerous,
-                    "tags": spec.tags,
-                    "input_schema": spec.input_schema,
-                    "when_to_use": spec.when_to_use,
-                    "when_not_to_use": spec.when_not_to_use,
-                    "prerequisites": spec.prerequisites,
-                    "follow_ups": spec.follow_ups,
-                    "pitfalls": spec.pitfalls,
-                    "example_conversation": spec.example_conversation,
-                    "local_model_hints": spec.local_model_hints,
-                }
-            )
-
+    specs_by_name = {spec.name: (module.id, spec) for module in modules for spec in module.specs()}
     for wf_spec in load_workflow_specs(settings, scope_guard):
+        specs_by_name[wf_spec.name] = ("workflow", wf_spec)
+    harness = HarnessModule(
+        settings,
+        scope_guard,
+        specs_provider=lambda: {name: spec for name, (_module, spec) in specs_by_name.items()},
+    )
+    for harness_spec in harness.specs():
+        specs_by_name[harness_spec.name] = ("harness", harness_spec)
+
+    visible_names = {
+        spec.name for spec in advertised_specs((spec for _module, spec in specs_by_name.values()), settings)
+    }
+    for name in sorted(specs_by_name):
+        if name not in visible_names:
+            continue
+        module_id, spec = specs_by_name[name]
         payload.append(
             {
-                "module": "workflow",
-                "name": wf_spec.name,
-                "description_short": wf_spec.description,
-                "description_full": wf_spec.render_full_description(),
-                "dangerous": wf_spec.dangerous,
-                "tags": wf_spec.tags,
-                "input_schema": wf_spec.input_schema,
+                "module": module_id,
+                "name": spec.name,
+                "description_short": spec.description,
+                "description_full": render_description(spec, settings),
+                "dangerous": spec.dangerous,
+                "tags": spec.tags,
+                "input_schema": spec.input_schema,
+                "phase": spec.phase,
+                "complexity_tier": spec.complexity_tier,
+                "preferred_model_tier": spec.preferred_model_tier,
+                "soft_timeout_sec": spec.soft_timeout_sec,
+                "output_trust": spec.output_trust,
+                "when_to_use": spec.when_to_use,
+                "when_not_to_use": spec.when_not_to_use,
+                "prerequisites": spec.prerequisites,
+                "follow_ups": spec.follow_ups,
+                "pitfalls": spec.pitfalls,
+                "example_conversation": spec.example_conversation,
+                "local_model_hints": spec.local_model_hints,
             }
         )
 
@@ -284,6 +294,7 @@ def show_config_cmd() -> None:
     payload = {
         "edition": s.edition,
         "features": s.features.model_dump(),
+        "llm": s.llm.model_dump(),
         "enabled_tools": enabled_tools,
     }
     typer.echo(json.dumps(payload, indent=2))
@@ -326,6 +337,7 @@ def version() -> None:
 
 
 def _resolve_path(hint: str | None, tool_name: str) -> str | None:
+    default_name = "nxc" if tool_name == "netexec" else tool_name
     if hint:
         p = Path(os.path.expanduser(hint))
         if p.is_file():
@@ -333,7 +345,7 @@ def _resolve_path(hint: str | None, tool_name: str) -> str | None:
         if found := shutil.which(hint):
             return found
         return None
-    return shutil.which(tool_name)
+    return shutil.which(default_name)
 
 
 def _status_for(name: str, block: dict[str, Any], resolved: str | None) -> str:
