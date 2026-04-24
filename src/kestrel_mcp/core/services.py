@@ -44,6 +44,7 @@ from ..domain.services import (
     FindingService,
     ScopeService,
     TargetService,
+    ToolInvocationService,
 )
 from ..domain.storage import create_all, make_engine, make_sessionmaker
 from ..logging import get_logger
@@ -79,6 +80,7 @@ class ServiceContainer:
             sessionmaker,
             encryption_required=credential_encryption_required,
         )
+        self.tool_invocation = ToolInvocationService(sessionmaker)
 
     # ----- lifecycle -----
 

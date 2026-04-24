@@ -25,25 +25,18 @@ def test_pro_defaults_are_strict():
     assert PRO_DEFAULTS.scope_enforcement == "strict"
     assert PRO_DEFAULTS.rate_limit_enabled is True
     assert PRO_DEFAULTS.credential_encryption_required is True
-    assert PRO_DEFAULTS.tool_soft_timeout_enabled is True
 
 
 def test_team_defaults_are_unleashed():
     assert TEAM_DEFAULTS.scope_enforcement == "warn_only"
     assert TEAM_DEFAULTS.rate_limit_enabled is False
     assert TEAM_DEFAULTS.credential_encryption_required is False
-    assert TEAM_DEFAULTS.tool_soft_timeout_enabled is False
-    assert TEAM_DEFAULTS.cost_ledger is True
-    assert TEAM_DEFAULTS.untrust_wrap_tool_output is True
 
 
 def test_internal_defaults_are_firepower_unleashed():
     assert INTERNAL_DEFAULTS.scope_enforcement == "warn_only"
     assert INTERNAL_DEFAULTS.rate_limit_enabled is False
     assert INTERNAL_DEFAULTS.credential_encryption_required is False
-    assert INTERNAL_DEFAULTS.tool_soft_timeout_enabled is False
-    assert INTERNAL_DEFAULTS.cost_ledger is True
-    assert INTERNAL_DEFAULTS.untrust_wrap_tool_output is True
 
 
 def test_get_defaults_unknown_edition_raises():

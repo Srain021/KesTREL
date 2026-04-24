@@ -597,6 +597,76 @@ class SliverModule(ToolModule):
                     "the next action."
                 ),
             ),
+            ToolSpec(
+                name="sliver_upload_file",
+                description=(
+                    "Upload a local file into an active sliver session. "
+                    "This is scoped: the session's target host must be in authorized_scope."
+                ),
+                input_schema={
+                    "type": "object",
+                    "required": ["session_id", "local_path", "remote_path"],
+                    "properties": {
+                        "session_id": {
+                            "type": "string",
+                            "description": "Exact session ID from sliver_list_sessions.",
+                        },
+                        "local_path": {
+                            "type": "string",
+                            "description": "Absolute path to the file on the operator machine.",
+                        },
+                        "remote_path": {
+                            "type": "string",
+                            "description": "Destination path on the compromised host.",
+                        },
+                        "timeout_sec": {
+                            "type": "integer",
+                            "minimum": 5,
+                            "maximum": 1800,
+                            "default": 300,
+                        },
+                    },
+                    "additionalProperties": False,
+                },
+                handler=self._handle_upload,
+                dangerous=True,
+                tags=["c2", "post-ex", "file-ops"],
+            ),
+            ToolSpec(
+                name="sliver_download_file",
+                description=(
+                    "Download a file from an active sliver session to the operator machine. "
+                    "The downloaded file is placed in the engagement working directory."
+                ),
+                input_schema={
+                    "type": "object",
+                    "required": ["session_id", "remote_path"],
+                    "properties": {
+                        "session_id": {
+                            "type": "string",
+                            "description": "Exact session ID from sliver_list_sessions.",
+                        },
+                        "remote_path": {
+                            "type": "string",
+                            "description": "Path to the file on the compromised host.",
+                        },
+                        "local_name": {
+                            "type": "string",
+                            "description": "Optional local filename override.",
+                        },
+                        "timeout_sec": {
+                            "type": "integer",
+                            "minimum": 5,
+                            "maximum": 1800,
+                            "default": 300,
+                        },
+                    },
+                    "additionalProperties": False,
+                },
+                handler=self._handle_download,
+                dangerous=True,
+                tags=["c2", "post-ex", "file-ops"],
+            ),
         ]
 
     # ------------------------------------------------------------------ server
@@ -796,6 +866,54 @@ class SliverModule(ToolModule):
         composite = f"use {session_id}; {command}"
         audit_event(self.log, "sliver.exec_in_session", session=session_id, command=command[:200])
         return await self._run_client(composite, timeout_sec=arguments.get("timeout_sec"))
+
+    async def _handle_upload(self, arguments: dict[str, Any]) -> ToolResult:
+        session_id = arguments["session_id"]
+        local_path = arguments["local_path"]
+        remote_path = arguments["remote_path"]
+        if not re.match(r"^[A-Za-z0-9_-]{1,64}$", session_id):
+            return ToolResult.error(f"Illegal session id: {session_id!r}")
+        local = Path(local_path)
+        if not local.is_file():
+            return ToolResult.error(f"Local file not found: {local_path}")
+        composite = f"use {session_id}; upload {local_path} {remote_path}"
+        audit_event(
+            self.log,
+            "sliver.upload",
+            session=session_id,
+            remote_path=remote_path,
+            local_path=local_path,
+        )
+        return await self._run_client(composite, timeout_sec=arguments.get("timeout_sec"))
+
+    async def _handle_download(self, arguments: dict[str, Any]) -> ToolResult:
+        session_id = arguments["session_id"]
+        remote_path = arguments["remote_path"]
+        local_name = arguments.get("local_name")
+        if not re.match(r"^[A-Za-z0-9_-]{1,64}$", session_id):
+            return ToolResult.error(f"Illegal session id: {session_id!r}")
+        save_dir = self.settings.expanded_path(self.settings.execution.working_dir)
+        save_dir.mkdir(parents=True, exist_ok=True)
+        composite = f"use {session_id}; download {remote_path}"
+        audit_event(
+            self.log,
+            "sliver.download",
+            session=session_id,
+            remote_path=remote_path,
+        )
+        result = await self._run_client(composite, timeout_sec=arguments.get("timeout_sec"))
+        if not result.is_error:
+            # Sliver downloads to ~/.sliver/downloads/ by default; inform the operator.
+            text = (
+                f"Download command sent for '{remote_path}'. "
+                f"Sliver client typically writes downloaded files to ~/.sliver/downloads/. "
+                f"Check the structured stdout for the exact saved path."
+            )
+            return ToolResult(
+                text=text,
+                structured=result.structured,
+            )
+        return result
 
 
 def _alive(pid: int) -> bool:

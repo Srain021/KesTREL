@@ -6,6 +6,7 @@ import json
 from typing import Any
 
 from ..config import Settings
+from ..domain import entities as ent
 from ..executor import ToolNotFoundError, resolve_binary, run_command
 from ..logging import audit_event
 from ..security import ScopeGuard
@@ -131,6 +132,53 @@ class HttpxModule(ToolModule):
             stdin_data=("\n".join(targets) + "\n").encode("utf-8"),
         )
         probes = _parse_httpx_jsonl(result.stdout)
+
+        target_ids: list[str] = []
+        try:
+            from ..core.context import current_context_or_none
+
+            ctx = current_context_or_none()
+            if ctx is not None and ctx.has_engagement():
+                engagement_id = ctx.require_engagement()
+                for probe in probes:
+                    url = probe.get("url")
+                    hostname = probe.get("target") or probe.get("host")
+                    value = url if url else (hostname or "")
+                    if not value:
+                        continue
+                    kind = ent.TargetKind.URL if url else ent.TargetKind.HOSTNAME
+                    t = await ctx.target.add(
+                        engagement_id=engagement_id,
+                        kind=kind,
+                        value=value,
+                        discovered_by_tool="httpx_probe",
+                    )
+                    target_ids.append(str(t.id))
+                    ports: list[int] = []
+                    if url:
+                        try:
+                            from urllib.parse import urlparse
+
+                            parsed = urlparse(url)
+                            if parsed.port:
+                                ports.append(parsed.port)
+                            elif parsed.scheme == "https":
+                                ports.append(443)
+                            elif parsed.scheme == "http":
+                                ports.append(80)
+                        except Exception:  # noqa: BLE001
+                            pass
+                    tech = probe.get("tech") or []
+                    hostnames = [hostname] if hostname else []
+                    await ctx.target.update_enrichment(
+                        t.id,
+                        open_ports=ports or None,
+                        tech_stack=tech if tech else None,
+                        hostnames=hostnames if hostnames else None,
+                    )
+        except Exception as persist_exc:  # noqa: BLE001
+            self.log.warning("httpx.persist_failed", error=str(persist_exc))
+
         audit_event(
             self.log,
             "httpx.probe",
@@ -148,6 +196,7 @@ class HttpxModule(ToolModule):
                 "exit_code": result.exit_code,
                 "stderr_tail": result.stderr[-2000:],
                 "truncated": result.truncated,
+                "targets_created": target_ids,
             },
             is_error=not result.ok,
         )

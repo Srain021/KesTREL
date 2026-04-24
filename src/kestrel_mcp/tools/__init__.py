@@ -9,6 +9,7 @@ Adding a new tool module:
 from __future__ import annotations
 
 from ..config import Settings
+from ..plugins import load_plugin_modules
 from ..security import ScopeGuard
 from .base import ToolModule
 
@@ -57,7 +58,9 @@ def load_modules(settings: Settings, scope_guard: ScopeGuard) -> list[ToolModule
         HavocModule(settings, scope_guard),
         EvilginxModule(settings, scope_guard),
     ]
-    return [m for m in candidates if m.enabled()]
+    bundled = [m for m in candidates if m.enabled()]
+    plugins = load_plugin_modules(settings, scope_guard)
+    return bundled + plugins
 
 
 __all__ = ["ToolModule", "load_modules"]

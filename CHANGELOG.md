@@ -11,6 +11,56 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- **Phase 5 / Release readiness** — v1.0.0 feature-complete baseline.
+- `ToolInvocationService` with tamper-evident SHA-256 hash-chain audit logging,
+  per-engagement asyncio locking, and recursive argument redaction for sensitive
+  keys. Every successful `call_tool` now writes to the `tool_invocation` table.
+- Evilginx `evilginx_enable_phishlet` — non-interactive phishlet enable via
+  direct `~/.evilginx/config.json` manipulation with optional SIGHUP reload.
+- Evilginx `evilginx_create_lure` — adds lure entries to config.json and
+  returns the lure URL.
+- Sliver `sliver_upload_file` and `sliver_download_file` — one-shot session
+  file transfers using the `use <session>; upload|download` command pattern.
+- Ligolo `ligolo_list_agents` — heuristic agent detection via platform-specific
+  network connection probes (`ss` / `Get-NetTCPConnection`).
+- Ligolo `ligolo_tunnel_status` — TUN interface and route table presence check.
+- Domain persistence for recon tools: `subfinder_enum`, `httpx_probe`,
+  `nmap_scan`, `ffuf_dir_bruteforce`, `ffuf_param_fuzz`, and Impacket scripts
+  now create/update `Target` and `Finding` entities when running under an
+  active engagement. Server `_record` forwards `targets_created` and
+  `findings_created` into the audit hash chain.
+- MCP `resources/list` and `resources/read` endpoints: exposes
+  `engagement://{id}/summary|scope|targets|findings` as dynamic JSON resources.
+- `full_vuln_scan` workflow — chains Nmap discovery → httpx liveness probe →
+  Nuclei vulnerability scan with severity filtering.
+- `exploit_chain` workflow — planning-only exploit chain recommendation that
+  requires `acknowledge_risk=true` and optionally generates Sliver payloads.
+- Plugin MVP: `kestrel_mcp.plugins` registry scans `kestrel_mcp.plugins`
+  entry-points via `importlib.metadata`, supports `Plugin` subclasses and plain
+  callables returning `ToolModule` lists.
+- Regression coverage for MCP resources and workflow wiring: added tests for
+  `resources/list`, `resources/read`, `exploit_chain`, and workflow registry
+  exposure.
+
+### Changed
+- Removed three dead feature flags (`cost_ledger`, `tool_soft_timeout_enabled`,
+  `untrust_wrap_tool_output`) from `FeatureFlags`. `Settings.build()` now
+  filters unknown keys for backward compatibility with old user configs.
+- README tool matrix updated to reflect completed depth work and workflows.
+- Chinese user manual updated to reflect the current workflow, resource,
+  prompt, and tool inventory.
+
+### Fixed
+- Config loading no longer crashes when user `config.yaml` contains legacy
+  feature flags that have been removed.
+- MCP `resources/list` / `resources/read` runtime wiring now instantiates
+  providers correctly, accepts MCP `AnyUrl` resource identifiers, and reads
+  scope entries via `ScopeService.list_entries()`.
+- `exploit_chain` now calls `sliver_generate_implant` with the correct handler
+  and normalizes the deprecated `listener_url` alias into Sliver's
+  `protocol` + `callback_addr` argument shape.
+
+### Added
 - Added a dedicated `internal` firepower edition for private crew operations:
   all bundled tool modules enabled by default, Team-style relaxed runtime
   gates, CLI/config wiring, Cursor env example, and docs.

@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import ipaddress
 import sys
 from typing import Any
 
 from ..config import Settings
+from ..domain import entities as ent
 from ..executor import run_command
 from ..logging import audit_event
 from ..security import ScopeGuard
@@ -322,6 +324,30 @@ class ImpacketModule(ToolModule):
             timeout_sec=timeout_sec,
             max_output_bytes=self.settings.execution.max_output_bytes,
         )
+
+        target_ids: list[str] = []
+        try:
+            from ..core.context import current_context_or_none
+
+            ctx = current_context_or_none()
+            if ctx is not None and ctx.has_engagement():
+                engagement_id = ctx.require_engagement()
+                kind = ent.TargetKind.HOSTNAME
+                try:
+                    ip = ipaddress.ip_address(target)
+                    kind = ent.TargetKind.IPV6 if isinstance(ip, ipaddress.IPv6Address) else ent.TargetKind.IPV4
+                except ValueError:
+                    pass
+                t = await ctx.target.add(
+                    engagement_id=engagement_id,
+                    kind=kind,
+                    value=target,
+                    discovered_by_tool=f"impacket_{script.lower()}",
+                )
+                target_ids.append(str(t.id))
+        except Exception as persist_exc:  # noqa: BLE001
+            self.log.warning("impacket.persist_failed", error=str(persist_exc))
+
         audit_event(self.log, f"impacket.{script}", target=target, exit_code=result.exit_code)
         return ToolResult(
             text=f"Impacket {script} exited with code {result.exit_code}.",
@@ -332,6 +358,7 @@ class ImpacketModule(ToolModule):
                 "stdout_tail": result.stdout[-4000:],
                 "stderr_tail": result.stderr[-2000:],
                 "truncated": result.truncated,
+                "targets_created": target_ids,
             },
             is_error=not result.ok,
         )

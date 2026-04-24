@@ -109,3 +109,5 @@ class TestToolRegistry:
         names = {s.name for s in specs}
         assert "generate_pentest_report" in names
         assert "recon_target" in names
+        assert "full_vuln_scan" in names
+        assert "exploit_chain" in names

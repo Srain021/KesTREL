@@ -6,6 +6,7 @@ audited interface.
 
 ## Start Here
 
+- Read the Chinese [user manual](user-manual.zh-CN.md) for a practical setup and operations guide.
 - Read the project overview in the top-level [README](../README.md).
 - Review the [security policy](../SECURITY.md) before operating tools.
 - Use [Internal Firepower](internal-firepower.md) for the private crew preset

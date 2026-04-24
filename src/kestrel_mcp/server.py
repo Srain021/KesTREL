@@ -33,17 +33,24 @@ import anyio
 
 try:
     from mcp.server import Server  # type: ignore[import-not-found]
+    from mcp.server.lowlevel.helper_types import ReadResourceContents  # type: ignore[import-not-found]
     from mcp.server.stdio import stdio_server  # type: ignore[import-not-found]
-    from mcp.types import TextContent, Tool  # type: ignore[import-not-found]
+    from mcp.types import GetPromptResult, Prompt, PromptMessage, Resource, TextContent, Tool  # type: ignore[import-not-found]
 
     _MCP_AVAILABLE = True
 except ImportError:  # pragma: no cover
     Server = None  # type: ignore[assignment]
+    ReadResourceContents = None  # type: ignore[misc,assignment]
     stdio_server = None  # type: ignore[assignment]
+    GetPromptResult = None  # type: ignore[misc,assignment]
+    Prompt = None  # type: ignore[misc,assignment]
+    PromptMessage = None  # type: ignore[misc,assignment]
     TextContent = None  # type: ignore[assignment]
     Tool = None  # type: ignore[assignment]
     _MCP_AVAILABLE = False
 
+from . import prompts as _prompts_module
+from . import resources as _resources_module
 from .config import Settings, load_settings
 from .core import RequestContext, ServiceContainer
 from .core.rate_limit import RateLimitedError, RateLimiter
@@ -141,29 +148,81 @@ class RedTeamMCPServer:
             call_engagement = args.pop("_engagement", None)
 
             async def _dispatch(ctx: RequestContext) -> ToolResult:
-                await self._apply_rate_limit(ctx, name, spec)
-                if spec.requires_scope_field:
-                    target = args.get(spec.requires_scope_field)
-                    if isinstance(target, list):
-                        for t in target:
-                            await self._check_scope(ctx, str(t), name)
-                    elif target is not None:
-                        await self._check_scope(ctx, str(target), name)
-                    elif spec.dangerous:
-                        raise AuthorizationError(
-                            f"Tool {name!r} requires a '{spec.requires_scope_field}' argument "
-                            "for scope validation."
+                from datetime import datetime, timezone
+
+                started_at = datetime.now(timezone.utc)
+
+                async def _record(result: ToolResult | None, error: Exception | None) -> None:
+                    if not ctx.has_engagement():
+                        return
+                    completed_at = datetime.now(timezone.utc)
+                    structured = result.structured if result is not None else {}
+                    try:
+                        from uuid import UUID
+
+                        def _to_uuids(key: str) -> list[UUID]:
+                            vals = structured.get(key) if isinstance(structured, dict) else None
+                            if not isinstance(vals, list):
+                                return []
+                            out: list[UUID] = []
+                            for v in vals:
+                                try:
+                                    out.append(UUID(str(v)))
+                                except Exception:
+                                    pass
+                            return out
+
+                        await ctx.tool_invocation.record(
+                            engagement_id=ctx.require_engagement(),
+                            actor_id=ctx.actor.id if ctx.actor else None,
+                            tool_name=name,
+                            arguments=args,
+                            started_at=started_at,
+                            completed_at=completed_at,
+                            exit_code=0 if (result is not None and not result.is_error) else 1,
+                            error_code=type(error).__name__ if error else None,
+                            error_message=str(error) if error else None,
+                            targets_created=_to_uuids("targets_created"),
+                            findings_created=_to_uuids("findings_created"),
+                            credentials_created=_to_uuids("credentials_created"),
+                            artifacts_created=_to_uuids("artifacts_created"),
+                        )
+                    except Exception as record_exc:  # noqa: BLE001
+                        self.log.warning(
+                            "tool_invocation.record_failed",
+                            tool=name,
+                            error=str(record_exc),
                         )
 
-                audit_event(
-                    self.log,
-                    f"tool.call.{name}",
-                    name=name,
-                    argument_keys=sorted(args.keys()),
-                    dangerous=spec.dangerous,
-                    engagement_id=str(ctx.engagement_id) if ctx.engagement_id else None,
-                )
-                return await spec.handler(args)
+                try:
+                    await self._apply_rate_limit(ctx, name, spec)
+                    if spec.requires_scope_field:
+                        target = args.get(spec.requires_scope_field)
+                        if isinstance(target, list):
+                            for t in target:
+                                await self._check_scope(ctx, str(t), name)
+                        elif target is not None:
+                            await self._check_scope(ctx, str(target), name)
+                        elif spec.dangerous:
+                            raise AuthorizationError(
+                                f"Tool {name!r} requires a '{spec.requires_scope_field}' argument "
+                                "for scope validation."
+                            )
+
+                    audit_event(
+                        self.log,
+                        f"tool.call.{name}",
+                        name=name,
+                        argument_keys=sorted(args.keys()),
+                        dangerous=spec.dangerous,
+                        engagement_id=str(ctx.engagement_id) if ctx.engagement_id else None,
+                    )
+                    result = await spec.handler(args)
+                    await _record(result, None)
+                    return result
+                except Exception as exc:
+                    await _record(None, exc)
+                    raise
 
             try:
                 result = await self._run_under_context(
@@ -196,6 +255,53 @@ class RedTeamMCPServer:
 
             return _render_result(result)
 
+        @mcp.list_prompts()  # type: ignore[misc]
+        async def list_prompts() -> list[Prompt]:
+            return _prompts_module.list_prompts()
+
+        @mcp.get_prompt()  # type: ignore[misc]
+        async def get_prompt(name: str, arguments: dict[str, Any] | None = None) -> GetPromptResult:
+            result = _prompts_module.get_prompt(name, arguments)
+            if result is None:
+                return GetPromptResult(
+                    description="Prompt not found",
+                    messages=[
+                        PromptMessage(
+                            role="assistant",
+                            content=TextContent(type="text", text=f"Unknown prompt: {name!r}"),
+                        )
+                    ],
+                )
+            return result
+
+        @mcp.list_resources()  # type: ignore[misc]
+        async def list_resources() -> list[Resource]:
+            async def _inner() -> list[Resource]:
+                items = await _resources_module.list_all_resources()
+                return [Resource(**item) for item in items]
+
+            return await self._run_resource_under_context(_inner)
+
+        @mcp.read_resource()  # type: ignore[misc]
+        async def read_resource(uri: str) -> list[ReadResourceContents]:
+            async def _inner() -> list[ReadResourceContents]:
+                payload = await _resources_module.read_resource(uri)
+                if payload is None:
+                    return [
+                        ReadResourceContents(
+                            content="Resource not found.",
+                            mime_type="text/plain",
+                        )
+                    ]
+                return [
+                    ReadResourceContents(
+                        content=payload["text"],
+                        mime_type=payload.get("mimeType"),
+                    )
+                ]
+
+            return await self._run_resource_under_context(_inner)
+
         return mcp
 
     # ------------------------------------------------------------------
@@ -221,6 +327,21 @@ class RedTeamMCPServer:
 
         async with self.container.open_context(engagement_id=engagement_id) as ctx:
             return await runner(ctx)
+
+    async def _run_resource_under_context(self, runner):
+        """Bind a RequestContext for resource handlers (no tool-specific state)."""
+
+        if self.container is None:
+            from .core.context import RequestContext, bind_context
+
+            fake_ctx = RequestContext(container=_NullContainer(), engagement_id=None)
+            with bind_context(fake_ctx):
+                return await runner()
+
+        engagement_id = await self._resolve_engagement(None)
+
+        async with self.container.open_context(engagement_id=engagement_id) as ctx:
+            return await runner()
 
     async def _resolve_engagement(self, override: str | None):
         """Resolve the engagement id from override > settings > env > None."""

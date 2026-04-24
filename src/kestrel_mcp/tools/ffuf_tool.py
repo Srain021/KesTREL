@@ -8,6 +8,7 @@ from typing import Any
 
 from ..config import Settings
 from ..core.paths import PathTraversalError, safe_path
+from ..domain import entities as ent
 from ..executor import ToolNotFoundError, resolve_binary, run_command
 from ..logging import audit_event
 from ..security import ScopeGuard
@@ -146,6 +147,46 @@ class FfufModule(ToolModule):
             max_output_bytes=self.settings.execution.max_output_bytes,
         )
         parsed = _parse_ffuf_json(result.stdout)
+
+        target_ids: list[str] = []
+        finding_ids: list[str] = []
+        try:
+            from ..core.context import current_context_or_none
+
+            ctx = current_context_or_none()
+            if ctx is not None and ctx.has_engagement():
+                engagement_id = ctx.require_engagement()
+                # Base URL is the first -u argument value
+                base_url = argv[argv.index("-u") + 1] if "-u" in argv else ""
+                # Remove FUZZ marker for base target
+                clean_url = base_url.replace("FUZZ", "").rstrip("/&?")
+                if clean_url:
+                    base_t = await ctx.target.add(
+                        engagement_id=engagement_id,
+                        kind=ent.TargetKind.URL,
+                        value=clean_url,
+                        discovered_by_tool=event.replace(".", "_"),
+                    )
+                    target_ids.append(str(base_t.id))
+                else:
+                    base_t = None
+
+                for r in parsed:
+                    url = r.get("url")
+                    if url and base_t is not None:
+                        f = await ctx.finding.create(
+                            engagement_id=engagement_id,
+                            target_id=base_t.id,
+                            title=f"Discovered path: {url}",
+                            severity=ent.FindingSeverity.INFO,
+                            discovered_by_tool=event.replace(".", "_"),
+                            category=ent.FindingCategory.INFORMATION_DISCLOSURE,
+                            description=f"ffuf discovered a reachable path. Status {r.get('status')}, length {r.get('length')}, words {r.get('words')}, lines {r.get('lines')}",
+                        )
+                        finding_ids.append(str(f.id))
+        except Exception as persist_exc:  # noqa: BLE001
+            self.log.warning("ffuf.persist_failed", error=str(persist_exc))
+
         audit_event(self.log, event, results=len(parsed), exit_code=result.exit_code)
         return ToolResult(
             text=f"ffuf returned {len(parsed)} result(s).",
@@ -155,6 +196,8 @@ class FfufModule(ToolModule):
                 "exit_code": result.exit_code,
                 "stderr_tail": result.stderr[-2000:],
                 "truncated": result.truncated,
+                "targets_created": target_ids,
+                "findings_created": finding_ids,
             },
             is_error=not result.ok,
         )

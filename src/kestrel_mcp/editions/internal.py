@@ -12,7 +12,4 @@ INTERNAL_DEFAULTS = FeatureFlags(
     scope_enforcement="warn_only",
     rate_limit_enabled=False,
     credential_encryption_required=False,
-    tool_soft_timeout_enabled=False,
-    cost_ledger=True,
-    untrust_wrap_tool_output=True,
 )

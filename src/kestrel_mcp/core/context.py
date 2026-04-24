@@ -49,6 +49,7 @@ if TYPE_CHECKING:
         FindingService,
         ScopeService,
         TargetService,
+        ToolInvocationService,
     )
     from .services import ServiceContainer
 
@@ -101,6 +102,10 @@ class RequestContext:
     @property
     def credential(self) -> CredentialService:
         return self.container.credential
+
+    @property
+    def tool_invocation(self) -> ToolInvocationService:
+        return self.container.tool_invocation
 
     # ---- engagement helpers ----
 

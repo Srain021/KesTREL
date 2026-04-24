@@ -142,6 +142,49 @@ class LigoloModule(ToolModule):
                 tags=["c2", "helper"],
             ),
             ToolSpec(
+                name="ligolo_list_agents",
+                description=(
+                    "Heuristic detection of connected Ligolo agents by inspecting "
+                    "active TCP connections to the proxy listener port. Returns "
+                    "remote IPs and connection states. Not as precise as the "
+                    "interactive 'session' command, but works without driving the TUI."
+                ),
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "listen_addr": {
+                            "type": "string",
+                            "default": "0.0.0.0:11601",
+                            "description": "Proxy listen address to inspect for incoming agents.",
+                        },
+                    },
+                    "additionalProperties": False,
+                },
+                handler=self._handle_list_agents,
+                tags=["c2", "recon"],
+            ),
+            ToolSpec(
+                name="ligolo_tunnel_status",
+                description=(
+                    "Check whether the Ligolo TUN interface is present and active, "
+                    "and list routes currently routed through it. Read-only — does "
+                    "not start or stop tunnels (tunnel control remains interactive)."
+                ),
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "tun_name": {
+                            "type": "string",
+                            "default": "ligolo",
+                            "description": "TUN interface name to look for.",
+                        },
+                    },
+                    "additionalProperties": False,
+                },
+                handler=self._handle_tunnel_status,
+                tags=["c2", "routing", "meta"],
+            ),
+            ToolSpec(
                 name="ligolo_add_route",
                 description=(
                     "Add an IPv4 route through the Ligolo TUN interface on the "
@@ -331,6 +374,137 @@ class LigoloModule(ToolModule):
         return ToolResult(
             text=f"Agent command for {os_family} -> {callback}",
             structured=bundle,
+        )
+
+    async def _handle_list_agents(self, arguments: dict[str, Any]) -> ToolResult:
+        listen_addr = arguments.get("listen_addr", "0.0.0.0:11601")
+        try:
+            _host, port_str = listen_addr.rsplit(":", 1)
+            port = int(port_str)
+        except ValueError:
+            return ToolResult.error(f"Cannot parse listen_addr: {listen_addr!r}")
+
+        if sys.platform == "win32":
+            argv = [
+                "powershell",
+                "-Command",
+                f"Get-NetTCPConnection -LocalPort {port} -State Established | "
+                f"Select-Object RemoteAddress, RemotePort, State | ConvertTo-Json",
+            ]
+        else:
+            argv = [
+                "ss",
+                "-tn",
+                "state",
+                "established",
+                f"( dport = :{port} or sport = :{port} )",
+            ]
+
+        try:
+            output = subprocess.check_output(argv, text=True, stderr=subprocess.DEVNULL)  # noqa: S603
+        except subprocess.CalledProcessError:
+            output = ""
+        except FileNotFoundError:
+            return ToolResult.error(
+                "Network inspection tool not found. On Windows, ensure PowerShell is available. "
+                "On Linux, install 'iproute2' (ss)."
+            )
+
+        agents: list[dict[str, Any]] = []
+        if sys.platform == "win32":
+            try:
+                data = json.loads(output)
+                if isinstance(data, dict):
+                    data = [data]
+                for row in data or []:
+                    agents.append({
+                        "remote_address": row.get("RemoteAddress"),
+                        "remote_port": row.get("RemotePort"),
+                        "state": row.get("State"),
+                    })
+            except json.JSONDecodeError:
+                pass
+        else:
+            for line in output.splitlines():
+                parts = line.split()
+                if len(parts) >= 5:
+                    agents.append({
+                        "local": parts[3],
+                        "remote": parts[4],
+                        "state": parts[1] if len(parts) > 1 else "ESTAB",
+                    })
+
+        audit_event(self.log, "ligolo.list_agents", listen_addr=listen_addr, count=len(agents))
+        return ToolResult(
+            text=f"{len(agents)} active connection(s) to proxy on {listen_addr}.",
+            structured={"listen_addr": listen_addr, "agents": agents},
+        )
+
+    async def _handle_tunnel_status(self, arguments: dict[str, Any]) -> ToolResult:
+        tun = arguments.get("tun_name", "ligolo")
+
+        if sys.platform == "win32":
+            check_argv = [
+                "powershell",
+                "-Command",
+                f"Get-NetAdapter -Name '{tun}*' -ErrorAction SilentlyContinue | "
+                f"Select-Object Name, Status, InterfaceIndex | ConvertTo-Json",
+            ]
+            route_argv = [
+                "powershell",
+                "-Command",
+                "Get-NetRoute -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -like '" + tun + "*' } | "
+                "Select-Object DestinationPrefix, NextHop, RouteMetric | ConvertTo-Json",
+            ]
+        else:
+            check_argv = ["ip", "link", "show", tun]
+            route_argv = ["ip", "route", "show", "dev", tun]
+
+        present = False
+        try:
+            output = subprocess.check_output(check_argv, text=True, stderr=subprocess.DEVNULL)  # noqa: S603
+            present = bool(output.strip())
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
+
+        routes: list[dict[str, str]] = []
+        if present:
+            try:
+                route_out = subprocess.check_output(route_argv, text=True, stderr=subprocess.DEVNULL)  # noqa: S603
+                if sys.platform == "win32":
+                    try:
+                        data = json.loads(route_out)
+                        if isinstance(data, dict):
+                            data = [data]
+                        for row in data or []:
+                            routes.append({
+                                "destination": row.get("DestinationPrefix", ""),
+                                "next_hop": row.get("NextHop", ""),
+                                "metric": str(row.get("RouteMetric", "")),
+                            })
+                    except json.JSONDecodeError:
+                        pass
+                else:
+                    for line in route_out.splitlines():
+                        parts = line.split()
+                        if parts:
+                            routes.append({"route": line.strip()})
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                pass
+
+        audit_event(
+            self.log,
+            "ligolo.tunnel_status",
+            tun=tun,
+            present=present,
+            route_count=len(routes),
+        )
+        return ToolResult(
+            text=(
+                f"TUN '{tun}' {'is present' if present else 'is NOT present'}. "
+                f"{len(routes)} route(s) via {tun}."
+            ),
+            structured={"tun_name": tun, "present": present, "routes": routes},
         )
 
     async def _handle_add_route(self, arguments: dict[str, Any]) -> ToolResult:

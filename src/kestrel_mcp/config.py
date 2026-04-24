@@ -226,6 +226,10 @@ class Settings(BaseSettings):
         if isinstance(user_features, FeatureFlags):
             user_features = user_features.model_dump(exclude_unset=True)
         merged = {**base_features, **user_features}
+        # Back-compat: silently drop feature flags that no longer exist so
+        # user config files don't crash on upgrade.
+        allowed = set(FeatureFlags.model_fields.keys())
+        merged = {k: v for k, v in merged.items() if k in allowed}
 
         if ed == "internal":
             user_tools = overrides.pop("tools", {})

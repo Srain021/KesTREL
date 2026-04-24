@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 from typing import Any
 
 from ..config import Settings
+from ..domain import entities as ent
 from ..executor import ToolNotFoundError, resolve_binary, run_command
 from ..logging import audit_event
 from ..security import ScopeGuard
@@ -150,6 +151,42 @@ class NmapModule(ToolModule):
             max_output_bytes=self.settings.execution.max_output_bytes,
         )
         parsed = parse_nmap_xml(result.stdout)
+
+        target_ids: list[str] = []
+        try:
+            from ..core.context import current_context_or_none
+
+            ctx = current_context_or_none()
+            if ctx is not None and ctx.has_engagement():
+                engagement_id = ctx.require_engagement()
+                for host in parsed.get("hosts", []):
+                    addr = host.get("address")
+                    if not addr:
+                        continue
+                    kind = ent.TargetKind.IPV6 if ":" in addr else ent.TargetKind.IPV4
+                    t = await ctx.target.add(
+                        engagement_id=engagement_id,
+                        kind=kind,
+                        value=addr,
+                        discovered_by_tool=event.replace(".", "_"),
+                    )
+                    target_ids.append(str(t.id))
+                    ports = [
+                        int(p["port"])
+                        for p in host.get("ports", [])
+                        if p.get("state") == "open" and p.get("port")
+                    ]
+                    hostnames = host.get("hostnames") or []
+                    svcs = {p.get("service") for p in host.get("ports", []) if p.get("service")}
+                    await ctx.target.update_enrichment(
+                        t.id,
+                        open_ports=ports if ports else None,
+                        hostnames=hostnames if hostnames else None,
+                        tech_stack=sorted(svcs) if svcs else None,
+                    )
+        except Exception as persist_exc:  # noqa: BLE001
+            self.log.warning("nmap.persist_failed", error=str(persist_exc))
+
         audit_event(
             self.log,
             event,
@@ -164,6 +201,7 @@ class NmapModule(ToolModule):
                 "exit_code": result.exit_code,
                 "stderr_tail": result.stderr[-2000:],
                 "truncated": result.truncated,
+                "targets_created": target_ids,
             },
             is_error=not result.ok,
         )

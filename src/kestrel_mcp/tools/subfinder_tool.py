@@ -6,6 +6,7 @@ import json
 from typing import Any
 
 from ..config import Settings
+from ..domain import entities as ent
 from ..executor import ToolNotFoundError, resolve_binary, run_command
 from ..logging import audit_event
 from ..security import ScopeGuard
@@ -135,6 +136,32 @@ class SubfinderModule(ToolModule):
         records = _parse_subfinder_jsonl(result.stdout)
         subdomains = sorted({r["host"] for r in records if r.get("host")})
 
+        target_ids: list[str] = []
+        try:
+            from ..core.context import current_context_or_none
+
+            ctx = current_context_or_none()
+            if ctx is not None and ctx.has_engagement():
+                engagement_id = ctx.require_engagement()
+                apex = await ctx.target.add(
+                    engagement_id=engagement_id,
+                    kind=ent.TargetKind.DOMAIN,
+                    value=domain,
+                    discovered_by_tool="subfinder_enum",
+                )
+                target_ids.append(str(apex.id))
+                for sub in subdomains:
+                    child = await ctx.target.add(
+                        engagement_id=engagement_id,
+                        kind=ent.TargetKind.SUBDOMAIN,
+                        value=sub,
+                        parent_id=apex.id,
+                        discovered_by_tool="subfinder_enum",
+                    )
+                    target_ids.append(str(child.id))
+        except Exception as persist_exc:  # noqa: BLE001
+            self.log.warning("subfinder.persist_failed", error=str(persist_exc))
+
         audit_event(
             self.log,
             "subfinder.enum",
@@ -153,6 +180,7 @@ class SubfinderModule(ToolModule):
                 "exit_code": result.exit_code,
                 "stderr_tail": result.stderr[-2000:],
                 "truncated": result.truncated,
+                "targets_created": target_ids,
             },
             is_error=not result.ok,
         )

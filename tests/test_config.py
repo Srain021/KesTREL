@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from kestrel_mcp.config import Settings, _deep_merge, load_settings
 
@@ -101,3 +102,28 @@ tools:
         assert settings.tools.nmap.enabled is True
         assert settings.tools.ffuf.enabled is True
         assert settings.tools.ffuf.wordlists_dir == "wordlists"
+
+    def test_legacy_feature_env_vars_are_ignored(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setenv("KESTREL_MCP_FEATURES__COST_LEDGER", "true")
+        monkeypatch.setenv("KESTREL_MCP_FEATURES__TOOL_SOFT_TIMEOUT_ENABLED", "false")
+        monkeypatch.setenv("KESTREL_MCP_FEATURES__UNTRUST_WRAP_TOOL_OUTPUT", "true")
+
+        settings = Settings.build()
+
+        assert settings.features.model_dump() == {
+            "scope_enforcement": "strict",
+            "rate_limit_enabled": True,
+            "credential_encryption_required": True,
+        }
+
+    def test_unknown_feature_env_var_still_rejected(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setenv("KESTREL_MCP_FEATURES__NOT_A_REAL_FLAG", "true")
+
+        with pytest.raises(ValidationError):
+            Settings.build()

@@ -22,8 +22,10 @@ from ..config import Settings
 from ..security import ScopeGuard
 from ..tools import load_modules
 from ..tools.base import ToolSpec
+from .exploit import ExploitChainWorkflow
 from .recon import ReconWorkflow
 from .report import ReportWorkflow
+from .vuln_scan import FullVulnScanWorkflow
 
 
 def load_workflow_specs(settings: Settings, scope_guard: ScopeGuard) -> list[ToolSpec]:
@@ -43,6 +45,23 @@ def load_workflow_specs(settings: Settings, scope_guard: ScopeGuard) -> list[Too
                 nuclei_scan=handlers.get("nuclei_scan"),
             )
         )
+
+    if {"nmap_scan", "httpx_probe", "nuclei_scan"}.issubset(handlers):
+        vuln = FullVulnScanWorkflow(settings, scope_guard)
+        specs.append(
+            vuln.spec(
+                nmap_scan=handlers["nmap_scan"],
+                httpx_probe=handlers["httpx_probe"],
+                nuclei_scan=handlers["nuclei_scan"],
+            )
+        )
+
+    exploit = ExploitChainWorkflow(settings, scope_guard)
+    specs.append(
+        exploit.spec(
+            sliver_generate=handlers.get("sliver_generate_implant"),
+        )
+    )
 
     specs.append(ReportWorkflow().spec())
 

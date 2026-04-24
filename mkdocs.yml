@@ -9,8 +9,10 @@ theme:
     - content.code.copy
 nav:
   - Home: index.md
+  - 中文使用说明: user-manual.zh-CN.md
   - Internal Firepower: internal-firepower.md
   - Releasing: releasing.md
+  - Release Checklist: RELEASE_CHECKLIST.md
   - RFCs: rfcs/index.md
   - Reference:
       - README: ../README.md

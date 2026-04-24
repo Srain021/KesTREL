@@ -8,11 +8,19 @@ See PRODUCT_LINES.md Part 9 for the decisions baked in here.
 
 from __future__ import annotations
 
-from typing import Literal
+from collections.abc import Mapping
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 ScopeEnforcement = Literal["strict", "warn_only", "off"]
+_DEPRECATED_FIELDS = frozenset(
+    {
+        "cost_ledger",
+        "tool_soft_timeout_enabled",
+        "untrust_wrap_tool_output",
+    }
+)
 
 
 class FeatureFlags(BaseModel):
@@ -31,17 +39,18 @@ class FeatureFlags(BaseModel):
         default=True,
         description="If False, CredentialService allows plaintext values.",
     )
-    cost_ledger: bool = Field(
-        default=True,
-        description="If True, record estimated cost per ToolInvocation.",
-    )
-    tool_soft_timeout_enabled: bool = Field(
-        default=True,
-        description="If False, ToolSpec.soft_timeout_sec is ignored.",
-    )
-    untrust_wrap_tool_output: bool = Field(
-        default=True,
-        description="If True, wrap ToolResult with <untrusted>...</untrusted>.",
-    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _drop_deprecated_fields(cls, data: Any) -> Any:
+        """Ignore known removed flags while still rejecting unknown extras.
+
+        This keeps older YAML/env configurations bootable after the field
+        cleanup, without weakening validation for truly unknown keys.
+        """
+
+        if not isinstance(data, Mapping):
+            return data
+        return {key: value for key, value in data.items() if key not in _DEPRECATED_FIELDS}
 
     model_config = {"extra": "forbid", "frozen": True}

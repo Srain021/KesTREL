@@ -14,12 +14,20 @@
 |------|-------|----------------------|
 | **Shodan** | Python SDK | search, host, count, facets, scan, account-info |
 | **Nuclei** | `nuclei` binary (JSONL output) | scan, update-templates, list-templates, validate-template, version |
-| **Caido** | CLI / REST (phase 2) | start, replay, intercept-config |
-| **Evilginx** | CLI (phase 3) | start, list-phishlets, enable-phishlet, create-lure, list-sessions |
-| **Sliver** | gRPC client (phase 3) | start-server, listeners, sessions, generate-implant, upload/download |
-| **Havoc** | CLI (phase 3) | build, start-teamserver, status, generate-demon, execute |
-| **Ligolo-ng** | CLI (phase 2) | start-proxy, list-agents, tunnel, listener |
-| **Workflows** | native Python (phase 3) | `recon_target`, `full_vuln_scan`, `exploit_chain`, `generate_pentest_report` |
+| **Subfinder** | `subfinder` binary | enum, version |
+| **httpx** | `httpx` binary | probe, version |
+| **Nmap** | `nmap` binary | scan, os-detect, version |
+| **ffuf** | `ffuf` binary | dir-bruteforce, param-fuzz, version |
+| **Impacket** | `impacket` Python lib | psexec, smbexec, wmiexec, secretsdump, get-user-spns |
+| **BloodHound** | BloodHound-CE REST | query, list-datasets, version |
+| **Caido** | CLI / REST (phase 2) | start, stop, status, replay *(limited: intercept-config not yet exposed)* |
+| **Evilginx** | CLI (phase 3) | start, stop, status, list-phishlets, list-sessions, enable-phishlet, create-lure |
+| **Sliver** | gRPC client (phase 3) | start-server, stop, status, listeners, sessions, generate-implant, execute-in-session, upload-file, download-file |
+| **Havoc** | CLI (phase 3) | build, start-teamserver, stop, status, lint-profile *(limited: generate-demon is hint-only, execute not yet implemented)* |
+| **Ligolo-ng** | CLI (phase 2) | start-proxy, stop, status, add-route, list-agents, tunnel-status |
+| **Readiness** | native Python | doctor, exploitability-triage, attack-path-plan, operator-fire-control, zero-day-hypothesis, evidence-pack |
+| **Engagement** | native Python + DB | new, list, show, activate, pause, close, switch, scope-add/remove/list/check, target-add/list, finding-list/show/transition |
+| **Workflows** | native Python (phase 3) | `recon_target` ✅, `generate_pentest_report` ✅, `full_vuln_scan` ✅, `exploit_chain` ✅ |
 
 All tools share one cross-cutting design:
 
@@ -348,10 +356,10 @@ Known limits (documented, not fixed): the scope guard can't verify the *true* ta
 ## 🗺️ Roadmap
 
 * [x] Phase 1 — core server, Shodan, Nuclei, CLI, install scripts
-* [ ] Phase 2 — Ligolo-ng, Caido
-* [ ] Phase 3 — Sliver, Havoc, Evilginx
-* [ ] Phase 4 — workflow tools (`recon_target`, `exploit_chain`, `generate_pentest_report`)
-* [ ] Phase 5 — MCP Resources (template browser, phishlet catalog) + Prompts library
+* [x] Phase 2 — Ligolo-ng, Caido
+* [x] Phase 3 — Sliver, Havoc, Evilginx
+* [x] Phase 4 — workflow tools (`recon_target`, `full_vuln_scan`, `exploit_chain`, `generate_pentest_report`)
+* [x] Phase 5 — MCP Resources + Prompts library
 * [ ] Phase 6 — PyPI release + Docker image
 
 ---

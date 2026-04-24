@@ -19,6 +19,7 @@ from .engagement_service import EngagementService
 from .finding_service import FindingService
 from .scope_service import ScopeService
 from .target_service import TargetService
+from .tool_invocation_service import ToolInvocationService
 
 __all__ = [
     "CredentialService",
@@ -26,4 +27,5 @@ __all__ = [
     "FindingService",
     "ScopeService",
     "TargetService",
+    "ToolInvocationService",
 ]
