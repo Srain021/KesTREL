@@ -35,6 +35,16 @@ resources, prompts, and reporting.
 | MCP extras | `resources/list`, `resources/read`, `prompts/list`, `prompts/get` |
 | Extensibility | plugin entry points via `kestrel_mcp.plugins` |
 
+## V3 Alpha Direction
+
+V3 is the HARNESS intelligence, safety governance, and tool ecosystem release.
+The first alpha keeps the public HARNESS surface stable
+(`harness_start`, `harness_next`, `harness_run`, `harness_state`) while making
+next-step routing adaptive: setup and bounded recon stay local, broad or
+ambiguous results move to standard, and high-risk operations route to strong.
+Sensitive or target-derived tool output is wrapped before it reaches MCP
+clients so models treat it as data, not instructions.
+
 ## Editions
 
 | Edition | Use case | Behavior |

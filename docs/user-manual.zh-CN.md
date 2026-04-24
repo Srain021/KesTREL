@@ -783,3 +783,23 @@ New external-binary wrappers are available and remain disabled by default in `pr
 - Workflow: `web_app_deep_scan` runs `httpx_probe -> katana_crawl -> nuclei_scan -> sqlmap_scan`; `recon_target` supports `use_amass=true` when Amass is enabled.
 - NetExec authentication accepts exactly one of `credential_ref`, `password`, or `ntlm_hash`.
 - hashcat cracked plaintexts and NetExec Kerberoast hashes are returned in detailed structured output and also sealed into CredentialService when an active engagement context exists.
+
+## V3 Alpha update - HARNESS adaptive routing
+
+V3 Alpha 的重点是让 HARNESS 变成小模型友好的执行层，而不是继续暴露更多底层按钮。
+
+- `harness_next` 每次只规划一个下一步，避免本地模型一次吞太多目标或结果。
+- `recommended_model_tier` 会随步骤变化：初始化和小范围侦察优先 `local`，大结果或漏洞解释切到 `standard`，高风险工具切到 `strong`。
+- 失败过的工具不会被无限重试；HARNESS 会先转向 `target_list` 等复核步骤。
+- 常见结构化结果会被压缩成 `probes=2`、`subdomains=75`、`findings_count=3` 这类短摘要，方便下一轮规划。
+- `output_trust=untrusted|sensitive` 的工具输出会在 MCP 层加边界提示，提醒模型把目标返回内容当数据而不是指令。
+
+Cursor 接本地模型时推荐：
+
+```json
+{
+  "KESTREL_MCP_LLM__TOOL_DESCRIPTION_MODE": "compact",
+  "KESTREL_MCP_LLM__TOOL_EXPOSURE": "harness_first",
+  "KESTREL_MCP_LLM__MODEL_TIER": "local"
+}
+```

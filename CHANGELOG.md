@@ -11,6 +11,9 @@ See [`rfcs/INDEX.md`](./rfcs/INDEX.md) for the authoritative RFC tracker.
 ## [Unreleased]
 
 ### Added
+- V3 alpha groundwork: synced RFC index markers, V3 roadmap notes, adaptive
+  HARNESS planning, MCP output trust wrapping, and clearer tool namespace
+  collision errors.
 - `RFC-V13` - Added the HARNESS local-model MVP: compact tool catalog mode,
   `harness_start` / `harness_next` / `harness_run` / `harness_state`, persisted
   SQLite sessions and steps, `tool://...` and `harness://...` resources, and

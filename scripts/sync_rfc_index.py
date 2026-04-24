@@ -58,6 +58,12 @@ EPIC_LABEL = {
     "V-CrossEdition": "Epic V — Cross-edition enhancements",
 }
 
+EPIC_ALIASES = {
+    "G-Tool-expansion": "G-Tools",
+    "T-Team": "T-TeamEdition",
+    "V-Cross-edition": "V-CrossEdition",
+}
+
 
 @dataclass
 class RFCEntry:
@@ -91,10 +97,11 @@ def parse_rfc(path: Path) -> RFCEntry | None:
     blocking = fm.get("blocking_on") or []
     if isinstance(blocking, str):
         blocking = [blocking]
+    epic = str(fm.get("epic", "unknown")).strip()
     return RFCEntry(
         id=str(rfc_id),
         title=str(fm.get("title", "(no title)")).strip(),
-        epic=str(fm.get("epic", "unknown")).strip(),
+        epic=EPIC_ALIASES.get(epic, epic),
         status=str(fm.get("status", "open")).strip(),
         blocking_on=[str(b).strip() for b in blocking],
         owner=str(fm.get("owner", "")).strip() or "—",
@@ -165,11 +172,11 @@ def apply_to_index(rendered: str, dry_run: bool) -> bool:
     current = INDEX_PATH.read_text(encoding="utf-8")
     block = f"{BEGIN_TABLE_MARKER}\n{rendered}\n{END_TABLE_MARKER}"
 
-    if BEGIN_TABLE_MARKER in current and END_TABLE_MARKER in current:
-        pattern = re.compile(
-            re.escape(BEGIN_TABLE_MARKER) + r".*?" + re.escape(END_TABLE_MARKER),
-            re.DOTALL,
-        )
+    pattern = re.compile(
+        rf"(?m)^{re.escape(BEGIN_TABLE_MARKER)}\s*$.*?^{re.escape(END_TABLE_MARKER)}\s*$",
+        re.DOTALL,
+    )
+    if pattern.search(current):
         updated = pattern.sub(block, current, count=1)
     else:
         # Markers not present yet — add note, don't auto-inject to avoid wrecking layout.
