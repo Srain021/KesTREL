@@ -90,6 +90,8 @@ class HarnessService(_ServiceBase):
             risk_level=risk_level,
             recommended_model_tier=recommended_model_tier,
             reason=reason,
+            result_summary=None,
+            tool_invocation_id=None,
             created_at=now,
             updated_at=now,
         )
@@ -214,4 +216,3 @@ def _step_from_row(row: HarnessStepRow) -> ent.HarnessStep:
         created_at=row.created_at,
         updated_at=row.updated_at,
     )
-

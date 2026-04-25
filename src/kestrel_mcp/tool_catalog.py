@@ -44,4 +44,3 @@ def catalog_payload(specs: Iterable[ToolSpec], settings: Settings) -> dict[str, 
         "count": len(visible),
         "tools": [spec.catalog_metadata() for spec in visible],
     }
-

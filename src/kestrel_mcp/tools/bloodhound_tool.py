@@ -41,7 +41,10 @@ class BloodHoundModule(ToolModule):
                 },
                 handler=self._handle_query,
                 tags=["ad", "graph", "analysis"],
-                prerequisites=["BloodHound-CE API URL configured.", "API key configured if required."],
+                prerequisites=[
+                    "BloodHound-CE API URL configured.",
+                    "API key configured if required.",
+                ],
                 pitfalls=["API endpoints differ by version; inspect errors before retrying."],
             ),
             ToolSpec(
@@ -99,7 +102,9 @@ class BloodHoundModule(ToolModule):
         if self._api_key:
             headers["Authorization"] = f"Bearer {self._api_key}"
         try:
-            async with httpx.AsyncClient(base_url=self._api_url, headers=headers, timeout=timeout_sec) as client:
+            async with httpx.AsyncClient(
+                base_url=self._api_url, headers=headers, timeout=timeout_sec
+            ) as client:
                 response = await client.request(method, path, json=json)
                 response.raise_for_status()
                 data = response.json()

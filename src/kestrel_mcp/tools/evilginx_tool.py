@@ -21,6 +21,7 @@ Tools:
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import signal
@@ -370,10 +371,8 @@ class EvilginxModule(ToolModule):
 
         config: dict[str, Any] = {}
         if config_path.exists():
-            try:
+            with contextlib.suppress(json.JSONDecodeError):
                 config = json.loads(config_path.read_text("utf-8")) or {}
-            except json.JSONDecodeError:
-                pass
 
         if not isinstance(config, dict):
             config = {}
@@ -478,7 +477,12 @@ class EvilginxModule(ToolModule):
         if self.settings.security.dry_run:
             return ToolResult(
                 text=f"[dry-run] would create lure id={lure_id} for '{phishlet}' on '{host}{path}'.",
-                structured={"dry_run": True, "phishlet": phishlet, "lure_id": lure_id, "url": f"https://{host}{path}"},
+                structured={
+                    "dry_run": True,
+                    "phishlet": phishlet,
+                    "lure_id": lure_id,
+                    "url": f"https://{host}{path}",
+                },
             )
 
         config_path.write_text(json.dumps(config, indent=2), encoding="utf-8")

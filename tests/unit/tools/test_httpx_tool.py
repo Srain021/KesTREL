@@ -116,9 +116,7 @@ async def test_httpx_probe_returns_error_when_binary_missing(
 
 async def test_httpx_probe_refuses_out_of_scope_target() -> None:
     with pytest.raises(AuthorizationError):
-        await _spec(_module(["*.example.com"]), "httpx_probe").handler(
-            {"targets": ["evil.test"]}
-        )
+        await _spec(_module(["*.example.com"]), "httpx_probe").handler({"targets": ["evil.test"]})
 
 
 async def test_httpx_version_uses_binary(monkeypatch: pytest.MonkeyPatch) -> None:

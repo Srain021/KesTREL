@@ -16,7 +16,12 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from mcp.types import GetPromptResult, Prompt, PromptMessage, TextContent  # type: ignore[import-not-found]
+    from mcp.types import (  # type: ignore[import-not-found]
+        GetPromptResult,
+        Prompt,
+        PromptMessage,
+        TextContent,
+    )
 
     _MCP_AVAILABLE = True
 except ImportError:  # pragma: no cover

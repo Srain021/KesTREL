@@ -53,7 +53,9 @@ async def _call_tool(server: RedTeamMCPServer, name: str, arguments: dict[str, o
 
 async def _invocation_rows(container: ServiceContainer) -> list[ToolInvocationRow]:
     async with container.sessionmaker() as session:
-        result = await session.execute(select(ToolInvocationRow).order_by(ToolInvocationRow.completed_at))
+        result = await session.execute(
+            select(ToolInvocationRow).order_by(ToolInvocationRow.completed_at)
+        )
         return list(result.scalars())
 
 

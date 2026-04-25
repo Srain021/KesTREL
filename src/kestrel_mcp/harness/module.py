@@ -143,7 +143,9 @@ class HarnessModule(ToolModule):
                 text="No HARNESS next step is available.",
                 structured={"session_id": str(session_id), "next_step": None},
             )
-        return ToolResult(text=f"Next HARNESS step: {step.tool_name}.", structured=_step_payload(step))
+        return ToolResult(
+            text=f"Next HARNESS step: {step.tool_name}.", structured=_step_payload(step)
+        )
 
     async def _handle_run(self, args: dict[str, Any]) -> ToolResult:
         if self._runner is None:
@@ -266,4 +268,3 @@ def _summarize_result(result: ToolResult) -> str:
             if isinstance(value, list):
                 return f"{result.text} {key}={len(value)}"[:4096]
     return result.text[:4096]
-

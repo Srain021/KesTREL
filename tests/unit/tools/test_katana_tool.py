@@ -11,7 +11,10 @@ pytestmark = pytest.mark.asyncio
 
 
 def _module() -> KatanaModule:
-    return KatanaModule(Settings(tools={"katana": {"enabled": True, "binary": "katana"}}), ScopeGuard(["*.example.com"]))
+    return KatanaModule(
+        Settings(tools={"katana": {"enabled": True, "binary": "katana"}}),
+        ScopeGuard(["*.example.com"]),
+    )
 
 
 def _spec(module: KatanaModule, name: str):
@@ -31,7 +34,9 @@ async def test_katana_crawl_returns_interesting_urls(monkeypatch: pytest.MonkeyP
 
     monkeypatch.setattr("kestrel_mcp.tools.katana_tool.resolve_binary", lambda *_: "katana")
     monkeypatch.setattr("kestrel_mcp.tools.katana_tool.run_command", fake_run_command)
-    result = await _spec(_module(), "katana_crawl").handler({"targets": ["https://app.example.com"]})
+    result = await _spec(_module(), "katana_crawl").handler(
+        {"targets": ["https://app.example.com"]}
+    )
 
     assert not result.is_error
     assert result.structured["urls"][0]["interesting"] is True

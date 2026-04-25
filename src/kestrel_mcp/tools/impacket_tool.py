@@ -26,7 +26,8 @@ class ImpacketModule(ToolModule):
     def specs(self) -> list[ToolSpec]:
         return [
             self._exec_spec(
-                "impacket_psexec", "psexec",
+                "impacket_psexec",
+                "psexec",
                 "Run Impacket psexec for an interactive SMB shell (temporary service).",
                 transport_hint="SMB (445) service",
                 when_to_use=[
@@ -67,7 +68,8 @@ class ImpacketModule(ToolModule):
                 ),
             ),
             self._exec_spec(
-                "impacket_smbexec", "smbexec",
+                "impacket_smbexec",
+                "smbexec",
                 "Run Impacket smbexec for single-command exec via temporary SMB service.",
                 transport_hint="SMB (445) service (per-command)",
                 when_to_use=[
@@ -95,7 +97,8 @@ class ImpacketModule(ToolModule):
                 ),
             ),
             self._exec_spec(
-                "impacket_wmiexec", "wmiexec",
+                "impacket_wmiexec",
+                "wmiexec",
                 "Run Impacket wmiexec over DCOM/WMI. Stealthier than SMB transports (no service).",
                 transport_hint="WMI/DCOM (135 + ephemeral)",
                 when_to_use=[
@@ -258,8 +261,7 @@ class ImpacketModule(ToolModule):
         base_pitfalls = [
             "Plaintext password passed as argv — route via CredentialService "
             "once a follow-up RFC wires it.",
-            "Commands producing > 8 KB output may be truncated by Impacket's "
-            "named-pipe buffer.",
+            "Commands producing > 8 KB output may be truncated by Impacket's named-pipe buffer.",
             f"Transport: {transport_hint}. Failure usually means the transport "
             "is blocked by firewall / GPO / EDR.",
         ]
@@ -305,7 +307,9 @@ class ImpacketModule(ToolModule):
             argv += ["-dc-ip", target, "-request"]
         if command := str(arguments.get("command") or "").strip():
             argv.append(command)
-        return await self._run_script(script, target, argv, int(arguments.get("timeout_sec") or 300))
+        return await self._run_script(
+            script, target, argv, int(arguments.get("timeout_sec") or 300)
+        )
 
     async def _run_script(
         self,
@@ -335,7 +339,11 @@ class ImpacketModule(ToolModule):
                 kind = ent.TargetKind.HOSTNAME
                 try:
                     ip = ipaddress.ip_address(target)
-                    kind = ent.TargetKind.IPV6 if isinstance(ip, ipaddress.IPv6Address) else ent.TargetKind.IPV4
+                    kind = (
+                        ent.TargetKind.IPV6
+                        if isinstance(ip, ipaddress.IPv6Address)
+                        else ent.TargetKind.IPV4
+                    )
                 except ValueError:
                     pass
                 t = await ctx.target.add(
@@ -376,8 +384,7 @@ def _credential_schema(*, include_command: bool) -> dict[str, Any]:
         "username": {
             "type": "string",
             "description": (
-                "Authorized user account name without the domain prefix. "
-                "Set 'domain' separately."
+                "Authorized user account name without the domain prefix. Set 'domain' separately."
             ),
         },
         "password": {
@@ -415,7 +422,12 @@ def _credential_schema(*, include_command: bool) -> dict[str, Any]:
                 "Quote carefully for cmd.exe; empty string for interactive shell."
             ),
         }
-    return {"type": "object", "required": required, "properties": props, "additionalProperties": False}
+    return {
+        "type": "object",
+        "required": required,
+        "properties": props,
+        "additionalProperties": False,
+    }
 
 
 def _identity(arguments: dict[str, Any], *, include_target: bool) -> str:

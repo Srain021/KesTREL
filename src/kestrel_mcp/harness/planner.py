@@ -59,7 +59,11 @@ class HarnessPlanner:
         target_type = classify_target(target)
 
         if failed_count and "target_list" in self._specs and "target_list" not in attempted:
-            tier = "strong" if failed_count >= self._policy.max_failed_steps_before_strong else "standard"
+            tier = (
+                "strong"
+                if failed_count >= self._policy.max_failed_steps_before_strong
+                else "standard"
+            )
             return self._plan(
                 "target_list",
                 {},
@@ -90,7 +94,11 @@ class HarnessPlanner:
                 recommended_model_tier="local",
             )
 
-        if _has_large_result(steps, self._policy) and "target_list" not in attempted and "target_list" in self._specs:
+        if (
+            _has_large_result(steps, self._policy)
+            and "target_list" not in attempted
+            and "target_list" in self._specs
+        ):
             return self._plan(
                 "target_list",
                 {},
@@ -99,7 +107,11 @@ class HarnessPlanner:
                 recommended_model_tier="standard",
             )
 
-        if target_type == "domain" and "subfinder_enum" not in attempted and "subfinder_enum" in self._specs:
+        if (
+            target_type == "domain"
+            and "subfinder_enum" not in attempted
+            and "subfinder_enum" in self._specs
+        ):
             return self._plan(
                 "subfinder_enum",
                 {"domain": strip_url(target), "silent": True},
@@ -117,7 +129,11 @@ class HarnessPlanner:
                 recommended_model_tier="local",
             )
 
-        if target_type in {"domain", "url", "ip"} and "httpx_probe" not in attempted and "httpx_probe" in self._specs:
+        if (
+            target_type in {"domain", "url", "ip"}
+            and "httpx_probe" not in attempted
+            and "httpx_probe" in self._specs
+        ):
             return self._plan(
                 "httpx_probe",
                 {"targets": [target], "tech_detect": True, "status_code": True, "title": True},

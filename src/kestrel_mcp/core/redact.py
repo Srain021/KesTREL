@@ -12,9 +12,7 @@ from typing import overload
 
 _RULES: list[tuple[re.Pattern[str], str]] = [
     (
-        re.compile(
-            r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----"
-        ),
+        re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----"),
         "<PRIVATE_KEY_REDACTED>",
     ),
     (re.compile(r"\bBearer\s+[A-Za-z0-9._\-+/=]{8,}"), "Bearer <REDACTED>"),

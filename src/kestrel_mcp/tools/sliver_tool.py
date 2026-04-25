@@ -75,7 +75,7 @@ class SliverModule(ToolModule):
                             "type": "boolean",
                             "default": True,
                             "description": "Run detached from the invoking TTY (default). "
-                                           "Set false only for interactive debugging.",
+                            "Set false only for interactive debugging.",
                         },
                     },
                     "additionalProperties": False,
@@ -889,7 +889,6 @@ class SliverModule(ToolModule):
     async def _handle_download(self, arguments: dict[str, Any]) -> ToolResult:
         session_id = arguments["session_id"]
         remote_path = arguments["remote_path"]
-        local_name = arguments.get("local_name")
         if not re.match(r"^[A-Za-z0-9_-]{1,64}$", session_id):
             return ToolResult.error(f"Illegal session id: {session_id!r}")
         save_dir = self.settings.expanded_path(self.settings.execution.working_dir)

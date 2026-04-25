@@ -45,7 +45,12 @@ class SqlmapModule(ToolModule):
                         "techniques": {"type": "string", "default": "BEUSTQ"},
                         "dbms": {"type": "string"},
                         "threads": {"type": "integer", "minimum": 1, "maximum": 10, "default": 1},
-                        "timeout_sec": {"type": "integer", "minimum": 30, "maximum": 7200, "default": 1800},
+                        "timeout_sec": {
+                            "type": "integer",
+                            "minimum": 30,
+                            "maximum": 7200,
+                            "default": 1800,
+                        },
                     },
                     "additionalProperties": False,
                 },
@@ -58,7 +63,10 @@ class SqlmapModule(ToolModule):
                 preferred_model_tier="strong",
                 output_trust="sensitive",
                 when_to_use=["A URL or request parameter may be SQL injectable."],
-                when_not_to_use=["Target is not in scope.", "User wants database dumping; use sqlmap_dump_table with acknowledgement."],
+                when_not_to_use=[
+                    "Target is not in scope.",
+                    "User wants database dumping; use sqlmap_dump_table with acknowledgement.",
+                ],
                 prerequisites=["sqlmap binary installed.", "Target URL is alive and in scope."],
                 follow_ups=["Create a fire-control packet before any dump or takeover action."],
                 pitfalls=["Never expose cookies or dumped data in chat output."],
@@ -77,7 +85,12 @@ class SqlmapModule(ToolModule):
                         "start": {"type": "integer", "minimum": 1},
                         "stop": {"type": "integer", "minimum": 1},
                         "acknowledge_risk": {"type": "boolean"},
-                        "timeout_sec": {"type": "integer", "minimum": 30, "maximum": 14400, "default": 3600},
+                        "timeout_sec": {
+                            "type": "integer",
+                            "minimum": 30,
+                            "maximum": 14400,
+                            "default": 3600,
+                        },
                     },
                     "additionalProperties": False,
                 },
@@ -90,7 +103,9 @@ class SqlmapModule(ToolModule):
                 preferred_model_tier="strong",
                 output_trust="sensitive",
                 prerequisites=["Confirmed SQL injection.", "Explicit acknowledge_risk=true."],
-                pitfalls=["Do not return dumped rows to the MCP client; only return counts and artifact path."],
+                pitfalls=[
+                    "Do not return dumped rows to the MCP client; only return counts and artifact path."
+                ],
             ),
             ToolSpec(
                 name="sqlmap_version",
@@ -124,7 +139,10 @@ class SqlmapModule(ToolModule):
             argv += ["--dbms", dbms]
 
         if self.settings.security.dry_run:
-            return ToolResult(text=f"[dry-run] would run sqlmap scan for {url}.", structured={"dry_run": True, "argv": _redact_argv(argv)})
+            return ToolResult(
+                text=f"[dry-run] would run sqlmap scan for {url}.",
+                structured={"dry_run": True, "argv": _redact_argv(argv)},
+            )
 
         result = await run_command(
             argv,
@@ -133,7 +151,13 @@ class SqlmapModule(ToolModule):
         )
         parsed = _parse_sqlmap_stdout(result.stdout)
         target_ids, finding_ids = await self._persist_scan(url, parsed)
-        audit_event(self.log, "sqlmap.scan", url=url, injectable=parsed["injectable"], exit_code=result.exit_code)
+        audit_event(
+            self.log,
+            "sqlmap.scan",
+            url=url,
+            injectable=parsed["injectable"],
+            exit_code=result.exit_code,
+        )
         return ToolResult(
             text=f"sqlmap scan completed for {url}; injectable={parsed['injectable']}.",
             structured={
@@ -169,7 +193,10 @@ class SqlmapModule(ToolModule):
             argv += ["--stop", str(int(arguments["stop"]))]
 
         if self.settings.security.dry_run:
-            return ToolResult(text=f"[dry-run] would run sqlmap dump for {url}.", structured={"dry_run": True, "argv": _redact_argv(argv)})
+            return ToolResult(
+                text=f"[dry-run] would run sqlmap dump for {url}.",
+                structured={"dry_run": True, "argv": _redact_argv(argv)},
+            )
 
         result = await run_command(
             argv,
@@ -196,9 +223,13 @@ class SqlmapModule(ToolModule):
             binary = self._binary()
         except ToolNotFoundError as exc:
             return ToolResult.error(str(exc))
-        result = await run_command([binary, "--version"], timeout_sec=30, max_output_bytes=64 * 1024)
+        result = await run_command(
+            [binary, "--version"], timeout_sec=30, max_output_bytes=64 * 1024
+        )
         raw = (result.stdout or result.stderr).strip()
-        return ToolResult(text=raw, structured={"raw": raw, "exit_code": result.exit_code}, is_error=not result.ok)
+        return ToolResult(
+            text=raw, structured={"raw": raw, "exit_code": result.exit_code}, is_error=not result.ok
+        )
 
     def _base_argv(self, arguments: dict[str, Any]) -> list[str] | ToolResult:
         try:

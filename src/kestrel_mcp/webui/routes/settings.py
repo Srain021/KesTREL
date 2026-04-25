@@ -63,8 +63,7 @@ async def settings_page(request: Request) -> HTMLResponse:
         "settings/page.html.j2",
         {
             "active_engagement": None,
-            "authorized_scope": ", ".join(scope_entries)
-            or "EMPTY (offensive tools disabled)",
+            "authorized_scope": ", ".join(scope_entries) or "EMPTY (offensive tools disabled)",
             "config_dir": str(USER_CONFIG_DIR),
             "edition": settings.edition,
             "python_version": sys.version.split()[0],

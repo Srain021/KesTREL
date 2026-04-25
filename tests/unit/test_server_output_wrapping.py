@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from kestrel_mcp.server import _render_result
 from kestrel_mcp.config import Settings
 from kestrel_mcp.security import ScopeGuard
-from kestrel_mcp.server import RedTeamMCPServer
+from kestrel_mcp.server import RedTeamMCPServer, _render_result
 from kestrel_mcp.tools.base import ToolModule, ToolResult, ToolSpec
 
 

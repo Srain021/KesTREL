@@ -149,8 +149,7 @@ def test_setup_steps_are_local_even_when_specs_default_standard() -> None:
 
 def test_broad_result_recommends_standard_target_review() -> None:
     specs = {
-        name: _spec(name)
-        for name in ["scope_check", "target_add", "subfinder_enum", "target_list"]
+        name: _spec(name) for name in ["scope_check", "target_add", "subfinder_enum", "target_list"]
     }
     planner = HarnessPlanner(specs)
     session = _session("example.com")
@@ -171,8 +170,7 @@ def test_broad_result_recommends_standard_target_review() -> None:
 
 def test_nuclei_baseline_recommends_standard_for_interpretation() -> None:
     specs = {
-        name: _spec(name)
-        for name in ["scope_check", "target_add", "httpx_probe", "nuclei_scan"]
+        name: _spec(name) for name in ["scope_check", "target_add", "httpx_probe", "nuclei_scan"]
     }
     planner = HarnessPlanner(specs)
     session = _session("https://app.example.com")
@@ -193,8 +191,7 @@ def test_nuclei_baseline_recommends_standard_for_interpretation() -> None:
 
 def test_failed_step_routes_to_standard_review_instead_of_retrying() -> None:
     specs = {
-        name: _spec(name)
-        for name in ["scope_check", "target_add", "subfinder_enum", "target_list"]
+        name: _spec(name) for name in ["scope_check", "target_add", "subfinder_enum", "target_list"]
     }
     planner = HarnessPlanner(specs)
     session = _session("example.com")
