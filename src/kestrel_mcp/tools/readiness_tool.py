@@ -96,7 +96,10 @@ class ReadinessModule(ToolModule):
                     "type": "object",
                     "required": ["findings"],
                     "properties": {
-                        "target": {"type": "string", "description": "Target label or host metadata."},
+                        "target": {
+                            "type": "string",
+                            "description": "Target label or host metadata.",
+                        },
                         "findings": {"type": "array", "items": {"type": "object"}, "minItems": 1},
                         "context": {"type": "object"},
                         "max_steps": {"type": "integer", "minimum": 1, "maximum": 10, "default": 5},
@@ -216,7 +219,9 @@ class ReadinessModule(ToolModule):
                     "Before writing a report or handing findings to another operator.",
                     "When sensitive tool output needs a structured summary and redaction reminder.",
                 ],
-                pitfalls=["Raw mode may expose secrets; prefer sanitized unless the human explicitly asks."],
+                pitfalls=[
+                    "Raw mode may expose secrets; prefer sanitized unless the human explicitly asks."
+                ],
                 local_model_hints="Summarize and structure evidence. Do not paste secrets unless requested.",
             ),
         ]
@@ -253,7 +258,10 @@ class ReadinessModule(ToolModule):
             key=lambda item: item.score,
             reverse=True,
         )
-        steps = [_plan_step(i + 1, assessment) for i, assessment in enumerate(ranked[: int(args.get("max_steps") or 5)])]
+        steps = [
+            _plan_step(i + 1, assessment)
+            for i, assessment in enumerate(ranked[: int(args.get("max_steps") or 5)])
+        ]
         return ToolResult(
             text=f"Built advisory attack path with {len(steps)} step(s). Human approval required before active validation.",
             structured={

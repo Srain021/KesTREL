@@ -20,8 +20,7 @@ def test_sync_markers_must_be_standalone_lines(tmp_path: Path, monkeypatch) -> N
     sync = _load_sync_module()
     index = tmp_path / "INDEX.md"
     original = (
-        "# RFC INDEX\n\n"
-        "Mention <!-- BEGIN_RFC_TABLE --> and <!-- END_RFC_TABLE --> inline only.\n"
+        "# RFC INDEX\n\nMention <!-- BEGIN_RFC_TABLE --> and <!-- END_RFC_TABLE --> inline only.\n"
     )
     index.write_text(original, encoding="utf-8")
     monkeypatch.setattr(sync, "INDEX_PATH", index)
@@ -36,11 +35,7 @@ def test_sync_replaces_standalone_marker_region(tmp_path: Path, monkeypatch) -> 
     sync = _load_sync_module()
     index = tmp_path / "INDEX.md"
     index.write_text(
-        "# RFC INDEX\n\n"
-        "<!-- BEGIN_RFC_TABLE -->\n"
-        "old\n"
-        "<!-- END_RFC_TABLE -->\n"
-        "\nfooter\n",
+        "# RFC INDEX\n\n<!-- BEGIN_RFC_TABLE -->\nold\n<!-- END_RFC_TABLE -->\n\nfooter\n",
         encoding="utf-8",
     )
     monkeypatch.setattr(sync, "INDEX_PATH", index)

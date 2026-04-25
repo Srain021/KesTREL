@@ -30,14 +30,14 @@ class FullVulnScanWorkflow:
         self.scope_guard = scope_guard
         self.log = get_logger("workflow.vuln_scan")
 
-    def spec(
+    def spec(  # noqa: C901
         self,
         *,
         nmap_scan: ToolHandler,
         httpx_probe: ToolHandler,
         nuclei_scan: ToolHandler,
     ) -> ToolSpec:
-        async def handler(arguments: dict[str, Any]) -> ToolResult:
+        async def handler(arguments: dict[str, Any]) -> ToolResult:  # noqa: C901
             targets = [str(t).strip() for t in arguments["targets"] if str(t).strip()]
             for target in targets:
                 await ensure_target_scope(
@@ -125,9 +125,7 @@ class FullVulnScanWorkflow:
                     )
                     if not httpx_result.is_error and httpx_result.structured:
                         probes = httpx_result.structured.get("probes", [])
-                        live_targets = [
-                            p["url"] for p in probes if p.get("url")
-                        ]
+                        live_targets = [p["url"] for p in probes if p.get("url")]
 
             # 3. Nuclei scan
             findings: list[dict[str, Any]] = []

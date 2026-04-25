@@ -204,7 +204,9 @@ async def test_recon_target_can_call_amass_when_requested() -> None:
 
     async def amass(arguments: dict[str, object]) -> ToolResult:
         calls.append("amass")
-        return ToolResult(text="amass", structured={"ips": ["10.0.0.5"], "subdomains": ["a.example.com"]})
+        return ToolResult(
+            text="amass", structured={"ips": ["10.0.0.5"], "subdomains": ["a.example.com"]}
+        )
 
     module = StubModule(
         settings,

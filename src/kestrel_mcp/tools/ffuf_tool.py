@@ -54,7 +54,10 @@ class FfufModule(ToolModule):
                 tags=["web", "fuzzing", "active"],
                 when_to_use=["User asks for directory/content discovery on a live web target."],
                 when_not_to_use=["Target has not been confirmed live; run httpx_probe first."],
-                prerequisites=["ffuf binary installed.", "Wordlist is under tools.ffuf.wordlists_dir."],
+                prerequisites=[
+                    "ffuf binary installed.",
+                    "Wordlist is under tools.ffuf.wordlists_dir.",
+                ],
                 pitfalls=["Never pass absolute wordlist paths; safe_path rejects them."],
             ),
             ToolSpec(
@@ -140,7 +143,9 @@ class FfufModule(ToolModule):
 
     async def _run_ffuf(self, argv: list[str], timeout_sec: int, event: str) -> ToolResult:
         if self.settings.security.dry_run:
-            return ToolResult(text=f"[dry-run] would run: {' '.join(argv)}", structured={"argv": argv})
+            return ToolResult(
+                text=f"[dry-run] would run: {' '.join(argv)}", structured={"argv": argv}
+            )
         result = await run_command(
             argv,
             timeout_sec=timeout_sec,

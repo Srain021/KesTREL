@@ -324,7 +324,9 @@ class RedTeamMCPServer:
                 engagement_id=str(ctx.engagement_id) if ctx.engagement_id else None,
             )
             result = await spec.handler(args)
-            invocation_id = await self._record_tool_invocation(ctx, name, args, started_at, result, None)
+            invocation_id = await self._record_tool_invocation(
+                ctx, name, args, started_at, result, None
+            )
             return result, invocation_id
         except Exception as exc:
             await self._record_tool_invocation(ctx, name, args, started_at, None, exc)

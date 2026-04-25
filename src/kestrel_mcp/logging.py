@@ -79,7 +79,8 @@ def configure_logging(
 def get_logger(name: str) -> structlog.stdlib.BoundLogger:
     """Return a bound logger with ``logger_name`` context set."""
 
-    return structlog.get_logger(name).bind(logger_name=name)
+    logger: structlog.stdlib.BoundLogger = structlog.get_logger(name).bind(logger_name=name)
+    return logger
 
 
 def audit_event(logger: structlog.stdlib.BoundLogger, event: str, **fields: Any) -> None:

@@ -32,7 +32,9 @@ async def _engagement_id(sm) -> object:
 
 async def _rows(sm) -> list[ToolInvocationRow]:
     async with sm() as session:
-        result = await session.execute(select(ToolInvocationRow).order_by(ToolInvocationRow.completed_at))
+        result = await session.execute(
+            select(ToolInvocationRow).order_by(ToolInvocationRow.completed_at)
+        )
         return list(result.scalars())
 
 

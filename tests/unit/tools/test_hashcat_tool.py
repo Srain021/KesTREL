@@ -37,12 +37,16 @@ def _spec(module: HashcatModule, name: str):
     return next(s for s in module.specs() if s.name == name)
 
 
-async def test_hashcat_crack_returns_detailed_plaintext(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_hashcat_crack_returns_detailed_plaintext(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     async def fake_run_command(*args, **kwargs):  # noqa: ANN002, ANN003
         argv = list(args[0])
         outfile = Path(argv[argv.index("--outfile") + 1])
         outfile.write_text("8846f7eaee8fb117ad06bdd830b7586c:Password1!\n", encoding="utf-8")
-        return ExecutionResult(argv=argv, exit_code=0, stdout="Recovered", stderr="", duration_sec=0.1)
+        return ExecutionResult(
+            argv=argv, exit_code=0, stdout="Recovered", stderr="", duration_sec=0.1
+        )
 
     monkeypatch.setattr("kestrel_mcp.tools.hashcat_tool.resolve_binary", lambda *_: "hashcat")
     monkeypatch.setattr("kestrel_mcp.tools.hashcat_tool.run_command", fake_run_command)
@@ -61,7 +65,9 @@ async def test_hashcat_crack_returns_detailed_plaintext(tmp_path: Path, monkeypa
 
 
 async def test_hashcat_requires_one_hash_source(tmp_path: Path) -> None:
-    result = await _spec(_module(tmp_path), "hashcat_crack").handler({"hash_mode": 1000, "attack_mode": 3, "mask": "?a"})
+    result = await _spec(_module(tmp_path), "hashcat_crack").handler(
+        {"hash_mode": 1000, "attack_mode": 3, "mask": "?a"}
+    )
     assert result.is_error
 
 

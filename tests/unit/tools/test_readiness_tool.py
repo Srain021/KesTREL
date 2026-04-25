@@ -24,7 +24,11 @@ async def test_readiness_tools_exist_and_are_advisory() -> None:
         assert not spec.dangerous
         assert {"helper", "audit"} <= set(spec.tags)
         rendered = spec.render_full_description().lower()
-        assert "never execute" in rendered or "does not execute" in rendered or "do not execute" in rendered
+        assert (
+            "never execute" in rendered
+            or "does not execute" in rendered
+            or "do not execute" in rendered
+        )
 
 
 async def test_exploitability_triage_returns_operator_review() -> None:

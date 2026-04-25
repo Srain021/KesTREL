@@ -58,8 +58,18 @@ class HashcatModule(ToolModule):
                         "wordlist": {"type": "string"},
                         "mask": {"type": "string"},
                         "username_in_hash": {"type": "boolean", "default": False},
-                        "workload_profile": {"type": "integer", "minimum": 1, "maximum": 4, "default": 2},
-                        "timeout_sec": {"type": "integer", "minimum": 30, "maximum": 86400, "default": 3600},
+                        "workload_profile": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4,
+                            "default": 2,
+                        },
+                        "timeout_sec": {
+                            "type": "integer",
+                            "minimum": 30,
+                            "maximum": 86400,
+                            "default": 3600,
+                        },
                     },
                     "additionalProperties": False,
                 },
@@ -72,7 +82,10 @@ class HashcatModule(ToolModule):
                 output_trust="sensitive",
                 when_to_use=["Captured hashes need offline password recovery."],
                 when_not_to_use=["No written authorization for password cracking."],
-                prerequisites=["hashcat binary installed.", "Wordlist/hash files stay under configured safe directories."],
+                prerequisites=[
+                    "hashcat binary installed.",
+                    "Wordlist/hash files stay under configured safe directories.",
+                ],
                 follow_ups=["Use created credential references with NetExec or Impacket."],
                 pitfalls=[
                     "This tool returns detailed cracked values in structured output; treat the response as sensitive.",
@@ -139,7 +152,9 @@ class HashcatModule(ToolModule):
             timeout_sec=int(arguments.get("timeout_sec") or 3600),
             max_output_bytes=self.settings.execution.max_output_bytes,
         )
-        cracked = _parse_hashcat_outfile(outfile.read_text(encoding="utf-8", errors="replace") if outfile.exists() else "")
+        cracked = _parse_hashcat_outfile(
+            outfile.read_text(encoding="utf-8", errors="replace") if outfile.exists() else ""
+        )
         credential_ids = await self._seal_cracked(cracked, int(arguments["hash_mode"]))
         cracked_details = [
             {
@@ -177,17 +192,25 @@ class HashcatModule(ToolModule):
         )
 
     async def _handle_modes(self, _arguments: dict[str, Any]) -> ToolResult:
-        modes = [{"mode": mode, "name": name} for mode, name in sorted(COMMON_HASHCAT_MODES.items())]
-        return ToolResult(text=f"{len(modes)} common hashcat modes available.", structured={"modes": modes})
+        modes = [
+            {"mode": mode, "name": name} for mode, name in sorted(COMMON_HASHCAT_MODES.items())
+        ]
+        return ToolResult(
+            text=f"{len(modes)} common hashcat modes available.", structured={"modes": modes}
+        )
 
     async def _handle_version(self, _arguments: dict[str, Any]) -> ToolResult:
         try:
             binary = self._binary()
         except ToolNotFoundError as exc:
             return ToolResult.error(str(exc))
-        result = await run_command([binary, "--version"], timeout_sec=30, max_output_bytes=64 * 1024)
+        result = await run_command(
+            [binary, "--version"], timeout_sec=30, max_output_bytes=64 * 1024
+        )
         raw = (result.stdout or result.stderr).strip()
-        return ToolResult(text=raw, structured={"raw": raw, "exit_code": result.exit_code}, is_error=not result.ok)
+        return ToolResult(
+            text=raw, structured={"raw": raw, "exit_code": result.exit_code}, is_error=not result.ok
+        )
 
     async def _hash_input(self, arguments: dict[str, Any]) -> tuple[Path, int]:
         sources = [

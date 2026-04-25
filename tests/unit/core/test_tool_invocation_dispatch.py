@@ -50,7 +50,9 @@ async def _call_tool(
 
 async def _rows(container: ServiceContainer) -> list[ToolInvocationRow]:
     async with container.sessionmaker() as session:
-        result = await session.execute(select(ToolInvocationRow).order_by(ToolInvocationRow.completed_at))
+        result = await session.execute(
+            select(ToolInvocationRow).order_by(ToolInvocationRow.completed_at)
+        )
         return list(result.scalars())
 
 

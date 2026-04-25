@@ -18,6 +18,7 @@ for LLM-driven automation:
 
 from __future__ import annotations
 
+import json
 import os
 import signal
 import subprocess
@@ -417,22 +418,26 @@ class LigoloModule(ToolModule):
                 if isinstance(data, dict):
                     data = [data]
                 for row in data or []:
-                    agents.append({
-                        "remote_address": row.get("RemoteAddress"),
-                        "remote_port": row.get("RemotePort"),
-                        "state": row.get("State"),
-                    })
+                    agents.append(
+                        {
+                            "remote_address": row.get("RemoteAddress"),
+                            "remote_port": row.get("RemotePort"),
+                            "state": row.get("State"),
+                        }
+                    )
             except json.JSONDecodeError:
                 pass
         else:
             for line in output.splitlines():
                 parts = line.split()
                 if len(parts) >= 5:
-                    agents.append({
-                        "local": parts[3],
-                        "remote": parts[4],
-                        "state": parts[1] if len(parts) > 1 else "ESTAB",
-                    })
+                    agents.append(
+                        {
+                            "local": parts[3],
+                            "remote": parts[4],
+                            "state": parts[1] if len(parts) > 1 else "ESTAB",
+                        }
+                    )
 
         audit_event(self.log, "ligolo.list_agents", listen_addr=listen_addr, count=len(agents))
         return ToolResult(
@@ -453,7 +458,9 @@ class LigoloModule(ToolModule):
             route_argv = [
                 "powershell",
                 "-Command",
-                "Get-NetRoute -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -like '" + tun + "*' } | "
+                "Get-NetRoute -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -like '"
+                + tun
+                + "*' } | "
                 "Select-Object DestinationPrefix, NextHop, RouteMetric | ConvertTo-Json",
             ]
         else:
@@ -470,18 +477,22 @@ class LigoloModule(ToolModule):
         routes: list[dict[str, str]] = []
         if present:
             try:
-                route_out = subprocess.check_output(route_argv, text=True, stderr=subprocess.DEVNULL)  # noqa: S603
+                route_out = subprocess.check_output(
+                    route_argv, text=True, stderr=subprocess.DEVNULL
+                )  # noqa: S603
                 if sys.platform == "win32":
                     try:
                         data = json.loads(route_out)
                         if isinstance(data, dict):
                             data = [data]
                         for row in data or []:
-                            routes.append({
-                                "destination": row.get("DestinationPrefix", ""),
-                                "next_hop": row.get("NextHop", ""),
-                                "metric": str(row.get("RouteMetric", "")),
-                            })
+                            routes.append(
+                                {
+                                    "destination": row.get("DestinationPrefix", ""),
+                                    "next_hop": row.get("NextHop", ""),
+                                    "metric": str(row.get("RouteMetric", "")),
+                                }
+                            )
                     except json.JSONDecodeError:
                         pass
                 else:

@@ -6,12 +6,12 @@ import asyncio
 import hashlib
 import json
 from collections.abc import Mapping
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from ...logging import audit_event
 from .. import entities as ent
@@ -23,7 +23,7 @@ _ZERO_HASH = "0" * 64
 
 
 class ToolInvocationService(_ServiceBase):
-    def __init__(self, sessionmaker) -> None:
+    def __init__(self, sessionmaker: async_sessionmaker[AsyncSession]) -> None:
         super().__init__(sessionmaker)
         self._chain_heads: dict[UUID, str] = {}
         self._locks: dict[UUID, asyncio.Lock] = {}

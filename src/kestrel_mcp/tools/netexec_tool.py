@@ -91,7 +91,11 @@ class NetExecModule(ToolModule):
                         **auth_props,
                         "targets": _targets_prop(),
                         "command": {"type": "string"},
-                        "exec_method": {"type": "string", "enum": ["wmiexec", "atexec", "smbexec"], "default": "wmiexec"},
+                        "exec_method": {
+                            "type": "string",
+                            "enum": ["wmiexec", "atexec", "smbexec"],
+                            "default": "wmiexec",
+                        },
                         "acknowledge_risk": {"type": "boolean"},
                     },
                     "additionalProperties": False,
@@ -176,16 +180,22 @@ class NetExecModule(ToolModule):
         if isinstance(argv_or_error, ToolResult):
             return argv_or_error
         argv = argv_or_error + ["--kerberoasting", "-"]
-        return await self._run(argv, "netexec.ldap_kerberoast", [target], arguments, parser="kerberoast")
+        return await self._run(
+            argv, "netexec.ldap_kerberoast", [target], arguments, parser="kerberoast"
+        )
 
     async def _handle_version(self, _arguments: dict[str, Any]) -> ToolResult:
         try:
             binary = self._binary()
         except ToolNotFoundError as exc:
             return ToolResult.error(str(exc))
-        result = await run_command([binary, "--version"], timeout_sec=30, max_output_bytes=64 * 1024)
+        result = await run_command(
+            [binary, "--version"], timeout_sec=30, max_output_bytes=64 * 1024
+        )
         raw = (result.stdout or result.stderr).strip()
-        return ToolResult(text=raw, structured={"raw": raw, "exit_code": result.exit_code}, is_error=not result.ok)
+        return ToolResult(
+            text=raw, structured={"raw": raw, "exit_code": result.exit_code}, is_error=not result.ok
+        )
 
     async def _base_argv(
         self,
@@ -235,7 +245,10 @@ class NetExecModule(ToolModule):
     ) -> ToolResult:
         safe_argv = _redact_argv(argv)
         if self.settings.security.dry_run:
-            return ToolResult(text=f"[dry-run] would run {event}.", structured={"dry_run": True, "argv": safe_argv, "targets": targets})
+            return ToolResult(
+                text=f"[dry-run] would run {event}.",
+                structured={"dry_run": True, "argv": safe_argv, "targets": targets},
+            )
         result = await run_command(
             argv,
             timeout_sec=int(arguments.get("timeout_sec") or 600),
@@ -266,7 +279,9 @@ class NetExecModule(ToolModule):
                 "argv": safe_argv,
                 "auth_source": _auth_source(arguments),
                 "auth_results": auth_results,
-                "parsed_line_count": len([line for line in raw_stdout.splitlines() if line.strip()]),
+                "parsed_line_count": len(
+                    [line for line in raw_stdout.splitlines() if line.strip()]
+                ),
                 "output_lines": [line for line in stdout.splitlines() if line.strip()],
                 "kerberoast_count": len(kerberoast_hashes),
                 "kerberoast_hashes": kerberoast_details,
@@ -294,7 +309,11 @@ class NetExecModule(ToolModule):
                 kind = ent.TargetKind.HOSTNAME
                 try:
                     ip = ipaddress.ip_address(target)
-                    kind = ent.TargetKind.IPV6 if isinstance(ip, ipaddress.IPv6Address) else ent.TargetKind.IPV4
+                    kind = (
+                        ent.TargetKind.IPV6
+                        if isinstance(ip, ipaddress.IPv6Address)
+                        else ent.TargetKind.IPV4
+                    )
                 except ValueError:
                     pass
                 row = await ctx.target.add(
@@ -377,7 +396,11 @@ def _enum_flag(value: str) -> str:
 
 
 def _looks_hash(value: str) -> bool:
-    return bool(_NTLM_RE.match(value.strip()) or ":" in value and all(_NTLM_RE.match(part) for part in value.split(":")[-2:]))
+    return bool(
+        _NTLM_RE.match(value.strip())
+        or ":" in value
+        and all(_NTLM_RE.match(part) for part in value.split(":")[-2:])
+    )
 
 
 def _parse_nxc_auth(text: str) -> list[dict[str, Any]]:

@@ -100,7 +100,7 @@ class HttpxModule(ToolModule):
             ),
         ]
 
-    async def _handle_probe(self, arguments: dict[str, Any]) -> ToolResult:
+    async def _handle_probe(self, arguments: dict[str, Any]) -> ToolResult:  # noqa: C901
         targets = [str(t).strip() for t in arguments["targets"] if str(t).strip()]
         for target in targets:
             await self.ensure_scope(target, tool_name="httpx_probe")

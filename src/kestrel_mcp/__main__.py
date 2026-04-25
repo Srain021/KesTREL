@@ -121,11 +121,15 @@ def serve_http(
     ] = False,
     allowed_host: Annotated[
         list[str] | None,
-        typer.Option("--allowed-host", help="Allowed Host header when DNS rebinding protection is on."),
+        typer.Option(
+            "--allowed-host", help="Allowed Host header when DNS rebinding protection is on."
+        ),
     ] = None,
     allowed_origin: Annotated[
         list[str] | None,
-        typer.Option("--allowed-origin", help="Allowed Origin header when DNS rebinding protection is on."),
+        typer.Option(
+            "--allowed-origin", help="Allowed Origin header when DNS rebinding protection is on."
+        ),
     ] = None,
     dns_rebinding_protection: Annotated[
         bool,
@@ -249,7 +253,8 @@ def list_tools_cmd() -> None:
         specs_by_name[harness_spec.name] = ("harness", harness_spec)
 
     visible_names = {
-        spec.name for spec in advertised_specs((spec for _module, spec in specs_by_name.values()), settings)
+        spec.name
+        for spec in advertised_specs((spec for _module, spec in specs_by_name.values()), settings)
     }
     for name in sorted(specs_by_name):
         if name not in visible_names:

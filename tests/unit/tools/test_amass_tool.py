@@ -11,7 +11,10 @@ pytestmark = pytest.mark.asyncio
 
 
 def _module() -> AmassModule:
-    return AmassModule(Settings(tools={"amass": {"enabled": True, "binary": "amass"}}), ScopeGuard(["example.com", "*.example.com"]))
+    return AmassModule(
+        Settings(tools={"amass": {"enabled": True, "binary": "amass"}}),
+        ScopeGuard(["example.com", "*.example.com"]),
+    )
 
 
 def _spec(module: AmassModule, name: str):

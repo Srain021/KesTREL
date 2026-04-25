@@ -453,7 +453,10 @@ class HarnessStepRow(Base):
 
     id: Mapped[UUID] = mapped_column(UUIDString(), primary_key=True)
     session_id: Mapped[UUID] = mapped_column(
-        UUIDString(), ForeignKey("harness_sessions.id", ondelete="CASCADE"), nullable=False, index=True
+        UUIDString(),
+        ForeignKey("harness_sessions.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     ordinal: Mapped[int] = mapped_column(Integer, nullable=False)
     tool_name: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
@@ -465,9 +468,7 @@ class HarnessStepRow(Base):
         index=True,
     )
     risk_level: Mapped[str] = mapped_column(String(16), nullable=False, default="low")
-    recommended_model_tier: Mapped[str] = mapped_column(
-        String(32), nullable=False, default="local"
-    )
+    recommended_model_tier: Mapped[str] = mapped_column(String(32), nullable=False, default="local")
     reason: Mapped[str] = mapped_column(Text, nullable=False, default="")
     result_summary: Mapped[str | None] = mapped_column(Text)
     tool_invocation_id: Mapped[UUID | None] = mapped_column(

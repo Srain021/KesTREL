@@ -38,8 +38,17 @@ class KatanaModule(ToolModule):
                         "depth": {"type": "integer", "minimum": 1, "maximum": 10, "default": 3},
                         "js_crawl": {"type": "boolean", "default": True},
                         "headless": {"type": "boolean", "default": False},
-                        "scope": {"type": "string", "enum": ["fqdn", "rdn", "dn"], "default": "fqdn"},
-                        "timeout_sec": {"type": "integer", "minimum": 10, "maximum": 3600, "default": 600},
+                        "scope": {
+                            "type": "string",
+                            "enum": ["fqdn", "rdn", "dn"],
+                            "default": "fqdn",
+                        },
+                        "timeout_sec": {
+                            "type": "integer",
+                            "minimum": 10,
+                            "maximum": 3600,
+                            "default": 600,
+                        },
                     },
                     "additionalProperties": False,
                 },
@@ -56,7 +65,10 @@ class KatanaModule(ToolModule):
                     "Target is a live HTTP service confirmed by httpx.",
                 ],
                 when_not_to_use=["Target is not a URL.", "Only passive recon is authorized."],
-                prerequisites=["Katana binary installed.", "Every target is inside authorized_scope."],
+                prerequisites=[
+                    "Katana binary installed.",
+                    "Every target is inside authorized_scope.",
+                ],
                 follow_ups=["Feed discovered URLs into sqlmap_scan or nuclei_scan."],
                 pitfalls=["headless=true requires a usable browser environment and is slower."],
             ),
@@ -139,7 +151,9 @@ class KatanaModule(ToolModule):
             return ToolResult.error(str(exc))
         result = await run_command([binary, "-version"], timeout_sec=30, max_output_bytes=64 * 1024)
         raw = (result.stdout or result.stderr).strip()
-        return ToolResult(text=raw, structured={"raw": raw, "exit_code": result.exit_code}, is_error=not result.ok)
+        return ToolResult(
+            text=raw, structured={"raw": raw, "exit_code": result.exit_code}, is_error=not result.ok
+        )
 
     async def _persist(self, records: list[dict[str, Any]]) -> tuple[list[str], list[str]]:
         target_ids: list[str] = []
@@ -193,7 +207,9 @@ def _parse_katana_jsonl(text: str) -> list[dict[str, Any]]:
             continue
         request = item.get("request") if isinstance(item.get("request"), dict) else {}
         response = item.get("response") if isinstance(item.get("response"), dict) else {}
-        url = item.get("url") or item.get("endpoint") or request.get("endpoint") or request.get("url")
+        url = (
+            item.get("url") or item.get("endpoint") or request.get("endpoint") or request.get("url")
+        )
         if not url:
             continue
         url = str(url).strip()
@@ -202,7 +218,9 @@ def _parse_katana_jsonl(text: str) -> list[dict[str, Any]]:
         seen.add(url)
         parsed = urlparse(url)
         method = item.get("method") or request.get("method") or "GET"
-        status_code = item.get("status_code") or item.get("status-code") or response.get("status_code")
+        status_code = (
+            item.get("status_code") or item.get("status-code") or response.get("status_code")
+        )
         interesting = _is_interesting_url(url) or bool(item.get("form") or item.get("forms"))
         out.append(
             {

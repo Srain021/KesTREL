@@ -11,14 +11,18 @@ pytestmark = pytest.mark.asyncio
 
 
 def _module() -> NetExecModule:
-    return NetExecModule(Settings(tools={"netexec": {"enabled": True, "binary": "nxc"}}), ScopeGuard(["10.0.0.0/8"]))
+    return NetExecModule(
+        Settings(tools={"netexec": {"enabled": True, "binary": "nxc"}}), ScopeGuard(["10.0.0.0/8"])
+    )
 
 
 def _spec(module: NetExecModule, name: str):
     return next(s for s in module.specs() if s.name == name)
 
 
-async def test_netexec_auth_redacts_input_password_but_returns_detailed_output(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_netexec_auth_redacts_input_password_but_returns_detailed_output(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     async def fake_run_command(*args, **kwargs):  # noqa: ANN002, ANN003
         argv = list(args[0])
         assert "-p" in argv
@@ -53,7 +57,9 @@ async def test_netexec_kerberoast_returns_hash_details(monkeypatch: pytest.Monke
     krb = "$krb5tgs$23$*svc$LAB.LOCAL$MSSQLSvc/sql.lab.local:1433*$abcdef"
 
     async def fake_run_command(*args, **kwargs):  # noqa: ANN002, ANN003
-        return ExecutionResult(argv=list(args[0]), exit_code=0, stdout=f"{krb}\n", stderr="", duration_sec=0.1)
+        return ExecutionResult(
+            argv=list(args[0]), exit_code=0, stdout=f"{krb}\n", stderr="", duration_sec=0.1
+        )
 
     monkeypatch.setattr("kestrel_mcp.tools.netexec_tool.resolve_binary", lambda *_: "nxc")
     monkeypatch.setattr("kestrel_mcp.tools.netexec_tool.run_command", fake_run_command)
@@ -67,7 +73,9 @@ async def test_netexec_kerberoast_returns_hash_details(monkeypatch: pytest.Monke
 
 async def test_netexec_refuses_out_of_scope() -> None:
     with pytest.raises(AuthorizationError):
-        await _spec(_module(), "netexec_smb_auth").handler({"targets": ["192.0.2.5"], "username": "a", "password": "b"})
+        await _spec(_module(), "netexec_smb_auth").handler(
+            {"targets": ["192.0.2.5"], "username": "a", "password": "b"}
+        )
 
 
 async def test_netexec_parsers() -> None:

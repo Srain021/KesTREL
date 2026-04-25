@@ -78,7 +78,9 @@ class WebAppDeepScanWorkflow:
             )
             crawled_urls = []
             if not katana_result.is_error and katana_result.structured:
-                crawled_urls = [u["url"] for u in katana_result.structured.get("urls", []) if u.get("url")]
+                crawled_urls = [
+                    u["url"] for u in katana_result.structured.get("urls", []) if u.get("url")
+                ]
 
             nuclei_targets = list(dict.fromkeys(live_urls + crawled_urls))
             nuclei_result = await nuclei_scan(
@@ -157,12 +159,26 @@ class WebAppDeepScanWorkflow:
                     "js_crawl": {"type": "boolean", "default": True},
                     "headless": {"type": "boolean", "default": False},
                     "scope": {"type": "string", "enum": ["fqdn", "rdn", "dn"], "default": "fqdn"},
-                    "severity": {"type": "array", "items": {"type": "string"}, "default": ["critical", "high", "medium"]},
-                    "rate_limit": {"type": "integer", "minimum": 1, "maximum": 1000, "default": 150},
+                    "severity": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "default": ["critical", "high", "medium"],
+                    },
+                    "rate_limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1000,
+                        "default": 150,
+                    },
                     "sqlmap_limit": {"type": "integer", "minimum": 0, "maximum": 50, "default": 10},
                     "sqlmap_level": {"type": "integer", "minimum": 1, "maximum": 5, "default": 1},
                     "sqlmap_risk": {"type": "integer", "minimum": 1, "maximum": 3, "default": 1},
-                    "timeout_sec": {"type": "integer", "minimum": 30, "maximum": 7200, "default": 1800},
+                    "timeout_sec": {
+                        "type": "integer",
+                        "minimum": 30,
+                        "maximum": 7200,
+                        "default": 1800,
+                    },
                 },
                 "additionalProperties": False,
             },
@@ -174,7 +190,9 @@ class WebAppDeepScanWorkflow:
             complexity_tier=5,
             preferred_model_tier="strong",
             output_trust="sensitive",
-            when_to_use=["User wants a full web app pass from liveness through crawl and SQLi checks."],
+            when_to_use=[
+                "User wants a full web app pass from liveness through crawl and SQLi checks."
+            ],
             prerequisites=["httpx, katana, nuclei, and sqlmap modules are enabled."],
             pitfalls=["sqlmap_dump_table is intentionally not called by this workflow."],
         )
@@ -184,6 +202,8 @@ def _sqlmap_candidates(urls: list[str]) -> list[str]:
     out: list[str] = []
     for url in urls:
         lower = url.lower()
-        if "?" in url or any(marker in lower for marker in ("id=", "search", "query", "filter", "page=")):
+        if "?" in url or any(
+            marker in lower for marker in ("id=", "search", "query", "filter", "page=")
+        ):
             out.append(url)
     return list(dict.fromkeys(out))

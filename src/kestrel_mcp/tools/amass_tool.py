@@ -39,12 +39,21 @@ class AmassModule(ToolModule):
                     "required": ["domain"],
                     "properties": {
                         "domain": {"type": "string"},
-                        "mode": {"type": "string", "enum": ["passive", "active"], "default": "passive"},
+                        "mode": {
+                            "type": "string",
+                            "enum": ["passive", "active"],
+                            "default": "passive",
+                        },
                         "brute_force": {"type": "boolean", "default": False},
                         "wordlist": {"type": "string"},
                         "include_sources": {"type": "boolean", "default": True},
                         "include_ips": {"type": "boolean", "default": True},
-                        "timeout_sec": {"type": "integer", "minimum": 30, "maximum": 7200, "default": 1800},
+                        "timeout_sec": {
+                            "type": "integer",
+                            "minimum": 30,
+                            "maximum": 7200,
+                            "default": 1800,
+                        },
                     },
                     "additionalProperties": False,
                 },
@@ -65,7 +74,10 @@ class AmassModule(ToolModule):
                     "Target is not a domain or is outside authorized scope.",
                 ],
                 prerequisites=["Amass binary is installed.", "Domain is inside authorized_scope."],
-                follow_ups=["Run httpx_probe on discovered names.", "Run nmap_scan on discovered IPs."],
+                follow_ups=[
+                    "Run httpx_probe on discovered names.",
+                    "Run nmap_scan on discovered IPs.",
+                ],
                 pitfalls=["active mode and brute_force are much noisier than passive mode."],
             ),
             ToolSpec(
@@ -107,7 +119,12 @@ class AmassModule(ToolModule):
         if self.settings.security.dry_run:
             return ToolResult(
                 text=f"[dry-run] would run Amass enum for {domain}.",
-                structured={"dry_run": True, "argv": argv, "domain": domain, "output": str(json_path)},
+                structured={
+                    "dry_run": True,
+                    "argv": argv,
+                    "domain": domain,
+                    "output": str(json_path),
+                },
             )
 
         result = await run_command(
@@ -115,7 +132,11 @@ class AmassModule(ToolModule):
             timeout_sec=int(arguments.get("timeout_sec") or 1800),
             max_output_bytes=self.settings.execution.max_output_bytes,
         )
-        raw_json = json_path.read_text(encoding="utf-8", errors="replace") if json_path.exists() else result.stdout
+        raw_json = (
+            json_path.read_text(encoding="utf-8", errors="replace")
+            if json_path.exists()
+            else result.stdout
+        )
         records = _parse_amass_json(raw_json)
         names = sorted({r["name"] for r in records if r.get("name")})
         ips = sorted({ip for r in records for ip in r.get("addresses", [])})
@@ -154,7 +175,9 @@ class AmassModule(ToolModule):
             return ToolResult.error(str(exc))
         result = await run_command([binary, "-version"], timeout_sec=30, max_output_bytes=64 * 1024)
         raw = (result.stdout or result.stderr).strip()
-        return ToolResult(text=raw, structured={"raw": raw, "exit_code": result.exit_code}, is_error=not result.ok)
+        return ToolResult(
+            text=raw, structured={"raw": raw, "exit_code": result.exit_code}, is_error=not result.ok
+        )
 
     async def _persist(self, domain: str, names: list[str], ips: list[str]) -> list[str]:
         target_ids: list[str] = []

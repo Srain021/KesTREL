@@ -103,14 +103,18 @@ def assess_exploitability(
 
     score = min(100, sum(signal.points for signal in signals))
     rating = _rating(score)
-    gaps = tuple(_evidence_gaps(finding, cves, enrichment_records, context, verified, evidence_count))
+    gaps = tuple(
+        _evidence_gaps(finding, cves, enrichment_records, context, verified, evidence_count)
+    )
     steps = tuple(_next_steps(rating, gaps, cves, bool(enrichment_records), not cves and verified))
     approval = rating in {ReadinessRating.READY_TO_VALIDATE, ReadinessRating.OPERATOR_REVIEW}
 
     return ReadinessAssessment(
         score=score,
         rating=rating,
-        confidence=_assessment_confidence(score, verified, evidence_count, bool(enrichment_records)),
+        confidence=_assessment_confidence(
+            score, verified, evidence_count, bool(enrichment_records)
+        ),
         requires_human_approval=approval,
         cves=tuple(cves),
         signals=tuple(signals),
@@ -304,7 +308,9 @@ def _next_steps(
 ) -> list[str]:
     steps: list[str] = []
     if gaps:
-        steps.append("Close evidence gaps before any high-risk action: " + "; ".join(gaps[:3]) + ".")
+        steps.append(
+            "Close evidence gaps before any high-risk action: " + "; ".join(gaps[:3]) + "."
+        )
     if cves and not has_enrichment:
         steps.append("Enrich CVEs with EPSS and CISA KEV before prioritizing operator time.")
     if zero_day_candidate:
@@ -312,11 +318,17 @@ def _next_steps(
             "Open a zero-day hypothesis record with isolated reproduction notes and sanitized evidence."
         )
     if rating is ReadinessRating.OPERATOR_REVIEW:
-        steps.append("Prepare an operator fire-control packet for human approval; do not auto-execute.")
+        steps.append(
+            "Prepare an operator fire-control packet for human approval; do not auto-execute."
+        )
     elif rating is ReadinessRating.READY_TO_VALIDATE:
         steps.append("Run scoped validation checks and attach evidence before escalation.")
     elif rating is ReadinessRating.INVESTIGATE:
-        steps.append("Gather version, reachability, and exploitability evidence before ranking higher.")
+        steps.append(
+            "Gather version, reachability, and exploitability evidence before ranking higher."
+        )
     else:
-        steps.append("Park unless new evidence, exposure, or threat intelligence changes the score.")
+        steps.append(
+            "Park unless new evidence, exposure, or threat intelligence changes the score."
+        )
     return steps

@@ -12,7 +12,9 @@ pytestmark = pytest.mark.asyncio
 
 def _module(tmp_path) -> SqlmapModule:
     return SqlmapModule(
-        Settings(tools={"sqlmap": {"enabled": True, "binary": "sqlmap", "output_dir": str(tmp_path)}}),
+        Settings(
+            tools={"sqlmap": {"enabled": True, "binary": "sqlmap", "output_dir": str(tmp_path)}}
+        ),
         ScopeGuard(["*.example.com"]),
     )
 
@@ -35,7 +37,9 @@ async def test_sqlmap_scan_detects_injection(tmp_path, monkeypatch: pytest.Monke
 
     monkeypatch.setattr("kestrel_mcp.tools.sqlmap_tool.resolve_binary", lambda *_: "sqlmap")
     monkeypatch.setattr("kestrel_mcp.tools.sqlmap_tool.run_command", fake_run_command)
-    result = await _spec(_module(tmp_path), "sqlmap_scan").handler({"url": "https://app.example.com/item?id=1"})
+    result = await _spec(_module(tmp_path), "sqlmap_scan").handler(
+        {"url": "https://app.example.com/item?id=1"}
+    )
 
     assert not result.is_error
     assert result.structured["injectable"] is True
@@ -44,7 +48,12 @@ async def test_sqlmap_scan_detects_injection(tmp_path, monkeypatch: pytest.Monke
 
 async def test_sqlmap_dump_requires_ack(tmp_path) -> None:
     result = await _spec(_module(tmp_path), "sqlmap_dump_table").handler(
-        {"url": "https://app.example.com/item?id=1", "database": "app", "table": "users", "acknowledge_risk": False}
+        {
+            "url": "https://app.example.com/item?id=1",
+            "database": "app",
+            "table": "users",
+            "acknowledge_risk": False,
+        }
     )
     assert result.is_error
 

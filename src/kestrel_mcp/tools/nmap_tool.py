@@ -134,7 +134,9 @@ class NmapModule(ToolModule):
             binary = self._binary()
         except ToolNotFoundError as exc:
             return ToolResult.error(str(exc))
-        result = await run_command([binary, "--version"], timeout_sec=30, max_output_bytes=64 * 1024)
+        result = await run_command(
+            [binary, "--version"], timeout_sec=30, max_output_bytes=64 * 1024
+        )
         raw = (result.stdout or result.stderr).strip()
         return ToolResult(
             text=raw.splitlines()[0] if raw else "",
@@ -144,7 +146,9 @@ class NmapModule(ToolModule):
 
     async def _run_nmap(self, argv: list[str], timeout_sec: int, event: str) -> ToolResult:
         if self.settings.security.dry_run:
-            return ToolResult(text=f"[dry-run] would run: {' '.join(argv)}", structured={"argv": argv})
+            return ToolResult(
+                text=f"[dry-run] would run: {' '.join(argv)}", structured={"argv": argv}
+            )
         result = await run_command(
             argv,
             timeout_sec=timeout_sec,

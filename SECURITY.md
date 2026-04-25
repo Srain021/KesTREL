@@ -4,19 +4,23 @@
 
 | Version | Supported |
 |---------|-----------|
-| 0.1.x   | ✅ (current development baseline) |
-| < 0.1   | ❌ |
+| 1.0.x   | ✅ (current release line) |
+| < 1.0   | ❌ |
 
 Pro LTS versions (when they exist) will receive 18 months of security patches;
 see [`PRODUCT_LINES.md`](./PRODUCT_LINES.md) for LTS policy details.
 
 ## Reporting a vulnerability
 
-**Do not file public GitHub issues for security bugs.** Instead:
+**Do not file public GitHub issues for security bugs.** Instead, use GitHub's
+private vulnerability reporting:
 
-1. Email the maintainers at `<maintainer-email-placeholder>`
-   (TODO: set real address before public release — see RFC-H01).
-2. Encrypt with our PGP key (TODO: publish key) for sensitive reports.
+1. Open a private advisory at
+   <https://github.com/Srain021/KesTREL/security/advisories/new>.
+2. If you cannot use GitHub Security Advisories, email the maintainer via
+   the address listed on their GitHub profile (<https://github.com/Srain021>).
+   A project PGP key may be published in a future release; until then, please
+   keep PoCs minimal and avoid sending live credentials.
 3. Include:
    - Affected version / commit SHA
    - Reproduction steps
@@ -70,7 +74,8 @@ to test**.
 software, whether authorized or not.
 
 See [`LICENSE`](./LICENSE) for the full legal text including the Responsible
-Use Addendum.
+Use Addendum, and [`ACCEPTABLE_USE.md`](./ACCEPTABLE_USE.md) for the
+maintainers' position on what we will and will not support.
 
 ## Known hardening gaps (tracked)
 
