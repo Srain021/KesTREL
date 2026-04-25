@@ -8,8 +8,22 @@ resources, prompts, and reporting.
 [![MCP 1.2+](https://img.shields.io/badge/MCP-1.2%2B-black)](https://modelcontextprotocol.io/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-> Authorized use only. Run this only against systems you own or have written
-> permission to test.
+> ## ⚠️ Authorized use only
+>
+> Kestrel MCP is a control surface for **offensive security tools**
+> (Sliver, Havoc, Evilginx, Impacket, sqlmap, NetExec, hashcat, …).
+> Running it against systems you do not own or have **written permission**
+> to test is a **criminal offense** in most jurisdictions
+> (CFAA, EU 2013/40, CMA 1990, 中国刑法 285/286).
+>
+> By using this software you accept the
+> [Acceptable Use Policy](./ACCEPTABLE_USE.md) and the responsible-use
+> clause in [LICENSE](./LICENSE). The maintainers accept no liability
+> for misuse.
+>
+> Defaults are conservative: empty scope refuses every offensive call,
+> and dangerous tools (C2, phishing, AD, cracking) are **disabled** in
+> `config/default.yaml` until you opt in.
 
 ## Start Here
 
@@ -17,6 +31,7 @@ resources, prompts, and reporting.
 - [Chinese manual](./docs/user-manual.zh-CN.md)
 - [Cursor MCP example](./config/cursor-mcp.json.example)
 - [Security policy](./SECURITY.md)
+- [Acceptable Use Policy](./ACCEPTABLE_USE.md)
 - [Release guide](./docs/releasing.md)
 - [Changelog](./CHANGELOG.md)
 
